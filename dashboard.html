@@ -2,124 +2,215 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard - Tamil Efootball</title>
-    <link rel="stylesheet" href="style.css"> <!-- Reuse your main CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - PES PARK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
     <style>
-        body { padding: 20px; max-width: 800px; margin: auto; }
-        .admin-section { background: #101926; padding: 20px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #1e293b; }
-        input { width: 100%; padding: 12px; margin: 8px 0; background: #060b13; border: 1px solid #1e293b; color: white; border-radius: 8px; }
-        button { background: #10b981; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
-        .delete-btn { background: #ef4444; width: auto; padding: 5px 10px; font-size: 12px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        :root {
+            --bg: #060b13;
+            --card-bg: #101926;
+            --border: #1e293b;
+            --accent: #10b981;
+            --gold: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .dashboard-wrapper {
+            width: 100%;
+            max-width: 600px; /* Forces everything into a clean vertical column */
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        h1 { text-align: center; font-size: 1.5rem; margin-bottom: 10px; }
+
+        /* Section Styling */
+        .admin-section { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 20px; 
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h3 { margin-top: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        
+        /* Form Elements */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        input, select { 
+            width: 100%; padding: 12px; background: #060b13; 
+            border: 1px solid var(--border); color: white; 
+            border-radius: 10px; outline: none; font-size: 0.9rem;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus { border-color: var(--accent); }
+
+        button { 
+            width: 100%; padding: 14px; border-radius: 10px; border: none; 
+            font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px;
+        }
+
+        .btn-green { background: var(--accent); color: #060b13; }
+        .btn-gold { background: var(--gold); color: black; }
+        .btn-green:hover, .btn-gold:hover { transform: translateY(-2px); opacity: 0.9; }
+
+        /* Player List Styling */
+        .list-container { max-height: 400px; overflow-y: auto; margin-top: 10px; }
+        .row-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 12px; border-bottom: 1px solid var(--border); font-size: 0.9rem;
+        }
+        .delete-btn { background: var(--danger); color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <h1>Admin Dashboard</h1>
+    <div class="dashboard-wrapper">
+        <h1>Admin Dashboard</h1>
 
-    <!-- SECTION 1: UPDATE LEAGUE STATS -->
-    <div class="admin-section">
-        <h3>Update League Overview (Blue Area)</h3>
-        <form id="statsForm" class="grid-2">
-            <input type="text" id="bdrLeader" placeholder="BDR Leader Name">
-            <input type="number" id="bdrValue" placeholder="BDR Points">
-            <input type="text" id="highestMV" placeholder="Highest MV Name">
-            <input type="number" id="mvValue" placeholder="MV Value">
-            <input type="number" id="teamsCount" placeholder="Total Teams">
-            <button type="submit" style="grid-column: span 2;">Update Stats</button>
-        </form>
-    </div>
-
-    <!-- SECTION 2: ADD NEW PLAYER -->
-    <div class="admin-section">
-        <h3>Add New Player</h3>
-        <form id="playerForm">
-            <div class="grid-2">
-                <input type="text" id="pName" placeholder="Player Name" required>
-                <input type="text" id="pNick" placeholder="Nickname">
-                <input type="text" id="pImage" placeholder="Image URL">
-                <input type="text" id="pTeam" placeholder="Team Name">
-                <input type="text" id="pTeamLogo" placeholder="Team Logo URL">
-            </div>
-            <button type="submit">Add Player</button>
-        </form>
-    </div>
-
-    <!-- SECTION 3: MANAGE PLAYERS -->
-    <div class="admin-section">
-        <h3>Registered Players</h3>
-        <div id="adminPlayerList"></div>
-    </div>
-
-    <!-- ADD TO DASHBOARD.HTML -->
-<div class="admin-section" style="border: 1px solid #f59e0b22;">
-    <h3 style="color: #f59e0b;"><i class="fa-solid fa-crown"></i> Hall of Fame Manager</h3>
-    <form id="hofForm">
-        <div class="grid-2">
-            <input type="text" id="hSeason" placeholder="Season (e.g. S1 2024)" required>
-            <input type="text" id="hName" placeholder="Winner Name" required>
-            <input type="text" id="hImg" placeholder="Winner Image URL">
-            <input type="text" id="hTeam" placeholder="Team Name">
-            <select id="hTitle" style="width: 100%; padding: 12px; background: #060b13; border: 1px solid #1e293b; color: white; border-radius: 8px;">
-                <option value="Champion">Champion</option>
-                <option value="Runner Up">Runner Up</option>
-                <option value="MVP of Season">MVP of Season</option>
-            </select>
+        <!-- 1. LEAGUE OVERVIEW -->
+        <div class="admin-section">
+            <h3 style="color: var(--accent);"><i class="fa-solid fa-chart-line"></i> League Overview (Blue Area)</h3>
+            <form id="statsForm">
+                <div class="grid-2">
+                    <input type="text" id="bdrLeader" placeholder="BDR Leader Name">
+                    <input type="number" id="bdrValue" placeholder="BDR Points">
+                    <input type="text" id="highestMV" placeholder="Highest MV Name">
+                    <input type="number" id="mvValue" placeholder="MV Value">
+                </div>
+                <input type="number" id="teamsCount" placeholder="Total Teams Count" style="margin-top: 12px;">
+                <button type="submit" class="btn-green">Update Main Stats</button>
+            </form>
         </div>
-        <button type="submit" style="background: #f59e0b; color: black; margin-top:10px;">Add to Hall of Fame</button>
-    </form>
 
-    <div id="hofAdminList" style="margin-top: 20px;"></div>
-</div>
-    <div class="admin-section">
-    <h3>Manage Player Stats</h3>
-    <select id="playerSelector" onchange="fetchSpecificPlayer()">
-        <option>Select a player to edit...</option>
-    </select>
+        <!-- 2. ADD PLAYER -->
+        <div class="admin-section">
+            <h3><i class="fa-solid fa-user-plus"></i> Add New Player</h3>
+            <form id="playerForm">
+                <div class="grid-2">
+                    <input type="text" id="pName" placeholder="Full Name" required>
+                    <input type="text" id="pNick" placeholder="Nickname">
+                    <input type="text" id="pTeam" placeholder="Team Name">
+                    <input type="text" id="pTeamLogo" placeholder="Team Logo URL">
+                </div>
+                <input type="text" id="pImage" placeholder="Player Image URL" style="margin-top: 12px;">
+                <button type="submit" class="btn-green">Add to Database</button>
+            </form>
+        </div>
 
-    <form id="updateStatsForm" style="margin-top:20px">
-        <div class="grid-2">
-            <input type="number" id="upAuction" placeholder="Auction Price">
-            <input type="number" id="upMarket" placeholder="Market Value">
-            <input type="number" id="upBDR" placeholder="BDR Points">
-            <input type="text" id="upSquad" placeholder="Squad Image URL">
+        <!-- 3. MANAGE INDIVIDUAL PLAYER STATS -->
+        <div class="admin-section">
+            <h3 style="color: #6366f1;"><i class="fa-solid fa-address-card"></i> Manage Player Specific Stats</h3>
+            <select id="playerSelector">
+                <option value="">Select a player to edit...</option>
+            </select>
+            <form id="updateStatsForm" style="margin-top: 15px;">
+                <div class="grid-2">
+                    <input type="number" id="upAuction" placeholder="Auction Price">
+                    <input type="number" id="upMarket" placeholder="Market Value">
+                    <input type="number" id="upBDR" placeholder="BDR Points">
+                    <input type="text" id="upSquad" placeholder="Squad Image URL">
+                </div>
+                <button type="submit" class="btn-green">Update Player Profile</button>
+            </form>
+        </div>
+
+        <!-- 4. HALL OF FAME -->
+        <div class="admin-section" style="border-color: var(--gold);">
+            <h3 style="color: var(--gold);"><i class="fa-solid fa-crown"></i> Hall of Fame Manager</h3>
+            <form id="hofForm">
+                <div class="grid-2">
+                    <input type="text" id="hSeason" placeholder="Season (e.g. S7 2026)" required>
+                    <input type="text" id="hName" placeholder="Winner Name" required>
+                    <input type="text" id="hTeam" placeholder="Team Name">
+                    <select id="hTitle">
+                        <option value="Champion">Champion</option>
+                        <option value="Runner Up">Runner Up</option>
+                        <option value="MVP">MVP</option>
+                    </select>
+                </div>
+                <input type="text" id="hImg" placeholder="Winner Image URL" style="margin-top: 12px;">
+                <button type="submit" class="btn-gold">Add to Legends List</button>
+            </form>
+            <div id="hofAdminList" class="list-container"></div>
+        </div>
+
+        <!-- 5. REGISTERED PLAYERS LIST -->
+        <div class="admin-section">
+            <h3><i class="fa-solid fa-users-gear"></i> Delete/Manage Players</h3>
+            <div id="adminPlayerList" class="list-container">
+                <p style="text-align: center; color: var(--text-dim);">Loading Players...</p>
             </div>
-        <button type="submit" style="margin-top:10px">Update Player Details</button>
-    </form>
+        </div>
     </div>
-
-
 
     <script>
-        const API = "https://pes-park-backend.onrender.com"; // Replace with your Render URL
+        const API = "https://pes-park-backend.onrender.com";
 
-        if (localStorage.getItem('isAdmin') !== 'true') {
-        window.location.href = 'login.html';
-        }
+        // Security Check
+        if (localStorage.getItem('isAdmin') !== 'true') { window.location.href = 'login.html'; }
 
-        // 1. Load Data on Start
-        async function loadAdminData() {
-            // Load Stats
+        // --- FETCH & LOAD FUNCTIONS ---
+        async function loadAllData() {
+            // Load League Stats
             const sRes = await fetch(`${API}/api/stats`);
             const s = await sRes.json();
-            document.getElementById('bdrLeader').value = s.bdrLeader;
-            document.getElementById('bdrValue').value = s.bdrValue;
-            document.getElementById('highestMV').value = s.highestMV;
-            document.getElementById('mvValue').value = s.mvValue;
-            document.getElementById('teamsCount').value = s.teamsCount;
+            if(s) {
+                document.getElementById('bdrLeader').value = s.bdrLeader || '';
+                document.getElementById('bdrValue').value = s.bdrValue || 0;
+                document.getElementById('highestMV').value = s.highestMV || '';
+                document.getElementById('mvValue').value = s.mvValue || 0;
+                document.getElementById('teamsCount').value = s.teamsCount || 0;
+            }
 
             // Load Players
             const pRes = await fetch(`${API}/api/players`);
             const players = await pRes.json();
+            
+            // Fill Deletion List
             document.getElementById('adminPlayerList').innerHTML = players.map(p => `
-                <div class="player-row" style="border-bottom: 1px solid #1e293b; padding: 10px 0;">
-                    <span>${p.name} (${p.teamName || 'No Team'})</span>
+                <div class="row-item">
+                    <span><b>${p.name}</b> (${p.teamName || 'Free Agent'})</span>
                     <button class="delete-btn" onclick="deletePlayer('${p._id}')">Delete</button>
+                </div>
+            `).join('');
+
+            // Fill Selector
+            const sel = document.getElementById('playerSelector');
+            sel.innerHTML = '<option value="">Select a player to edit...</option>' + 
+                            players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+
+            // Load HOF
+            const hRes = await fetch(`${API}/api/achievements`);
+            const hof = await hRes.json();
+            document.getElementById('hofAdminList').innerHTML = hof.map(h => `
+                <div class="row-item">
+                    <span>${h.season}: ${h.winnerName}</span>
+                    <button class="delete-btn" onclick="deleteAchieve('${h._id}')">Remove</button>
                 </div>
             `).join('');
         }
 
-        // 2. Handle Stats Update
+        // --- FORM HANDLERS ---
+
+        // Update Global Stats
         document.getElementById('statsForm').onsubmit = async (e) => {
             e.preventDefault();
             const data = {
@@ -129,15 +220,11 @@
                 mvValue: document.getElementById('mvValue').value,
                 teamsCount: document.getElementById('teamsCount').value
             };
-            await fetch(`${API}/api/stats`, { 
-                method: 'PUT', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify(data) 
-            });
-            alert("Stats Updated!");
+            await fetch(`${API}/api/stats`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            alert("League Stats Updated!");
         };
 
-        // 3. Handle Add Player
+        // Add New Player
         document.getElementById('playerForm').onsubmit = async (e) => {
             e.preventDefault();
             const data = {
@@ -147,86 +234,44 @@
                 teamName: document.getElementById('pTeam').value,
                 teamLogo: document.getElementById('pTeamLogo').value
             };
-            await fetch(`${API}/api/players`, { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify(data) 
-            });
+            await fetch(`${API}/api/players`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
             location.reload();
         };
 
-        // 4. Handle Delete
-        async function deletePlayer(id) {
-            if(confirm("Delete this player?")) {
-                await fetch(`${API}/api/players/${id}`, { method: 'DELETE' });
-                location.reload();
-            }
-        }
+        // Update Specific Player Stats
+        document.getElementById('updateStatsForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('playerSelector').value;
+            if(!id) return alert("Select a player first!");
+            const data = {
+                auctionPrice: document.getElementById('upAuction').value,
+                marketValue: document.getElementById('upMarket').value,
+                bdrPoints: document.getElementById('upBDR').value,
+                squadImage: document.getElementById('upSquad').value
+            };
+            await fetch(`${API}/api/players/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            alert("Player Profile Updated!");
+        };
 
-        loadAdminData();
-
+        // HOF Handler
         document.getElementById('hofForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const data = {
-            season: document.getElementById('hSeason').value,
-            winnerName: document.getElementById('hName').value,
-            winnerImage: document.getElementById('hImg').value,
-            teamName: document.getElementById('hTeam').value,
-            title: document.getElementById('hTitle').value
-        };
-        await fetch(`${API}/api/achievements`, { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify(data) 
-        });
-        location.reload();
-    };
-
-    // Load achievements into dashboard for deletion
-    async function loadHofAdmin() {
-        const res = await fetch(`${API}/api/achievements`);
-        const data = await res.json();
-        document.getElementById('hofAdminList').innerHTML = data.map(a => `
-            <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #1e293b;">
-                <span>${a.season}: ${a.winnerName}</span>
-                <button class="delete-btn" onclick="deleteAchieve('${a._id}')">Remove</button>
-            </div>
-        `).join('');
-    }
-
-    async function deleteAchieve(id) {
-        if(confirm("Remove from Hall of Fame?")) {
-            await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' });
+            e.preventDefault();
+            const data = {
+                season: document.getElementById('hSeason').value,
+                winnerName: document.getElementById('hName').value,
+                winnerImage: document.getElementById('hImg').value,
+                teamName: document.getElementById('hTeam').value,
+                title: document.getElementById('hTitle').value
+            };
+            await fetch(`${API}/api/achievements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
             location.reload();
-        }
-    }
-    loadHofAdmin();
-        async function fillSelector() {
-        const res = await fetch(`${API}/api/players`);
-        const players = await res.json();
-        const sel = document.getElementById('playerSelector');
-        sel.innerHTML += players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
-    }
-
-    // 2. Update via API
-    document.getElementById('updateStatsForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('playerSelector').value;
-        const data = {
-            auctionPrice: document.getElementById('upAuction').value,
-            marketValue: document.getElementById('upMarket').value,
-            bdrPoints: document.getElementById('upBDR').value,
-            squadImage: document.getElementById('upSquad').value
         };
 
-        await fetch(`${API}/api/players/${id}`, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        alert("Stats Updated!");
-    };
-    fillSelector();
+        // Deletion Functions
+        async function deletePlayer(id) { if(confirm("Delete Player?")) { await fetch(`${API}/api/players/${id}`, { method: 'DELETE' }); location.reload(); } }
+        async function deleteAchieve(id) { if(confirm("Remove from HOF?")) { await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' }); location.reload(); } }
+
+        loadAllData();
     </script>
 </body>
 </html>
