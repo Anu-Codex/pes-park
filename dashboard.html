@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Tamil Efootball</title>
+    <link rel="stylesheet" href="style.css"> <!-- Reuse your main CSS -->
+    <style>
+        body { padding: 20px; max-width: 800px; margin: auto; }
+        .admin-section { background: #101926; padding: 20px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #1e293b; }
+        input { width: 100%; padding: 12px; margin: 8px 0; background: #060b13; border: 1px solid #1e293b; color: white; border-radius: 8px; }
+        button { background: #10b981; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+        .delete-btn { background: #ef4444; width: auto; padding: 5px 10px; font-size: 12px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    </style>
+</head>
+<body>
+
+    <h1>Admin Dashboard</h1>
+
+    <!-- SECTION 1: UPDATE LEAGUE STATS -->
+    <div class="admin-section">
+        <h3>Update League Overview (Blue Area)</h3>
+        <form id="statsForm" class="grid-2">
+            <input type="text" id="bdrLeader" placeholder="BDR Leader Name">
+            <input type="number" id="bdrValue" placeholder="BDR Points">
+            <input type="text" id="highestMV" placeholder="Highest MV Name">
+            <input type="number" id="mvValue" placeholder="MV Value">
+            <input type="number" id="teamsCount" placeholder="Total Teams">
+            <button type="submit" style="grid-column: span 2;">Update Stats</button>
+        </form>
+    </div>
+
+    <!-- SECTION 2: ADD NEW PLAYER -->
+    <div class="admin-section">
+        <h3>Add New Player</h3>
+        <form id="playerForm">
+            <div class="grid-2">
+                <input type="text" id="pName" placeholder="Player Name" required>
+                <input type="text" id="pNick" placeholder="Nickname">
+                <input type="text" id="pImage" placeholder="Image URL">
+                <input type="text" id="pTeam" placeholder="Team Name">
+                <input type="text" id="pTeamLogo" placeholder="Team Logo URL">
+            </div>
+            <button type="submit">Add Player</button>
+        </form>
+    </div>
+
+    <!-- SECTION 3: MANAGE PLAYERS -->
+    <div class="admin-section">
+        <h3>Registered Players</h3>
+        <div id="adminPlayerList"></div>
+    </div>
+
+    <script>
+        const API = "https://your-backend-url.onrender.com"; // Replace with your Render URL
+
+        // 1. Load Data on Start
+        async function loadAdminData() {
+            // Load Stats
+            const sRes = await fetch(`${API}/api/stats`);
+            const s = await sRes.json();
+            document.getElementById('bdrLeader').value = s.bdrLeader;
+            document.getElementById('bdrValue').value = s.bdrValue;
+            document.getElementById('highestMV').value = s.highestMV;
+            document.getElementById('mvValue').value = s.mvValue;
+            document.getElementById('teamsCount').value = s.teamsCount;
+
+            // Load Players
+            const pRes = await fetch(`${API}/api/players`);
+            const players = await pRes.json();
+            document.getElementById('adminPlayerList').innerHTML = players.map(p => `
+                <div class="player-row" style="border-bottom: 1px solid #1e293b; padding: 10px 0;">
+                    <span>${p.name} (${p.teamName || 'No Team'})</span>
+                    <button class="delete-btn" onclick="deletePlayer('${p._id}')">Delete</button>
+                </div>
+            `).join('');
+        }
+
+        // 2. Handle Stats Update
+        document.getElementById('statsForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                bdrLeader: document.getElementById('bdrLeader').value,
+                bdrValue: document.getElementById('bdrValue').value,
+                highestMV: document.getElementById('highestMV').value,
+                mvValue: document.getElementById('mvValue').value,
+                teamsCount: document.getElementById('teamsCount').value
+            };
+            await fetch(`${API}/api/stats`, { 
+                method: 'PUT', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(data) 
+            });
+            alert("Stats Updated!");
+        };
+
+        // 3. Handle Add Player
+        document.getElementById('playerForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('pName').value,
+                nickname: document.getElementById('pNick').value,
+                image: document.getElementById('pImage').value,
+                teamName: document.getElementById('pTeam').value,
+                teamLogo: document.getElementById('pTeamLogo').value
+            };
+            await fetch(`${API}/api/players`, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(data) 
+            });
+            location.reload();
+        };
+
+        // 4. Handle Delete
+        async function deletePlayer(id) {
+            if(confirm("Delete this player?")) {
+                await fetch(`${API}/api/players/${id}`, { method: 'DELETE' });
+                location.reload();
+            }
+        }
+
+        loadAdminData();
+    </script>
+</body>
+</html>
