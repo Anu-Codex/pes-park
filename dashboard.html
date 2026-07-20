@@ -51,6 +51,29 @@
         <div id="adminPlayerList"></div>
     </div>
 
+    <!-- ADD TO DASHBOARD.HTML -->
+<div class="admin-section" style="border: 1px solid #f59e0b22;">
+    <h3 style="color: #f59e0b;"><i class="fa-solid fa-crown"></i> Hall of Fame Manager</h3>
+    <form id="hofForm">
+        <div class="grid-2">
+            <input type="text" id="hSeason" placeholder="Season (e.g. S1 2024)" required>
+            <input type="text" id="hName" placeholder="Winner Name" required>
+            <input type="text" id="hImg" placeholder="Winner Image URL">
+            <input type="text" id="hTeam" placeholder="Team Name">
+            <select id="hTitle" style="width: 100%; padding: 12px; background: #060b13; border: 1px solid #1e293b; color: white; border-radius: 8px;">
+                <option value="Champion">Champion</option>
+                <option value="Runner Up">Runner Up</option>
+                <option value="MVP of Season">MVP of Season</option>
+            </select>
+        </div>
+        <button type="submit" style="background: #f59e0b; color: black; margin-top:10px;">Add to Hall of Fame</button>
+    </form>
+
+    <div id="hofAdminList" style="margin-top: 20px;"></div>
+</div>
+
+
+
     <script>
         const API = "https://your-backend-url.onrender.com"; // Replace with your Render URL
 
@@ -125,6 +148,43 @@
         }
 
         loadAdminData();
+
+        document.getElementById('hofForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const data = {
+            season: document.getElementById('hSeason').value,
+            winnerName: document.getElementById('hName').value,
+            winnerImage: document.getElementById('hImg').value,
+            teamName: document.getElementById('hTeam').value,
+            title: document.getElementById('hTitle').value
+        };
+        await fetch(`${API}/api/achievements`, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(data) 
+        });
+        location.reload();
+    };
+
+    // Load achievements into dashboard for deletion
+    async function loadHofAdmin() {
+        const res = await fetch(`${API}/api/achievements`);
+        const data = await res.json();
+        document.getElementById('hofAdminList').innerHTML = data.map(a => `
+            <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #1e293b;">
+                <span>${a.season}: ${a.winnerName}</span>
+                <button class="delete-btn" onclick="deleteAchieve('${a._id}')">Remove</button>
+            </div>
+        `).join('');
+    }
+
+    async function deleteAchieve(id) {
+        if(confirm("Remove from Hall of Fame?")) {
+            await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' });
+            location.reload();
+        }
+    }
+    loadHofAdmin();
     </script>
 </body>
 </html>
