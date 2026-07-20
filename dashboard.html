@@ -71,6 +71,22 @@
 
     <div id="hofAdminList" style="margin-top: 20px;"></div>
 </div>
+    <div class="admin-section">
+    <h3>Manage Player Stats</h3>
+    <select id="playerSelector" onchange="fetchSpecificPlayer()">
+        <option>Select a player to edit...</option>
+    </select>
+
+    <form id="updateStatsForm" style="margin-top:20px">
+        <div class="grid-2">
+            <input type="number" id="upAuction" placeholder="Auction Price">
+            <input type="number" id="upMarket" placeholder="Market Value">
+            <input type="number" id="upBDR" placeholder="BDR Points">
+            <input type="text" id="upSquad" placeholder="Squad Image URL">
+            </div>
+        <button type="submit" style="margin-top:10px">Update Player Details</button>
+    </form>
+    </div>
 
 
 
@@ -185,6 +201,32 @@
         }
     }
     loadHofAdmin();
+        async function fillSelector() {
+        const res = await fetch(`${API}/api/players`);
+        const players = await res.json();
+        const sel = document.getElementById('playerSelector');
+        sel.innerHTML += players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+    }
+
+    // 2. Update via API
+    document.getElementById('updateStatsForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('playerSelector').value;
+        const data = {
+            auctionPrice: document.getElementById('upAuction').value,
+            marketValue: document.getElementById('upMarket').value,
+            bdrPoints: document.getElementById('upBDR').value,
+            squadImage: document.getElementById('upSquad').value
+        };
+
+        await fetch(`${API}/api/players/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        alert("Stats Updated!");
+    };
+    fillSelector();
     </script>
 </body>
 </html>
