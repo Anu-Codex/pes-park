@@ -41,7 +41,7 @@
                 </select>
             </div>
 
-            <h1 class="league-name">Tamil Efootball League</h1>
+            <h1 class="league-name">PES PARK Efootball League</h1>
             <p class="league-meta">8 teams • 117 players</p>
 
             <div class="leader-badge">
@@ -92,4 +92,24 @@
     </div>
 
 </body>
+    <script>
+        async function loadMainPage() {
+    const API = "https://your-backend-url.onrender.com";
+
+    // Fetch Stats
+    const sRes = await fetch(`${API}/api/stats`);
+    const s = await sRes.json();
+    
+    // Update the UI boxes (Assuming you added IDs to them)
+    document.getElementById('display-bdr-val').innerText = s.bdrValue;
+    document.getElementById('display-bdr-name').innerText = s.bdrLeader;
+    document.getElementById('display-mv-val').innerText = s.mvValue;
+    document.getElementById('display-mv-name').innerText = s.highestMV;
+    document.getElementById('display-teams').innerText = s.teamsCount;
+
+    // Fetch and display players (the table)
+    fetchPlayers(); 
+}
+loadMainPage();
+    </script>
 </html>
