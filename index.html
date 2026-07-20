@@ -101,6 +101,101 @@
             </div>
         </main>
     </div>
+    <section class="dashboard-view">
+    <div class="view-header">
+        <h3>DASHBOARD VIEW</h3>
+        <select class="custom-dropdown">
+            <option>Total players</option>
+        </select>
+    </div>
+
+    <div class="players-card">
+        <!-- Total Count Area -->
+        <div class="total-players-info">
+            <div class="count-box">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+                <small>TOTAL PLAYERS</small>
+                <h4 id="playerCountDisplay">0 registered</h4>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="playerSearch" placeholder="Search players or teams..." onkeyup="filterPlayers()">
+        </div>
+
+        <!-- Table Header -->
+        <div class="list-header">
+            <span class="col-player">Player</span>
+            <span class="col-team">Team</span>
+        </div>
+
+        <!-- Dynamic Player List -->
+        <div id="playerContainer" class="player-list-body">
+            <!-- Data from Dashboard will appear here -->
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Styling to match the image exactly */
+    .players-card {
+        background: #101926;
+        border-radius: 20px;
+        padding: 20px;
+        border: 1px solid #1e293b;
+    }
+
+    .total-players-info { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+    .count-box { background: #1e293b; color: #6366f1; padding: 12px; border-radius: 10px; font-size: 1.2rem; }
+    .total-players-info h4 { font-size: 1.3rem; margin-top: 2px; }
+
+    .search-container {
+        background: #060b13;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        padding: 12px 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .search-container input { background: transparent; border: none; color: white; width: 100%; outline: none; }
+    .search-container i { color: #475569; }
+
+    .list-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 0 10px 10px 10px;
+        border-bottom: 1px solid #1e293b;
+        color: #64748b;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .player-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 10px;
+        border-bottom: 1px solid #1e293b;
+    }
+
+    /* Column 1: Player Info */
+    .player-cell { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .player-avatar { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; background: #060b13; }
+    .p-name { display: block; font-weight: 600; color: #fff; font-size: 0.95rem; }
+    .p-nick { color: #64748b; font-size: 0.85rem; }
+
+    /* Column 2: Team Info (Right Aligned) */
+    .team-cell { display: flex; align-items: center; gap: 10px; justify-content: flex-end; width: 150px; }
+    .team-logo { width: 30px; height: 30px; border-radius: 4px; object-fit: contain; }
+    .t-name { color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; font-weight: 600; }
+    .no-team { color: #334155; font-weight: bold; }
+</style>
 
 </body>
     <script>
@@ -122,5 +217,43 @@
     fetchPlayers(); 
 }
 loadMainPage();
+        const API_URL = "https://your-backend.onrender.com/api/players";
+
+    async function loadPlayers() {
+        const res = await fetch(API_URL);
+        const players = await res.json();
+        
+        document.getElementById('playerCountDisplay').innerText = `${players.length} registered`;
+        
+        const container = document.getElementById('playerContainer');
+        container.innerHTML = players.map(p => `
+            <div class="player-row">
+                <div class="player-cell">
+                    <img src="${p.image || 'default-avatar.png'}" class="player-avatar">
+                    <div>
+                        <span class="p-name">${p.name}</span>
+                        <span class="p-nick">"${p.nickname}"</span>
+                    </div>
+                </div>
+                <div class="team-cell">
+                    ${p.teamName ? `
+                        <img src="${p.teamLogo}" class="team-logo">
+                        <span class="t-name">${p.teamName}</span>
+                    ` : '<span class="no-team">—</span>'}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    loadPlayers();
+
+    // Simple Search Filter
+    function filterPlayers() {
+        let input = document.getElementById('playerSearch').value.toLowerCase();
+        let rows = document.getElementsByClassName('player-row');
+        for (let row of rows) {
+            row.style.display = row.innerText.toLowerCase().includes(input) ? "flex" : "none";
+        }
+    }
     </script>
 </html>
