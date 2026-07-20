@@ -3,201 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tamil Efootball League</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Tamil Efootballers</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg: #060b13;
+            --card-bg: #101926;
+            --item-bg: #162130;
+            --accent: #10b981;
+            --text-dim: #94a3b8;
+            --border: #1e293b;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* The main wrapper that forces vertical stacking */
+        .main-container {
+            width: 100%;
+            max-width: 500px; /* Limits width to look like a mobile app */
+            display: flex;
+            flex-direction: column; /* FORCES TOP TO BOTTOM LAYOUT */
+            gap: 30px; /* Space between the two sections */
+        }
+
+        /* HEADER SECTION */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo h2 { margin: 0; color: white; font-size: 1.2rem; }
+        .logo span { color: var(--accent); font-size: 0.7rem; display: block; font-weight: bold; }
+        
+        .top-nav { display: flex; gap: 10px; }
+        .nav-item { 
+            color: var(--text-dim); text-decoration: none; width: 40px; height: 40px; 
+            display: flex; align-items: center; justify-content: center; border-radius: 10px; 
+        }
+        .nav-item.active { background: rgba(16,185,129,0.1); color: var(--accent); border: 1px solid rgba(16,185,129,0.2); }
+
+        /* FIRST SECTION: LEAGUE STATS */
+        .league-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 25px;
+            border: 1px solid var(--border);
+        }
+
+        .dropdown-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        select { background: #1e293b; color: white; border: 1px solid var(--border); padding: 8px; border-radius: 8px; }
+
+        .league-title { font-size: 1.8rem; margin: 10px 0; }
+        .league-leader { background: rgba(16,185,129,0.1); padding: 8px 15px; border-radius: 20px; display: inline-block; font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;}
+        .league-leader b { color: white; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .stat-box { background: var(--item-bg); padding: 15px; border-radius: 15px; border: 1px solid var(--border); }
+        .stat-box i { font-size: 1.2rem; margin-bottom: 10px; display: block; }
+        .stat-box .label { font-size: 0.75rem; color: var(--text-dim); }
+        .stat-box .val { font-size: 1.4rem; font-weight: bold; display: block; margin: 4px 0; }
+
+        /* SECOND SECTION: DASHBOARD VIEW (Under the first one) */
+        .dashboard-section { width: 100%; }
+        
+        .section-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .section-title-row h3 { font-size: 0.85rem; color: var(--text-dim); letter-spacing: 1px; margin: 0; }
+
+        .players-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .total-info { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .icon-sq { background: #1e293b; padding: 12px; border-radius: 10px; color: #6366f1; }
+
+        .search-box {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .search-box input { background: transparent; border: none; color: white; width: 100%; outline: none; }
+
+        .table-header { display: flex; justify-content: space-between; padding: 10px; color: var(--text-dim); font-size: 0.8rem; border-bottom: 1px solid var(--border); }
+        
+        .player-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 10px; border-bottom: 1px solid var(--border); }
+        .p-details { display: flex; align-items: center; gap: 12px; }
+        .p-img { width: 45px; height: 45px; border-radius: 8px; background: var(--bg); }
+        .t-details { display: flex; align-items: center; gap: 8px; }
+        .t-logo { width: 25px; height: 25px; border-radius: 4px; }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Header Section -->
-        <header class="main-header">
-            <div class="logo-area">
-                <img src="https://via.placeholder.com/40" alt="Logo" class="logo">
-                <div>
-                    <h2 class="site-title">PES</h2>
-                    <p class="site-subtitle">PARK</p>
-                </div>
+    <div class="main-container">
+        
+        <!-- HEADER -->
+        <header>
+            <div class="logo">
+                <h2>PES <b>PARK</b></h2>
+                <span>EFOOTBALLERS</span>
             </div>
-            <!-- Top Right Options -->
-    <nav class="top-nav">
-        <!-- 1st: Live Page (Current) -->
-        <a href="index.html" class="nav-item active">
-            <i class="fa-solid fa-chart-simple"></i>
-        </a>
-        <!-- 2nd: Hall of Fame -->
-        <a href="halloffame.html" class="nav-item">
-            <i class="fa-solid fa-trophy"></i>
-        </a>
-        <!-- 3rd: Admin Login -->
-        <a href="login.html" class="nav-item">
-            <i class="fa-solid fa-right-to-bracket"></i>
-        </a>
-    </nav>
+            <nav class="top-nav">
+                <a href="#" class="nav-item active"><i class="fa-solid fa-chart-simple"></i></a>
+                <a href="halloffame.html" class="nav-item"><i class="fa-solid fa-trophy"></i></a>
+                <a href="login.html" class="nav-item"><i class="fa-solid fa-right-to-bracket"></i></a>
+            </nav>
         </header>
 
-        <!-- Main Card Section -->
-        <main class="league-card">
-            
-            <!-- Yellow Marked: Dropdowns -->
-            <div class="filter-row">
-                <select class="custom-dropdown">
-                    <option>2026</option>
-                    <option>2025</option>
-                </select>
-
-                <select class="custom-dropdown">
-                    <option>Season 7 • Current</option>
-                    <option>Season 6</option>
-                </select>
+        <!-- 1st DIV: LEAGUE INFO & STATS -->
+        <section class="league-card">
+            <div class="dropdown-row">
+                <select><option>2026</option></select>
+                <select><option>Season 7 • Current</option></select>
             </div>
+            <h1 class="league-title">PES PARK<br>Efootball League</h1>
+            <div class="league-leader">League leader <b>BLUE LOCK • 0 pts</b></div>
 
-            <h1 class="league-name">PES PARK Efootball League</h1>
-            <p class="league-meta">8 teams • 117 players</p>
-
-            <div class="leader-badge">
-                League leader <span class="badge-text">BLUE LOCK • 0 pts</span>
-            </div>
-
-            <!-- Blue Marked Area: Admin Controlled Grid -->
             <div class="stats-grid">
-                
-                <div class="stat-item">
-                    <div class="stat-icon icon-gold">🏆</div>
-                    <div class="stat-info">
-                        <span class="label">BDR Leader</span>
-                        <span class="value">0</span>
-                        <span class="sub-value">Abhay</span>
-                    </div>
+                <div class="stat-box">
+                    <i class="fa-solid fa-trophy" style="color: #f59e0b;"></i>
+                    <span class="label">BDR Leader</span>
+                    <span class="val" id="bdrVal">0</span>
+                    <span class="label" id="bdrName">Abhay</span>
                 </div>
-
-                <div class="stat-item">
-                    <div class="stat-icon icon-green">📈</div>
-                    <div class="stat-info">
-                        <span class="label">Highest MV</span>
-                        <span class="value">0</span>
-                        <span class="sub-value">Abhay</span>
-                    </div>
+                <div class="stat-box">
+                    <i class="fa-solid fa-chart-line" style="color: #ef4444;"></i>
+                    <span class="label">Highest MV</span>
+                    <span class="val" id="mvVal">0</span>
+                    <span class="label" id="mvName">Abhay</span>
                 </div>
-
-                <div class="stat-item">
-                    <div class="stat-icon icon-purple">👥</div>
-                    <div class="stat-info">
-                        <span class="label">Teams</span>
-                        <span class="value">8</span>
-                        <span class="sub-value">in the league</span>
-                    </div>
+                <div class="stat-box">
+                    <i class="fa-solid fa-users" style="color: #3b82f6;"></i>
+                    <span class="label">Teams</span>
+                    <span class="val" id="teamCount">8</span>
+                    <span class="label">in the league</span>
                 </div>
-
-                <div class="stat-item">
-                    <div class="stat-icon icon-blue">📉</div>
-                    <div class="stat-info">
-                        <span class="label">Players</span>
-                        <span class="value">117</span>
-                        <span class="sub-value">registered</span>
-                    </div>
+                <div class="stat-box">
+                    <i class="fa-solid fa-user-check" style="color: #a855f7;"></i>
+                    <span class="label">Players</span>
+                    <span class="val" id="playerCount">117</span>
+                    <span class="label">registered</span>
                 </div>
-
             </div>
-        </main>
-    </div>
-    <section class="dashboard-view">
-    <div class="view-header">
-        <h3>DASHBOARD VIEW</h3>
-        <select class="custom-dropdown">
-            <option>Total players</option>
-        </select>
-    </div>
+        </section>
 
-    <div class="players-card">
-        <!-- Total Count Area -->
-        <div class="total-players-info">
-            <div class="count-box">
-                <i class="fa-solid fa-users"></i>
+        <!-- 2nd DIV: DASHBOARD VIEW (NOW UNDERNEATH) -->
+        <section class="dashboard-section">
+            <div class="section-title-row">
+                <h3>DASHBOARD VIEW</h3>
+                <select><option>Total players</option></select>
             </div>
-            <div>
-                <small>TOTAL PLAYERS</small>
-                <h4 id="playerCountDisplay">0 registered</h4>
+
+            <div class="players-card">
+                <div class="total-info">
+                    <div class="icon-sq"><i class="fa-solid fa-users-viewfinder"></i></div>
+                    <div>
+                        <span class="label" style="font-size: 0.7rem; color: var(--text-dim);">TOTAL PLAYERS</span>
+                        <h4 style="margin: 0;" id="totalReg">117 registered</h4>
+                    </div>
+                </div>
+
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass" style="color: var(--text-dim);"></i>
+                    <input type="text" placeholder="Search players or teams...">
+                </div>
+
+                <div class="table-header">
+                    <span>Player</span>
+                    <span>Team</span>
+                </div>
+
+                <div id="playerList">
+                    <!-- This will be filled by your Javascript Fetch -->
+                    <div class="player-row">
+                        <div class="p-details">
+                            <div class="p-img"></div>
+                            <div>
+                                <span style="display:block; font-weight:bold;">Abhay</span>
+                                <span style="font-size:0.8rem; color:var(--text-dim);">"Redhood"</span>
+                            </div>
+                        </div>
+                        <div class="t-details">
+                            <div class="t-logo" style="background:gold;"></div>
+                            <span style="font-size:0.8rem;">RANGERS</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Search Bar -->
-        <div class="search-container">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="playerSearch" placeholder="Search players or teams..." onkeyup="filterPlayers()">
-        </div>
-
-        <!-- Table Header -->
-        <div class="list-header">
-            <span class="col-player">Player</span>
-            <span class="col-team">Team</span>
-        </div>
-
-        <!-- Dynamic Player List -->
-        <div id="playerContainer" class="player-list-body">
-            <!-- Data from Dashboard will appear here -->
-        </div>
     </div>
-</section>
 
-<style>
-    /* Styling to match the image exactly */
-    .players-card {
-        background: #101926;
-        border-radius: 20px;
-        padding: 20px;
-        border: 1px solid #1e293b;
-    }
-
-    .total-players-info { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-    .count-box { background: #1e293b; color: #6366f1; padding: 12px; border-radius: 10px; font-size: 1.2rem; }
-    .total-players-info h4 { font-size: 1.3rem; margin-top: 2px; }
-
-    .search-container {
-        background: #060b13;
-        border: 1px solid #1e293b;
-        border-radius: 12px;
-        padding: 12px 15px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
-    .search-container input { background: transparent; border: none; color: white; width: 100%; outline: none; }
-    .search-container i { color: #475569; }
-
-    .list-header {
-        display: flex;
-        justify-content: space-between;
-        padding: 0 10px 10px 10px;
-        border-bottom: 1px solid #1e293b;
-        color: #64748b;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-
-    .player-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 15px 10px;
-        border-bottom: 1px solid #1e293b;
-    }
-
-    /* Column 1: Player Info */
-    .player-cell { display: flex; align-items: center; gap: 12px; flex: 1; }
-    .player-avatar { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; background: #060b13; }
-    .p-name { display: block; font-weight: 600; color: #fff; font-size: 0.95rem; }
-    .p-nick { color: #64748b; font-size: 0.85rem; }
-
-    /* Column 2: Team Info (Right Aligned) */
-    .team-cell { display: flex; align-items: center; gap: 10px; justify-content: flex-end; width: 150px; }
-    .team-logo { width: 30px; height: 30px; border-radius: 4px; object-fit: contain; }
-    .t-name { color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; font-weight: 600; }
-    .no-team { color: #334155; font-weight: bold; }
-</style>
-
-</body>
     <script>
         async function loadMainPage() {
     const API = "https://your-backend-url.onrender.com";
@@ -256,4 +277,5 @@ loadMainPage();
         }
     }
     </script>
+</body>
 </html>
