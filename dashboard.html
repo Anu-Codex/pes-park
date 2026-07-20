@@ -54,6 +54,10 @@
     <script>
         const API = "https://your-backend-url.onrender.com"; // Replace with your Render URL
 
+        if (localStorage.getItem('isAdmin') !== 'true') {
+        window.location.href = 'login.html';
+        }
+
         // 1. Load Data on Start
         async function loadAdminData() {
             // Load Stats
