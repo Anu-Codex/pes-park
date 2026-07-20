@@ -248,6 +248,8 @@ loadMainPage();
         
         const container = document.getElementById('playerContainer');
         container.innerHTML = players.map(p => `
+    <div class="player-row">
+        <div class="player-cell" onclick="window.location.href='player.html?id=${p._id}'" style="cursor:pointer">
             <div class="player-row">
                 <div class="player-cell">
                     <img src="${p.image || 'default-avatar.png'}" class="player-avatar">
