@@ -436,7 +436,7 @@
     <select id="viewSelector" onchange="toggleView()">
         <option value="total">Total players</option>
                     <option value="auction">Auction Tour</option>
-                    <option>Quick Tour</option>
+                    <option value="quick">Quick Tour</option>
                     <option value="soloTour">Solo Tour</option>
                     <option value="Weekend">Weekend Series</option>
                 </select>
@@ -545,6 +545,8 @@
         renderMarketValues(container);
         } else if (view === "auction") {
             renderAuctionTour(container);
+        } else if (view === "quick") {
+            renderQuickTour(container);
         } else if (view === "soloTour") {
             renderSoloTour(container);
         } else if (view === "Weekend") {
@@ -862,6 +864,50 @@ async function switchWeekendTab() {
             `).join('') || '<p style="text-align:center; padding:20px;">No Weekend Series data found.</p>';
         } else {
             content.innerHTML = '<p style="text-align:center; padding:20px;">Weekend ' + tab + ' data coming soon...</p>';
+        }
+    } catch (e) { console.error(e); }
+}
+        function renderQuickTour(container) {
+    container.innerHTML = `
+        <div class="quick-tour-card">
+            <div class="tour-nav-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+                <h4 id="quickTabTitle" style="margin:0; font-size:0.9rem; color:#ef4444;">FIXTURES</h4>
+                <select id="quickTabSelector" style="background:var(--bg); color:white; border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem;" onchange="switchQuickTab()">
+                    <option value="fixtures">Fixtures</option>
+                    <option value="boot">Golden Boot</option>
+                    <option value="table">Points table</option>
+                    <option value="knockouts">Knockouts</option>
+                </select>
+            </div>
+            <div id="quickContent" style="min-height:150px;"></div>
+        </div>
+    `;
+    switchQuickTab();
+}
+
+async function switchQuickTab() {
+    const tab = document.getElementById('quickTabSelector').value;
+    const content = document.getElementById('quickContent');
+    document.getElementById('quickTabTitle').innerText = tab.toUpperCase();
+
+    try {
+        if (tab === 'fixtures' || tab === 'knockouts') {
+            const res = await fetch(`${API}/api/quick/fixtures`);
+            const data = await res.json();
+            const type = tab === 'knockouts' ? 'Knockout' : 'League';
+            const filtered = data.filter(f => f.type === type);
+
+            content.innerHTML = filtered.map(f => `
+                <div class="player-row" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="flex:1;">${f.playerA}</span>
+                    <b style="background:var(--bg); padding:4px 10px; border-radius:6px; margin:0 15px;">
+                        ${f.status === 'Completed' ? f.scoreA + ' - ' + f.scoreB : 'VS'}
+                    </b>
+                    <span style="flex:1; text-align:right;">${f.playerB}</span>
+                </div>
+            `).join('') || '<p style="text-align:center; padding:20px;">No Quick Tour records.</p>';
+        } else {
+            content.innerHTML = '<p style="text-align:center; padding:20px;">Quick ' + tab + ' statistics coming soon...</p>';
         }
     } catch (e) { console.error(e); }
 }
