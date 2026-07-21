@@ -205,7 +205,35 @@
         <button type="submit" class="btn-gold" style="margin-top:10px">Save Ranking</button>
     </form>
 </div>
-
+    <div class="admin-section" style="border-color: #a855f7;">
+    <h3 style="color: #a855f7;"><i class="fa-solid fa-gamepad"></i> Solo Tour Manager</h3>
+    <form id="soloMatchForm">
+        <div class="grid-2">
+            <input type="text" id="smA" placeholder="Player A" required>
+            <input type="text" id="smB" placeholder="Player B" required>
+            <input type="number" id="ssA" placeholder="Score A">
+            <input type="number" id="ssB" placeholder="Score B">
+            <select id="smType"><option value="League">League</option><option value="Knockout">Knockout</option></select>
+            <select id="smStatus"><option value="Upcoming">Upcoming</option><option value="Completed">Completed</option></select>
+        </div>
+        <button type="submit" class="btn-green" style="background:#a855f7">Save Solo Match</button>
+    </form>
+</div>
+    <div class="admin-section" style="border-color: #3b82f6;">
+    <h3 style="color: #3b82f6;"><i class="fa-solid fa-calendar-days"></i> Weekend Series Manager</h3>
+    <form id="weekendMatchForm">
+        <div class="grid-2">
+            <input type="text" id="wmA" placeholder="Player A" required>
+            <input type="text" id="wmB" placeholder="Player B" required>
+            <input type="number" id="wsA" placeholder="Score A">
+            <input type="number" id="wsB" placeholder="Score B">
+            <select id="wmType"><option value="League">League</option><option value="Knockout">Knockout</option></select>
+            <select id="wmStatus"><option value="Upcoming">Upcoming</option><option value="Completed">Completed</option></select>
+        </div>
+        <button type="submit" class="btn-green" style="background:#3b82f6">Save Weekend Match</button>
+    </form>
+</div>
+    
     <script>
         const API = "https://pes-park-backend.onrender.com";
 
@@ -354,6 +382,34 @@
         };
         await fetch(`${API}/api/auction/ranks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
         alert("Ranking Saved!");
+    };
+        document.getElementById('soloMatchForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const data = {
+            playerA: document.getElementById('smA').value, playerB: document.getElementById('smB').value,
+            scoreA: document.getElementById('ssA').value, scoreB: document.getElementById('ssB').value,
+            type: document.getElementById('smType').value, status: document.getElementById('smStatus').value
+        };
+        await fetch(`${API}/api/solo/fixtures`, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(data) 
+        });
+        alert("Solo Match Saved!");
+    };
+        document.getElementById('weekendMatchForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const data = {
+            playerA: document.getElementById('wmA').value, playerB: document.getElementById('wmB').value,
+            scoreA: document.getElementById('wsA').value, scoreB: document.getElementById('wsB').value,
+            type: document.getElementById('wmType').value, status: document.getElementById('wmStatus').value
+        };
+        await fetch(`${API}/api/weekend/fixtures`, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(data) 
+        });
+        alert("Weekend Match Record Saved!");
     };
     </script>
 </body>
