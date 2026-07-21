@@ -235,6 +235,31 @@
                 document.getElementById('loading').innerHTML = "<span style='color:red'>Failed to load profile. Check Backend.</span>";
             }
         }
+        // --- Replace this specific part in your fetchProfile function ---
+
+// Clear the selector first to prevent duplicates, keep the default option
+const selector = document.getElementById('h2hSelector');
+selector.innerHTML = '<option value="">Select opponent...</option>';
+
+if (matches && matches.length > 0) {
+    // We check for both "opponentName" and "opponent" to be safe
+    const opponentList = matches.map(m => m.opponentName || m.opponent).filter(Boolean);
+    
+    // Get unique names only
+    const uniqueOpponents = [...new Set(opponentList)];
+
+    if (uniqueOpponents.length > 0) {
+        uniqueOpponents.forEach(opp => {
+            const opt = document.createElement('option');
+            opt.value = opp;
+            opt.innerText = opp;
+            selector.appendChild(opt);
+        });
+        console.log("H2H Dropdown populated with:", uniqueOpponents);
+    } else {
+        console.log("No unique opponents found in match history.");
+    }
+}
 
         function calcH2H() {
     const selectedOpp = document.getElementById('h2hSelector').value;
