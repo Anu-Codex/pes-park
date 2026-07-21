@@ -282,6 +282,37 @@
 .m-team-cell { width: 130px; display: flex; align-items: center; gap: 10px; }
 .m-t-logo { width: 28px; height: 28px; border-radius: 4px; object-fit: contain; }
 .m-t-name { font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
+
+/* --- HAMBURGER MENU STYLES --- */
+.logo-group { display: flex; align-items: center; gap: 15px; }
+.hamburger-btn {
+    background: transparent; border: none; color: white;
+    font-size: 1.5rem; cursor: pointer; padding: 5px;
+}
+
+.side-nav {
+    position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+    background: #0f172a; z-index: 20000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.5); padding: 25px;
+}
+.side-nav.active { left: 0; }
+
+.side-nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+.close-btn { background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;}
+
+.nav-links { list-style: none; padding: 0; }
+.nav-links li {
+    padding: 15px 12px; color: #f8fafc; font-size: 1rem;
+    display: flex; align-items: center; gap: 15px; cursor: pointer;
+    border-radius: 12px; margin-bottom: 8px; transition: 0.2s;
+}
+.nav-links li i { width: 20px; color: var(--accent); }
+.nav-links li:hover { background: #1e293b; color: var(--accent); }
+
+#menu-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); z-index: 19999; display: none; backdrop-filter: blur(4px);
+}
     </style>
 </head>
 <body>
@@ -302,11 +333,30 @@
         <p class="loading-footer">Version 7.0.2 • Secure Connection</p>
     </div>
 </div>
+    <!-- Sidebar Menu -->
+<div id="side-menu" class="side-nav">
+    <div class="side-nav-header">
+        <h3 style="margin:0; font-size:1rem; color:var(--accent)">MENU</h3>
+        <button onclick="toggleMenu()" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <ul class="nav-links">
+        <li onclick="switchView('total')"><i class="fa-solid fa-users"></i> Total Players</li>
+        <li onclick="switchView('bdr')"><i class="fa-solid fa-trophy"></i> BDR Rankings</li>
+        <li onclick="switchView('market')"><i class="fa-solid fa-chart-line"></i> Market Value</li>
+        <li onclick="switchView('trophies')"><i class="fa-solid fa-award"></i> Trophies</li>
+        <li onclick="switchView('ucl')"><i class="fa-solid fa-shield-halved"></i> UCL</li>
+    </ul>
+</div>
+<div id="menu-overlay" onclick="toggleMenu()"></div>
 
     <div class="main-container">
         
         <!-- HEADER -->
         <header>
+            <div class="logo-group">
+        <button class="hamburger-btn" onclick="toggleMenu()">
+            <i class="fa-solid fa-bars"></i>
+        </button>
             <div class="logo">
                 <h2>PES <b>PARK</b></h2>
                 <span>EFOOTBALL COMMUNITY</span>
@@ -361,16 +411,10 @@
     <h3>DASHBOARD VIEW</h3>
     <select id="viewSelector" onchange="toggleView()">
         <option value="total">Total players</option>
-        <option value="bdr">BDR Rankings</option>
                     <option>Auction Tour</option>
                     <option>Quick Tour</option>
                     <option>Solo Tour</option>
                     <option>Weekend Series</option>
-                    <option>League Table</option>
-                    <option>UCL</option>
-                    <option value="market">Market Value</option>
-                    <option>Trophies</option>
-                
                 </select>
             </div>
 
@@ -457,7 +501,7 @@
             document.getElementById('playerCount').innerText = allPlayers.length;
 
             // Trigger the dashboard view
-            toggleView();
+            switchView('total');
 
         } catch (error) {
             console.error("Initialization Error:", error);
@@ -593,6 +637,41 @@
 
     container.innerHTML = html;
         }
+        // 1. Toggle Sidebar Menu
+function toggleMenu() {
+    const menu = document.getElementById('side-menu');
+    const overlay = document.getElementById('menu-overlay');
+    if (menu.classList.contains('active')) {
+        menu.classList.remove('active');
+        overlay.style.display = 'none';
+    } else {
+        menu.classList.add('active');
+        overlay.style.display = 'block';
+    }
+}
+
+// 2. Switch View and Close Menu
+function switchView(viewName) {
+    toggleMenu(); // Close sidebar
+    const container = document.getElementById('dynamicContent');
+    const title = document.querySelector('.section-title-row h3');
+    
+    if (viewName === 'bdr') {
+        title.innerText = "BDR RANKINGS";
+        renderBDRRankings(container);
+    } else if (viewName === 'market') {
+        title.innerText = "MARKET VALUES";
+        renderMarketValues(container);
+    } else if (viewName === 'total') {
+        title.innerText = "DASHBOARD VIEW";
+        renderTotalPlayers(container);
+    } else {
+        container.innerHTML = `<div style="text-align:center; padding:50px; color:var(--text-dim)">
+            <i class="fa-solid fa-hourglass-start" style="font-size:2rem; margin-bottom:15px"></i>
+            <p>${viewName.toUpperCase()} data coming soon...</p>
+        </div>`;
+    }
+}
 
     // 4. Search Filter Logic
     function filterList() {
