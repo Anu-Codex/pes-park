@@ -116,9 +116,103 @@
         .p-img { width: 45px; height: 45px; border-radius: 8px; background: var(--bg); }
         .t-details { display: flex; align-items: center; gap: 8px; }
         .t-logo { width: 25px; height: 25px; border-radius: 4px; }
+
+        /* Loader Overlay Styling */
+#loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #060b13; /* Same as your site bg */
+    z-index: 10000; /* Stays on top of everything */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease;
+}
+
+.loader-content {
+    width: 80%;
+    max-width: 350px;
+    text-align: center;
+}
+
+.loader-logo {
+    margin-bottom: 30px;
+}
+
+.loader-logo i {
+    font-size: 3rem;
+    color: #10b981;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.loader-logo h2 {
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+}
+
+.loader-logo span { color: #10b981; }
+
+#status-text {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin-bottom: 15px;
+    height: 20px; /* Prevents jumping when text changes */
+    font-weight: 500;
+}
+
+/* The Progress Bar */
+.progress-container {
+    width: 100%;
+    height: 6px;
+    background: #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+#progress-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    transition: width 0.1s linear; /* Smooth fill */
+}
+
+.loading-footer {
+    font-size: 0.7rem;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Hide the rest of the site until loaded */
+.content-loaded body {
+    overflow: auto;
+}
     </style>
 </head>
 <body>
+    <!-- Loader Overlay -->
+<div id="loader-overlay">
+    <div class="loader-content">
+        <div class="loader-logo">
+            <i class="fa-solid fa-shield-halved"></i>
+            <h2>PES <span>PARK</span></h2>
+        </div>
+        
+        <p id="status-text">Initializing...</p>
+        
+        <div class="progress-container">
+            <div id="progress-fill"></div>
+        </div>
+        
+        <p class="loading-footer">Version 7.0.2 • Secure Connection</p>
+    </div>
+</div>
 
     <div class="main-container">
         
@@ -280,6 +374,59 @@
 
     // Run the function when page loads
     window.onload = loadMainPageData;
+        function startLoadingSequence() {
+    const overlay = document.getElementById('loader-overlay');
+    const fill = document.getElementById('progress-fill');
+    const status = document.getElementById('status-text');
+    
+    let progress = 0;
+    const duration = 5000; // 5 seconds
+    const intervalTime = 50; // Update every 50ms
+    const step = 100 / (duration / intervalTime);
+
+    // Array of status messages
+    const messages = [
+        { point: 0, text: "Connecting to Server..." },
+        { point: 25, text: "Establishing Secure Connection..." },
+        { point: 50, text: "Fetching PES PARK Database..." },
+        { point: 75, text: "Synchronizing Player Records..." },
+        { point: 90, text: "Server Connected Successfully!" }
+    ];
+
+    const timer = setInterval(() => {
+        progress += step;
+        if (progress > 100) progress = 100;
+
+        // Update progress bar width
+        fill.style.width = progress + "%";
+
+        // Update status text based on progress
+        messages.forEach(msg => {
+            if (progress >= msg.point) {
+                status.innerText = msg.text;
+            }
+        });
+
+        // When finished
+        if (progress >= 100) {
+            clearInterval(timer);
+            
+            // Wait 500ms after 100% then fade out
+            setTimeout(() => {
+                overlay.style.opacity = "0";
+                setTimeout(() => {
+                    overlay.style.display = "none";
+                }, 800); // Wait for fade transition to finish
+            }, 500);
+        }
+    }, intervalTime);
+}
+
+// Trigger the loader when the window opens
+window.addEventListener('DOMContentLoaded', () => {
+    startLoadingSequence();
+    loadMainPageData(); // Your existing function to fetch real data
+});
     </script>
 </body>
 </html>
