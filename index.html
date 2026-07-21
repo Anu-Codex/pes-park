@@ -290,12 +290,26 @@
     font-size: 1.5rem; cursor: pointer; padding: 5px;
 }
 
+/* --- FIXED SIDEBAR CSS --- */
 .side-nav {
-    position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
-    background: #0f172a; z-index: 20000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 10px 0 30px rgba(0,0,0,0.5); padding: 25px;
+    position: fixed;
+    top: 0;
+    left: -300px; /* This hides it to the left */
+    width: 280px;
+    height: 100vh;
+    background: #0f172a;
+    z-index: 99999; /* Ensure it is above EVERYTHING */
+    transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+    padding: 25px;
+    visibility: hidden; /* Extra safety to prevent flickering */
 }
-.side-nav.active { left: 0; }
+
+/* This class is added by JavaScript when you click the button */
+.side-nav.active {
+    left: 0;
+    visibility: visible;
+}
 
 .side-nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
 .close-btn { background: transparent; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer;}
@@ -310,8 +324,15 @@
 .nav-links li:hover { background: #1e293b; color: var(--accent); }
 
 #menu-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7); z-index: 19999; display: none; backdrop-filter: blur(4px);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 99998; /* Just below the sidebar */
+    display: none; /* Hidden by default */
+    backdrop-filter: blur(4px);
 }
     </style>
 </head>
