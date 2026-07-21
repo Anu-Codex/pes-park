@@ -238,31 +238,34 @@
             
             // Avatar
             document.getElementById('avatar').innerHTML = p.image ? `<img src="${p.image}">` : `<i class="fa-solid fa-user" style="font-size:2rem;color:var(--text-dim)"></i>`;
-            // --- LOGIC TO RENDER RECENT FORM ---
-const formContainer = document.getElementById('recentFormDots');
+            // --- LOGIC TO RENDER RECENT FORM (FIXED) ---
+            const formContainer = document.getElementById('recentFormDots');
 
-if (playerMatches && playerMatches.length > 0) {
-    // Get last 5 matches and reverse them so the newest is on the right
-    const recentMatches = playerMatches.slice(0, 5).reverse();
+            if (matches && matches.length > 0) {
+                // Get last 5 matches and reverse them so the newest is on the right
+                const recentMatches = matches.slice(0, 5).reverse();
 
-    formContainer.innerHTML = recentMatches.map(m => {
-        let statusClass = '';
-        let letter = '';
+                formContainer.innerHTML = recentMatches.map(m => {
+                    let statusClass = '';
+                    let letter = '';
 
-        if (m.result === "WIN") { statusClass = 'f-win'; letter = 'W'; }
-        else if (m.result === "LOSS") { statusClass = 'f-loss'; letter = 'L'; }
-        else { statusClass = 'f-draw'; letter = 'D'; }
+                    // Match result check (supports WIN, LOSS, DRAW)
+                    const res = (m.result || "").toUpperCase();
+                    if (res === "WIN") { statusClass = 'f-win'; letter = 'W'; }
+                    else if (res === "LOSS") { statusClass = 'f-loss'; letter = 'L'; }
+                    else { statusClass = 'f-draw'; letter = 'D'; }
 
-        return `
-            <div class="form-item">
-                <div class="dot ${statusClass}"></div>
-                <span class="dot-letter ${statusClass}">${letter}</span>
-            </div>
-        `;
-    }).join('');
-} else {
-    formContainer.innerHTML = '<span style="color:var(--text-dim); font-size:0.7rem;">No matches played yet</span>';
-}
+                    return `
+                        <div class="form-item">
+                            <div class="dot ${statusClass}"></div>
+                            <span class="dot-letter ${statusClass}">${letter}</span>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                formContainer.innerHTML = '<span style="color:var(--text-dim); font-size:0.7rem;">No matches played yet</span>';
+            }
+            // --- END OF FIX ---
             
             // Match History (Last 5)
             const list = document.getElementById('historyList');
