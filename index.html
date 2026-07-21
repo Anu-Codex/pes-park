@@ -673,18 +673,23 @@ function toggleMenu() {
 
 // 2. Switch View and Close Menu
 function switchView(viewName) {
-    toggleMenu(); // Close sidebar
+    const menu = document.getElementById('side-menu');
+    const overlay = document.getElementById('menu-overlay');
     const container = document.getElementById('dynamicContent');
     const title = document.querySelector('.section-title-row h3');
-    
+
+    // FIX: Explicitly REMOVE the active class, do not "toggle" it
+    menu.classList.remove('active');
+    overlay.style.display = 'none';
+
     if (viewName === 'bdr') {
-        title.innerText = "BDR RANKINGS";
+        if(title) title.innerText = "BDR RANKINGS";
         renderBDRRankings(container);
     } else if (viewName === 'market') {
-        title.innerText = "MARKET VALUES";
+        if(title) title.innerText = "MARKET VALUES";
         renderMarketValues(container);
-    } else if (viewName === 'total') {
-        title.innerText = "DASHBOARD VIEW";
+    } else {
+        if(title) title.innerText = "DASHBOARD VIEW";
         renderTotalPlayers(container);
     } else {
         container.innerHTML = `<div style="text-align:center; padding:50px; color:var(--text-dim)">
