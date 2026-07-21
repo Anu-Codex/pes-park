@@ -774,6 +774,97 @@ async function switchTourTab() {
         content.innerHTML = '<p style="text-align:center; padding:30px; color:red;">Database Error.</p>';
     }
 }
+        function renderSoloTour(container) {
+    container.innerHTML = `
+        <div class="solo-tour-card">
+            <div class="tour-nav-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+                <h4 id="soloTabTitle" style="margin:0; font-size:0.9rem; color:var(--accent);">FIXTURES</h4>
+                <select id="soloTabSelector" style="background:var(--bg); color:white; border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem;" onchange="switchSoloTab()">
+                    <option value="fixtures">Fixtures</option>
+                    <option value="boot">Golden Boot</option>
+                    <option value="table">Points table</option>
+                    <option value="knockouts">Knockouts</option>
+                </select>
+            </div>
+            <div id="soloContent" style="min-height:150px;"></div>
+        </div>
+    `;
+    switchSoloTab();
+}
+
+async function switchSoloTab() {
+    const tab = document.getElementById('soloTabSelector').value;
+    const content = document.getElementById('soloContent');
+    document.getElementById('soloTabTitle').innerText = tab.toUpperCase();
+
+    try {
+        if (tab === 'fixtures' || tab === 'knockouts') {
+            const res = await fetch(`${API}/api/solo/fixtures`);
+            const data = await res.json();
+            const type = tab === 'knockouts' ? 'Knockout' : 'League';
+            const filtered = data.filter(f => f.type === type);
+
+            content.innerHTML = filtered.map(f => `
+                <div class="player-row" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="flex:1;">${f.playerA}</span>
+                    <b style="background:var(--bg); padding:4px 10px; border-radius:6px; margin:0 15px;">
+                        ${f.status === 'Completed' ? f.scoreA + ' - ' + f.scoreB : 'VS'}
+                    </b>
+                    <span style="flex:1; text-align:right;">${f.playerB}</span>
+                </div>
+            `).join('') || '<p style="text-align:center; padding:20px;">No data.</p>';
+        } else {
+            const res = await fetch(`${API}/api/solo/ranks`);
+            const data = await res.json();
+            // Filter logic for table/boot would go here
+            content.innerHTML = '<p style="text-align:center; padding:20px;">Solo ' + tab + ' records coming soon...</p>';
+        }
+    } catch (e) { console.error(e); }
+}
+        function renderWeekendSeries(container) {
+    container.innerHTML = `
+        <div class="weekend-series-card">
+            <div class="tour-nav-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+                <h4 id="weekendTabTitle" style="margin:0; font-size:0.9rem; color:#3b82f6;">FIXTURES</h4>
+                <select id="weekendTabSelector" style="background:var(--bg); color:white; border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem;" onchange="switchWeekendTab()">
+                    <option value="fixtures">Fixtures</option>
+                    <option value="boot">Golden Boot</option>
+                    <option value="table">Points table</option>
+                    <option value="knockouts">Knockouts</option>
+                </select>
+            </div>
+            <div id="weekendContent" style="min-height:150px;"></div>
+        </div>
+    `;
+    switchWeekendTab();
+}
+
+async function switchWeekendTab() {
+    const tab = document.getElementById('weekendTabSelector').value;
+    const content = document.getElementById('weekendContent');
+    document.getElementById('weekendTabTitle').innerText = tab.toUpperCase();
+
+    try {
+        if (tab === 'fixtures' || tab === 'knockouts') {
+            const res = await fetch(`${API}/api/weekend/fixtures`);
+            const data = await res.json();
+            const type = tab === 'knockouts' ? 'Knockout' : 'League';
+            const filtered = data.filter(f => f.type === type);
+
+            content.innerHTML = filtered.map(f => `
+                <div class="player-row" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="flex:1;">${f.playerA}</span>
+                    <b style="background:var(--bg); padding:4px 10px; border-radius:6px; margin:0 15px;">
+                        ${f.status === 'Completed' ? f.scoreA + ' - ' + f.scoreB : 'VS'}
+                    </b>
+                    <span style="flex:1; text-align:right;">${f.playerB}</span>
+                </div>
+            `).join('') || '<p style="text-align:center; padding:20px;">No Weekend Series data found.</p>';
+        } else {
+            content.innerHTML = '<p style="text-align:center; padding:20px;">Weekend ' + tab + ' data coming soon...</p>';
+        }
+    } catch (e) { console.error(e); }
+}
     </script>
 
                     
