@@ -129,6 +129,22 @@
 .f-win { background-color: #10b981; color: #10b981; }
 .f-loss { background-color: #ef4444; color: #ef4444; }
 .f-draw { background-color: #f59e0b; color: #f59e0b; }
+        .captain-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(245, 158, 11, 0.15); /* Light gold transparent */
+    color: #f59e0b; /* Bright gold */
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.captain-badge i { font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -149,6 +165,11 @@
                     <h1 id="pName">Name</h1>
                     <p id="pNick">"Nickname"</p>
                 </div>
+            </div>
+            <div id="capBadgeContainer" style="display: none;">
+    <div class="captain-badge">
+        <i class="fa-solid fa-crown"></i> Team Captain
+    </div>
             </div>
             <div class="stats-grid">
                 <div class="stat-box"><span>Auction Price</span><b id="pAuction">0</b></div>
@@ -352,6 +373,12 @@
     }
 
     fetchProfile();
+        // Inside fetchProfile function:
+if (p.isCaptain) {
+    document.getElementById('capBadgeContainer').style.display = 'block';
+    // Optional: Add a crown next to the name
+    document.getElementById('pName').innerHTML += ' <i class="fa-solid fa-crown" style="color:#f59e0b; font-size:1rem; margin-left:5px;"></i>';
+}
     </script>
 </body>
 </html>
