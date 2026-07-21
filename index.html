@@ -437,8 +437,8 @@
         <option value="total">Total players</option>
                     <option value="auction">Auction Tour</option>
                     <option>Quick Tour</option>
-                    <option>Solo Tour</option>
-                    <option>Weekend Series</option>
+                    <option value="soloTour">Solo Tour</option>
+                    <option value="Weekend">Weekend Series</option>
                 </select>
             </div>
 
@@ -545,6 +545,10 @@
         renderMarketValues(container);
         } else if (view === "auction") {
             renderAuctionTour(container);
+        } else if (view === "soloTour") {
+            renderSoloTour(container);
+        } else if (view === "Weekend") {
+            renderWeekendSeries(container);
     } else {
         renderTotalPlayers(container);
     }
