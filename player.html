@@ -29,6 +29,10 @@
         
         /* Squad Image */
         .squad-box img { width: 100%; border-radius: 15px; border: 1px solid var(--border); }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; width: 60px; text-align: center; }
+    .badge.win { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid #10b981; }
+    .badge.loss { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
+    .badge.draw { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid #f59e0b; }
     </style>
 </head>
 <body>
@@ -37,6 +41,32 @@
 
         <div id="profileContent">Loading Profile...</div>
     </div>
+    <!-- Match History Section -->
+<div class="history-card">
+    <div style="display:flex; justify-content:space-between">
+        <h3>Match history</h3>
+        <span style="color:#64748b; font-size:0.8rem" id="matchCount">Showing last 5 matches</span>
+    </div>
+    <div id="matchHistoryList"></div>
+</div>
+
+<!-- Head to Head Section -->
+<div class="history-card">
+    <h3><i class="fa-solid fa-swords"></i> Head-to-head record</h3>
+    <select id="h2hSelector" onchange="calculateH2H()" style="width:100%; padding:12px; background:#060b13; border:1px solid #1e293b; color:white; border-radius:10px;">
+        <option value="">Select opponent...</option>
+    </select>
+    
+    <div id="h2hDisplay" style="margin-top:20px; display:none; text-align:center;">
+        <div class="stats-row">
+            <div class="stat-item"><span id="h2hWins" style="color:#10b981">0</span><b>WINS</b></div>
+            <div class="stat-item"><span id="h2hDraws" style="color:gold">0</span><b>DRAWS</b></div>
+            <div class="stat-item"><span id="h2hLoss" style="color:#ef4444">0</span><b>LOSSES</b></div>
+        </div>
+    </div>
+    <p id="h2hEmpty" style="color:#64748b; text-align:center; padding:20px;">Select an opponent to view head-to-head records</p>
+</div>
+
 
     <script>
         const API = "https://pes-park-backend.onrender.com";
@@ -83,6 +113,51 @@
             `;
         }
         loadProfile();
+        let currentPlayerMatches = [];
+
+    async function loadProfile() {
+        const res = await fetch(`${API}/api/players/${playerId}`);
+        const p = await res.json();
+        currentPlayerMatches = p.matches;
+
+        // 1. Render Match History
+        document.getElementById('matchHistoryList').innerHTML = p.matches.slice(0, 5).map(m => `
+            <div class="match-row">
+                <span style="color:#475569; width:50px;">${m.date}</span>
+                <span style="flex:1">vs ${m.opponentName} <b style="background:#1e293b; padding:2px 8px; border-radius:5px; margin-left:10px">${m.myScore}-${m.oppScore}</b></span>
+                <span class="badge ${m.result.toLowerCase()}">${m.result}</span>
+            </div>
+        `).join('');
+
+        // 2. Fill H2H Selector with unique opponents from history
+        const opponents = [...new Set(p.matches.map(m => m.opponentName))];
+        document.getElementById('h2hSelector').innerHTML += opponents.map(opp => `<option value="${opp}">${opp}</option>`).join('');
+    }
+
+    function calculateH2H() {
+        const selectedOpp = document.getElementById('h2hSelector').value;
+        const display = document.getElementById('h2hDisplay');
+        const empty = document.getElementById('h2hEmpty');
+
+        if(!selectedOpp) {
+            display.style.display = "none";
+            empty.style.display = "block";
+            return;
+        }
+
+        const filtered = currentPlayerMatches.filter(m => m.opponentName === selectedOpp);
+        
+        const wins = filtered.filter(m => m.result === "WIN").length;
+        const draws = filtered.filter(m => m.result === "DRAW").length;
+        const losses = filtered.filter(m => m.result === "LOSS").length;
+
+        document.getElementById('h2hWins').innerText = wins;
+        document.getElementById('h2hDraws').innerText = draws;
+        document.getElementById('h2hLoss').innerText = losses;
+
+        display.style.display = "block";
+        empty.style.display = "none";
+    }
     </script>
 </body>
 </html>
