@@ -334,6 +334,9 @@
     display: none; /* Hidden by default */
     backdrop-filter: blur(4px);
 }
+        .tour-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+.tour-dropdown { background: var(--bg); color: var(--accent); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-weight: bold; }
+#tourContent { animation: fadeIn 0.3s ease; }
     </style>
 </head>
 <body>
@@ -704,6 +707,62 @@ function switchView(viewName) {
     }
 
     window.addEventListener('DOMContentLoaded', manageLoader);
+
+    // --- NEW: AUCTION TOUR RENDERER ---
+function renderAuctionTour(container) {
+    container.innerHTML = `
+        <div class="auction-tour-container">
+            <div class="tour-nav-row">
+                <h3 id="tourTabTitle">FIXTURES</h3>
+                <select id="tourTabSelector" class="tour-dropdown" onchange="switchTourTab()">
+                    <option value="fixtures">Fixtures</option>
+                    <option value="boot">Golden Boot</option>
+                    <option value="best">Best Players</option>
+                    <option value="table">Points Table</option>
+                    <option value="knockouts">Knockouts</option>
+                </select>
+            </div>
+            <div id="tourContent">Loading...</div>
+        </div>
+    `;
+    switchTourTab(); // Load default tab (fixtures)
+}
+
+async function switchTourTab() {
+    const tab = document.getElementById('tourTabSelector').value;
+    const content = document.getElementById('tourContent');
+    document.getElementById('tourTabTitle').innerText = tab.toUpperCase();
+
+    if (tab === 'fixtures' || tab === 'knockouts') {
+        const res = await fetch(`${API}/api/auction/fixtures`);
+        const data = await res.json();
+        const filtered = data.filter(f => tab === 'knockouts' ? f.type === 'Knockout' : f.type === 'League');
+        
+        content.innerHTML = filtered.map(f => `
+            <div class="match-row">
+                <span class="m-opp">${f.playerA}</span>
+                <span class="m-score">${f.status === 'Completed' ? f.scoreA + '-' + f.scoreB : 'VS'}</span>
+                <span class="m-opp" style="text-align:right">${f.playerB}</span>
+            </div>
+        `).join('') || '<p style="text-align:center; padding:20px;">No fixtures yet.</p>';
+
+    } else if (tab === 'boot' || tab === 'best') {
+        const res = await fetch(`${API}/api/auction/ranks`);
+        const data = await res.json();
+        const cat = tab === 'boot' ? 'Golden Boot' : 'Best Player';
+        const filtered = data.filter(d => d.category === cat).sort((a,b) => b.value - a.value);
+
+        content.innerHTML = filtered.map((d, i) => `
+            <div class="rank-row">
+                <div class="rank-num">#${i+1}</div>
+                <div class="rank-info">
+                    <span>${d.playerName}</span>
+                    <div class="rank-pts"><b>${d.value}</b> <span>${tab === 'boot' ? 'Goals' : 'Rating'}</span></div>
+                </div>
+            </div>
+        `).join('') || '<p style="text-align:center; padding:20px;">No data recorded.</p>';
+    }
+}
     </script>
 
                     
