@@ -259,6 +259,15 @@
             
             // Avatar
             document.getElementById('avatar').innerHTML = p.image ? `<img src="${p.image}">` : `<i class="fa-solid fa-user" style="font-size:2rem;color:var(--text-dim)"></i>`;
+            // --- LOGIC TO SHOW CAPTAIN BADGE ---
+const capContainer = document.getElementById('capBadgeContainer');
+if (p.isCaptain === true) {
+    capContainer.style.display = 'block';
+    // Optional: add a small crown icon next to the name too
+    document.getElementById('pName').innerHTML = p.name + ' <i class="fa-solid fa-crown" style="color:#f59e0b; font-size:1.1rem; margin-left:5px;"></i>';
+} else {
+    capContainer.style.display = 'none';
+}
             // --- LOGIC TO RENDER RECENT FORM (FIXED) ---
             const formContainer = document.getElementById('recentFormDots');
 
