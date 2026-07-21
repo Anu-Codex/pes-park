@@ -532,6 +532,33 @@
             location.reload();
         }
         }
+        // This function now fills EVERY player dropdown on the dashboard
+async function fillAllSelectors() {
+    try {
+        const res = await fetch(`${API}/api/players`);
+        const players = await res.json();
+
+        // 1. Target the Edit Stats Dropdown
+        const statSel = document.getElementById('playerSelector');
+        // 2. Target the Captaincy Dropdown
+        const capSel = document.getElementById('capPlayerSelector');
+        // 3. Target the Team Manager Dropdown (if you have one)
+        const teamSel = document.getElementById('matchPlayerA');
+
+        const optionsHTML = players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+
+        // Inject the players into all selectors
+        if(statSel) statSel.innerHTML = '<option value="">Select player to edit...</option>' + optionsHTML;
+        if(capSel) capSel.innerHTML = '<option value="">Select Player...</option>' + optionsHTML;
+        if(teamSel) teamSel.innerHTML = '<option value="">Select Player...</option>' + optionsHTML;
+
+    } catch (err) {
+        console.error("Error filling selectors:", err);
+    }
+}
+
+// Make sure to call this new function at the bottom of your script
+fillAllSelectors();
     </script>
 </body>
 </html>
