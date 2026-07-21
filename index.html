@@ -435,7 +435,7 @@
     <h3>DASHBOARD VIEW</h3>
     <select id="viewSelector" onchange="toggleView()">
         <option value="total">Total players</option>
-                    <option>Auction Tour</option>
+                    <option value="auction">Auction Tour</option>
                     <option>Quick Tour</option>
                     <option>Solo Tour</option>
                     <option>Weekend Series</option>
@@ -537,11 +537,14 @@
     function toggleView() {
         const view = document.getElementById('viewSelector').value;
         const container = document.getElementById('dynamicContent');
+        const sectionTitle = document.querySelector('.section-title-row h3');
 
         if (view === "bdr") {
         renderBDRRankings(container);
     } else if (view === "market") { // NEW CASE
         renderMarketValues(container);
+        } else if (view === "auction") {
+            renderAuctionTour(container);
     } else {
         renderTotalPlayers(container);
     }
