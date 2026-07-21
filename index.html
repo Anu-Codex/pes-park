@@ -239,6 +239,49 @@
 }
 .rank-pts b { display: block; font-size: 1rem; color: #f59e0b; }
 .rank-pts span { font-size: 0.7rem; color: #475569; text-transform: uppercase; }
+/* Market Values Specific Styles */
+.market-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+}
+.market-header h5 { color: var(--text-dim); margin: 0; font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; }
+.market-header h3 { margin: 5px 0 0; font-size: 1.3rem; font-weight: 700; }
+.market-icon { color: var(--accent); font-size: 1.3rem; opacity: 0.8; }
+
+.market-table-header {
+    display: flex;
+    padding: 12px 15px;
+    color: #475569;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+}
+
+.market-row {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: 0.2s;
+}
+.market-row:hover { background: rgba(255,255,255,0.03); }
+
+/* Column Widths to match Image */
+.m-rank { width: 35px; font-weight: 800; color: #334155; }
+.m-rank.top-1 { color: #f59e0b; } /* Gold color for rank 1 */
+
+.m-player-cell { flex: 1; display: flex; align-items: center; gap: 15px; }
+.m-avatar { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; }
+.m-name { font-weight: 600; font-size: 0.95rem; color: #f8fafc; }
+
+.m-team-cell { width: 130px; display: flex; align-items: center; gap: 10px; }
+.m-t-logo { width: 28px; height: 28px; border-radius: 4px; object-fit: contain; }
+.m-t-name { font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -325,7 +368,7 @@
                     <option>Weekend Series</option>
                     <option>League Table</option>
                     <option>UCL</option>
-                    <option>Market Value</option>
+                    <option value="market">Market Value</option>
                     <option>Trophies</option>
                 
                 </select>
@@ -428,12 +471,13 @@
         const container = document.getElementById('dynamicContent');
 
         if (view === "bdr") {
-            renderBDRRankings(container);
-        } else {
-            renderTotalPlayers(container);
-        }
+        renderBDRRankings(container);
+    } else if (view === "market") { // NEW CASE
+        renderMarketValues(container);
+    } else {
+        renderTotalPlayers(container);
     }
-
+    }
     function renderTotalPlayers(container) {
         container.innerHTML = `
             <div class="total-info">
@@ -509,6 +553,46 @@
         }).join('');
         container.innerHTML = html;
     }
+        function renderMarketValues(container) {
+    // Sort players by Market Value (Highest first)
+    const sorted = [...allPlayers].sort((a, b) => (b.marketValue || 0) - (a.marketValue || 0));
+
+    let html = `
+        <div class="market-header">
+            <div>
+                <h5>MARKET VALUES</h5>
+                <h3>Player valuations</h3>
+            </div>
+            <i class="fa-solid fa-chart-line market-icon"></i>
+        </div>
+        <div class="market-table-header">
+            <span style="width: 35px;">#</span>
+            <span style="flex: 1; margin-left: 15px;">Player</span>
+            <span style="width: 130px;">Team</span>
+        </div>
+    `;
+
+    html += sorted.map((p, index) => {
+        const rank = index + 1;
+        return `
+            <div class="market-row" onclick="window.location.href='player.html?id=${p._id}'">
+                <div class="m-rank ${rank === 1 ? 'top-1' : ''}">${rank}</div>
+                <div class="m-player-cell">
+                    <img src="${p.image || 'https://via.placeholder.com/45'}" class="m-avatar" onerror="this.src='https://via.placeholder.com/45'">
+                    <span class="m-name">${p.name}</span>
+                </div>
+                <div class="m-team-cell">
+                    ${p.teamName ? `
+                        <img src="${p.teamLogo || 'https://via.placeholder.com/28'}" class="m-t-logo">
+                        <span class="m-t-name">${p.teamName}</span>
+                    ` : '<span style="color:#1e293b; font-weight:bold;">—</span>'}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
+        }
 
     // 4. Search Filter Logic
     function filterList() {
