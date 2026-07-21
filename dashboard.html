@@ -233,6 +233,20 @@
         <button type="submit" class="btn-green" style="background:#3b82f6">Save Weekend Match</button>
     </form>
 </div>
+    <div class="admin-section" style="border-color: #ef4444;">
+    <h3 style="color: #ef4444;"><i class="fa-solid fa-bolt"></i> Quick Tour Manager</h3>
+    <form id="quickMatchForm">
+        <div class="grid-2">
+            <input type="text" id="qmA" placeholder="Player A" required>
+            <input type="text" id="qmB" placeholder="Player B" required>
+            <input type="number" id="qsA" placeholder="Score A">
+            <input type="number" id="qsB" placeholder="Score B">
+            <select id="qmType"><option value="League">League</option><option value="Knockout">Knockout</option></select>
+            <select id="qmStatus"><option value="Upcoming">Upcoming</option><option value="Completed">Completed</option></select>
+        </div>
+        <button type="submit" class="btn-green" style="background:#ef4444">Save Quick Tour Match</button>
+    </form>
+</div>
     
     <script>
         const API = "https://pes-park-backend.onrender.com";
@@ -410,6 +424,20 @@
             body: JSON.stringify(data) 
         });
         alert("Weekend Match Record Saved!");
+    };
+        document.getElementById('quickMatchForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const data = {
+            playerA: document.getElementById('qmA').value, playerB: document.getElementById('qmB').value,
+            scoreA: document.getElementById('qsA').value, scoreB: document.getElementById('qsB').value,
+            type: document.getElementById('qmType').value, status: document.getElementById('qmStatus').value
+        };
+        await fetch(`${API}/api/quick/fixtures`, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(data) 
+        });
+        alert("Quick Tour Match Saved!");
     };
     </script>
 </body>
