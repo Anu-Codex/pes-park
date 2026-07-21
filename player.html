@@ -169,124 +169,113 @@
     </div>
 
     <script>
-        const API = "https://pes-park-backend.onrender.com";
-        const urlParams = new URLSearchParams(window.location.search);
-        const playerId = urlParams.get('id');
+    const API = "https://pes-park-backend.onrender.com";
+    const urlParams = new URLSearchParams(window.location.search);
+    const playerId = urlParams.get('id');
 
-        let matches = [];
+    let matches = [];
 
-        async function fetchProfile() {
-            try {
-                const res = await fetch(`${API}/api/players/${playerId}`);
-                const p = await res.json();
-                matches = p.matches || [];
+    async function fetchProfile() {
+        try {
+            const res = await fetch(`${API}/api/players/${playerId}`);
+            const p = await res.json();
+            matches = p.matches || [];
 
-                // Load Data
-                document.getElementById('pName').innerText = p.name;
-                document.getElementById('pNick').innerText = `"${p.nickname}"`;
-                document.getElementById('pAuction').innerText = p.auctionPrice || 0;
-                document.getElementById('pMarket').innerText = p.marketValue || 0;
-                document.getElementById('pBDR').innerText = p.bdrPoints || 0;
-                
-                // Avatar
-                document.getElementById('avatar').innerHTML = p.image ? `<img src="${p.image}">` : `<i class="fa-solid fa-user" style="font-size:2rem;color:var(--text-dim)"></i>`;
-                
-                // Match History
-                const list = document.getElementById('historyList');
+            // Load Header Data
+            document.getElementById('pName').innerText = p.name;
+            document.getElementById('pNick').innerText = `"${p.nickname}"`;
+            document.getElementById('pAuction').innerText = p.auctionPrice || 0;
+            document.getElementById('pMarket').innerText = p.marketValue || 0;
+            document.getElementById('pBDR').innerText = p.bdrPoints || 0;
+            
+            // Avatar
+            document.getElementById('avatar').innerHTML = p.image ? `<img src="${p.image}">` : `<i class="fa-solid fa-user" style="font-size:2rem;color:var(--text-dim)"></i>`;
+            
+            // Match History (Last 5)
+            const list = document.getElementById('historyList');
+            if (matches.length > 0) {
                 list.innerHTML = matches.slice(0, 5).map(m => `
                     <div class="match-row">
                         <div class="m-date">${new Date(m.date).toLocaleDateString('en-GB', {day:'2-digit', month:'short'})}</div>
-                        <div class="m-opp">vs ${m.opponentName}</div>
+                        <div class="m-opp">vs ${m.opponentName || m.opponent}</div>
                         <div class="m-score">${m.myScore}-${m.oppScore}</div>
                         <div class="badge ${m.result.toLowerCase()}">${m.result}</div>
                     </div>
                 `).join('');
-
-                // H2H Select
-                const opps = [...new Set(matches.map(m => m.opponentName))];
-                document.getElementById('h2hSelector').innerHTML += opps.map(o => `<option value="${o}">${o}</option>`).join('');
-
-                // Squad
-                document.getElementById('squadImg').src = p.squadImage || "https://via.placeholder.com/400x200?text=No+Squad+Image+Available";
-
-                // Season Summary Calculations
-                const s = p.seasonStats || { wins:0, draws:0, losses:0, goals:0 };
-                const played = s.wins + s.draws + s.losses;
-                document.getElementById('sWins').innerText = s.wins;
-                document.getElementById('sDraws').innerText = s.draws;
-                document.getElementById('sLoss').innerText = s.losses;
-                document.getElementById('sPlayed').innerText = played;
-                document.getElementById('sGoals').innerText = s.goals;
-                document.getElementById('sWinRate').innerText = played > 0 ? ((s.wins / played) * 100).toFixed(0) + "%" : "0%";
-                document.getElementById('sGPM').innerText = played > 0 ? (s.goals / played).toFixed(1) : "0.0";
-
-                // Trophies
-                const t = p.trophies || {};
-                document.getElementById('tBallon').innerText = t.ballonDor || 0;
-                document.getElementById('tLeague').innerText = t.league || 0;
-                document.getElementById('tUCL').innerText = t.ucl || 0;
-                document.getElementById('tWeekly').innerText = t.weekly || 0;
-
-                // Show Content
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('playerContent').style.display = 'block';
-
-            } catch (err) {
-                document.getElementById('loading').innerHTML = "<span style='color:red'>Failed to load profile. Check Backend.</span>";
+            } else {
+                list.innerHTML = '<p style="text-align:center; color:var(--text-dim); font-size:0.8rem;">No match records found.</p>';
             }
+
+            // --- EXACT FIX FOR H2H SELECTOR ---
+            const selector = document.getElementById('h2hSelector');
+            selector.innerHTML = '<option value="">Select opponent...</option>';
+            
+            // Extract unique names checking both possible field names
+            const opponentList = matches.map(m => m.opponentName || m.opponent).filter(Boolean);
+            const uniqueOpponents = [...new Set(opponentList)];
+
+            uniqueOpponents.forEach(opp => {
+                const opt = document.createElement('option');
+                opt.value = opp;
+                opt.innerText = opp;
+                selector.appendChild(opt);
+            });
+            // ---------------------------------
+
+            // Squad Image
+            document.getElementById('squadImg').src = p.squadImage || "https://via.placeholder.com/400x200?text=No+Squad+Image+Available";
+
+            // Season Summary Calculations
+            const s = p.seasonStats || { wins:0, draws:0, losses:0, goals:0 };
+            const played = (s.wins || 0) + (s.draws || 0) + (s.losses || 0);
+            document.getElementById('sWins').innerText = s.wins || 0;
+            document.getElementById('sDraws').innerText = s.draws || 0;
+            document.getElementById('sLoss').innerText = s.losses || 0;
+            document.getElementById('sPlayed').innerText = played;
+            document.getElementById('sGoals').innerText = s.goals || 0;
+            document.getElementById('sWinRate').innerText = played > 0 ? ((s.wins / played) * 100).toFixed(0) + "%" : "0%";
+            document.getElementById('sGPM').innerText = played > 0 ? (s.goals / played).toFixed(1) : "0.0";
+
+            // Trophies
+            const t = p.trophies || {};
+            document.getElementById('tBallon').innerText = t.ballonDor || 0;
+            document.getElementById('tLeague').innerText = t.league || 0;
+            document.getElementById('tUCL').innerText = t.ucl || 0;
+            document.getElementById('tWeekly').innerText = t.weekly || 0;
+
+            // Show Content
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('playerContent').style.display = 'block';
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById('loading').innerHTML = "<span style='color:red'>Failed to load profile. Check Backend.</span>";
         }
-        // --- Replace this specific part in your fetchProfile function ---
-
-// Clear the selector first to prevent duplicates, keep the default option
-const selector = document.getElementById('h2hSelector');
-selector.innerHTML = '<option value="">Select opponent...</option>';
-
-if (matches && matches.length > 0) {
-    // We check for both "opponentName" and "opponent" to be safe
-    const opponentList = matches.map(m => m.opponentName || m.opponent).filter(Boolean);
-    
-    // Get unique names only
-    const uniqueOpponents = [...new Set(opponentList)];
-
-    if (uniqueOpponents.length > 0) {
-        uniqueOpponents.forEach(opp => {
-            const opt = document.createElement('option');
-            opt.value = opp;
-            opt.innerText = opp;
-            selector.appendChild(opt);
-        });
-        console.log("H2H Dropdown populated with:", uniqueOpponents);
-    } else {
-        console.log("No unique opponents found in match history.");
-    }
-}
-
-        function calcH2H() {
-    const selectedOpp = document.getElementById('h2hSelector').value;
-    const view = document.getElementById('h2hDisplay');
-    
-    if (!selectedOpp) {
-        view.style.display = 'none';
-        return;
     }
 
-    // Filter matches where the opponent matches the selection
-    const filtered = matches.filter(m => (m.opponentName === selectedOpp || m.opponent === selectedOpp));
-
-    const wins = filtered.filter(m => m.result === "WIN").length;
-    const draws = filtered.filter(m => m.result === "DRAW").length;
-    const losses = filtered.filter(m => m.result === "LOSS").length;
-
-    // Update UI
-    document.getElementById('hWins').innerText = wins;
-    document.getElementById('hDraws').innerText = draws;
-    document.getElementById('hLoss').innerText = losses;
-
-    // Show the stats grid
-    view.style.display = 'grid';
+    function calcH2H() {
+        const selectedOpp = document.getElementById('h2hSelector').value;
+        const view = document.getElementById('h2hDisplay');
+        
+        if (!selectedOpp) {
+            view.style.display = 'none';
+            return;
         }
 
-        fetchProfile();
+        const filtered = matches.filter(m => (m.opponentName === selectedOpp || m.opponent === selectedOpp));
+
+        const wins = filtered.filter(m => m.result === "WIN").length;
+        const draws = filtered.filter(m => m.result === "DRAW").length;
+        const losses = filtered.filter(m => m.result === "LOSS").length;
+
+        document.getElementById('hWins').innerText = wins;
+        document.getElementById('hDraws').innerText = draws;
+        document.getElementById('hLoss').innerText = losses;
+
+        view.style.display = 'grid';
+    }
+
+    fetchProfile();
     </script>
 </body>
 </html>
