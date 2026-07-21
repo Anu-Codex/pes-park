@@ -88,6 +88,47 @@
         .h2h-select { width: 100%; padding: 14px; background: #020617; color: white; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 15px; }
 
         #loading { text-align: center; color: var(--text-dim); padding-top: 100px; }
+        /* Recent Form Styling */
+.recent-form-container {
+    margin-top: 15px;
+}
+
+.form-label {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-dots-wrapper {
+    display: flex;
+    gap: 10px;
+}
+
+.form-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.dot-letter {
+    font-size: 10px;
+    font-weight: 900;
+}
+
+/* Form Colors */
+.f-win { background-color: #10b981; color: #10b981; }
+.f-loss { background-color: #ef4444; color: #ef4444; }
+.f-draw { background-color: #f59e0b; color: #f59e0b; }
     </style>
 </head>
 <body>
@@ -115,6 +156,13 @@
                 <div class="stat-box"><span>BDR Points</span><b id="pBDR">0</b></div>
             </div>
         </div>
+        <!-- Recent Form Display -->
+<div class="recent-form-container">
+    <span class="form-label">Recent Form</span>
+    <div id="recentFormDots" class="form-dots-wrapper">
+        <!-- Dots will be injected here -->
+    </div>
+</div>
 
         <!-- MATCH HISTORY -->
         <div class="glass-card">
@@ -190,6 +238,31 @@
             
             // Avatar
             document.getElementById('avatar').innerHTML = p.image ? `<img src="${p.image}">` : `<i class="fa-solid fa-user" style="font-size:2rem;color:var(--text-dim)"></i>`;
+            // --- LOGIC TO RENDER RECENT FORM ---
+const formContainer = document.getElementById('recentFormDots');
+
+if (playerMatches && playerMatches.length > 0) {
+    // Get last 5 matches and reverse them so the newest is on the right
+    const recentMatches = playerMatches.slice(0, 5).reverse();
+
+    formContainer.innerHTML = recentMatches.map(m => {
+        let statusClass = '';
+        let letter = '';
+
+        if (m.result === "WIN") { statusClass = 'f-win'; letter = 'W'; }
+        else if (m.result === "LOSS") { statusClass = 'f-loss'; letter = 'L'; }
+        else { statusClass = 'f-draw'; letter = 'D'; }
+
+        return `
+            <div class="form-item">
+                <div class="dot ${statusClass}"></div>
+                <span class="dot-letter ${statusClass}">${letter}</span>
+            </div>
+        `;
+    }).join('');
+} else {
+    formContainer.innerHTML = '<span style="color:var(--text-dim); font-size:0.7rem;">No matches played yet</span>';
+}
             
             // Match History (Last 5)
             const list = document.getElementById('historyList');
