@@ -193,6 +193,10 @@
 .content-loaded body {
     overflow: auto;
 }
+        /* Add this to your existing CSS */
+.no-animation {
+    display: none !important;
+}
     </style>
 </head>
 <body>
@@ -374,17 +378,34 @@
 
     // Run the function when page loads
     window.onload = loadMainPageData;
-        function startLoadingSequence() {
+        function manageLoader() {
+    const overlay = document.getElementById('loader-overlay');
+    
+    // Check if the user has already seen the animation in this session
+    const hasSeenLoader = sessionStorage.getItem('hasSeenLoader');
+
+    if (hasSeenLoader === 'true') {
+        // User has already seen it, hide it immediately with no animation
+        overlay.classList.add('no-animation');
+        loadMainPageData(); // Just load the data
+    } else {
+        // First time visit: Run the animation
+        runSplashAnimation();
+        // Set the flag so it doesn't show again
+        sessionStorage.setItem('hasSeenLoader', 'true');
+    }
+}
+
+function runSplashAnimation() {
     const overlay = document.getElementById('loader-overlay');
     const fill = document.getElementById('progress-fill');
     const status = document.getElementById('status-text');
     
     let progress = 0;
-    const duration = 5000; // 5 seconds
-    const intervalTime = 50; // Update every 50ms
+    const duration = 5000; 
+    const intervalTime = 50; 
     const step = 100 / (duration / intervalTime);
 
-    // Array of status messages
     const messages = [
         { point: 0, text: "Connecting to Server..." },
         { point: 25, text: "Establishing Secure Connection..." },
@@ -396,37 +417,28 @@
     const timer = setInterval(() => {
         progress += step;
         if (progress > 100) progress = 100;
-
-        // Update progress bar width
         fill.style.width = progress + "%";
 
-        // Update status text based on progress
         messages.forEach(msg => {
-            if (progress >= msg.point) {
-                status.innerText = msg.text;
-            }
+            if (progress >= msg.point) status.innerText = msg.text;
         });
 
-        // When finished
         if (progress >= 100) {
             clearInterval(timer);
-            
-            // Wait 500ms after 100% then fade out
             setTimeout(() => {
                 overlay.style.opacity = "0";
                 setTimeout(() => {
                     overlay.style.display = "none";
-                }, 800); // Wait for fade transition to finish
+                }, 800);
             }, 500);
         }
     }, intervalTime);
+
+    loadMainPageData(); // Start fetching data in the background
 }
 
-// Trigger the loader when the window opens
-window.addEventListener('DOMContentLoaded', () => {
-    startLoadingSequence();
-    loadMainPageData(); // Your existing function to fetch real data
-});
+// Start the check as soon as the page is ready
+window.addEventListener('DOMContentLoaded', manageLoader);
     </script>
 </body>
 </html>
