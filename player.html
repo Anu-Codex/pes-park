@@ -237,14 +237,28 @@
         }
 
         function calcH2H() {
-            const opp = document.getElementById('h2hSelector').value;
-            const view = document.getElementById('h2hDisplay');
-            if(!opp) { view.style.display = 'none'; return; }
-            const filtered = matches.filter(m => m.opponentName === opp);
-            document.getElementById('hWins').innerText = filtered.filter(m => m.result === "WIN").length;
-            document.getElementById('hDraws').innerText = filtered.filter(m => m.result === "DRAW").length;
-            document.getElementById('hLoss').innerText = filtered.filter(m => m.result === "LOSS").length;
-            view.style.display = 'grid';
+    const selectedOpp = document.getElementById('h2hSelector').value;
+    const view = document.getElementById('h2hDisplay');
+    
+    if (!selectedOpp) {
+        view.style.display = 'none';
+        return;
+    }
+
+    // Filter matches where the opponent matches the selection
+    const filtered = matches.filter(m => (m.opponentName === selectedOpp || m.opponent === selectedOpp));
+
+    const wins = filtered.filter(m => m.result === "WIN").length;
+    const draws = filtered.filter(m => m.result === "DRAW").length;
+    const losses = filtered.filter(m => m.result === "LOSS").length;
+
+    // Update UI
+    document.getElementById('hWins').innerText = wins;
+    document.getElementById('hDraws').innerText = draws;
+    document.getElementById('hLoss').innerText = losses;
+
+    // Show the stats grid
+    view.style.display = 'grid';
         }
 
         fetchProfile();
