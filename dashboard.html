@@ -160,6 +160,20 @@
             </div>
         </div>
     </div>
+    <div class="admin-section">
+    <h3 style="color: #6366f1;"><i class="fa-solid fa-gamepad"></i> Record Match Result</h3>
+    <form id="matchForm">
+        <select id="matchPlayerA" required><option value="">Select Player...</option></select>
+        <div class="grid-2" style="margin-top:10px">
+            <input type="text" id="matchOpponent" placeholder="Opponent Name" required>
+            <div style="display:flex; gap:5px">
+                <input type="number" id="myScore" placeholder="Score" required>
+                <input type="number" id="oppScore" placeholder="Opp Score" required>
+            </div>
+            </div>
+        <button type="submit" class="btn-green">Save Match Record</button>
+    </form>
+    </div>
 
     <script>
         const API = "https://pes-park-backend.onrender.com";
@@ -272,6 +286,23 @@
         async function deleteAchieve(id) { if(confirm("Remove from HOF?")) { await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' }); location.reload(); } }
 
         loadAllData();
+        document.getElementById('matchForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('matchPlayerA').value;
+        const data = {
+            opponentName: document.getElementById('matchOpponent').value,
+            myScore: parseInt(document.getElementById('myScore').value),
+            oppScore: parseInt(document.getElementById('oppScore').value)
+        };
+
+        await fetch(`${API}/api/players/${id}/matches`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        alert("Match Recorded!");
+        location.reload();
+    };
     </script>
 </body>
 </html>
