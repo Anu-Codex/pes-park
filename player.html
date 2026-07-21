@@ -21,90 +21,73 @@
         body {
             background-color: var(--bg);
             color: var(--text-main);
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 15px;
-            padding-bottom: 50px;
+            padding-bottom: 80px;
         }
 
-        /* Top Navigation */
-        .top-nav {
-            display: flex;
-            align-items: center;
-            padding: 10px 0 20px;
-        }
+        .top-nav { display: flex; align-items: center; padding: 10px 0 20px; }
+        .back-link { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
 
-        .back-link {
-            color: var(--text-dim);
-            text-decoration: none;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Main Card Layout */
+        /* Card System */
         .glass-card {
             background: var(--card-bg);
             border-radius: 20px;
             border: 1px solid var(--border);
             padding: 20px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
-        /* Header Info */
+        /* Profile Header */
         .profile-header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
         .p-avatar { 
             width: 70px; height: 70px; border-radius: 16px; 
             background: #1e293b; border: 1.5px solid var(--border);
-            display: flex; align-items: center; justify-content: center; font-size: 2rem;
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
         }
-        .p-name-area h1 { margin: 0; font-size: 1.5rem; letter-spacing: -0.5px; }
+        .p-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .p-name-area h1 { margin: 0; font-size: 1.5rem; }
         .p-name-area p { margin: 4px 0 0; color: var(--text-dim); font-size: 0.9rem; }
 
-        /* Stats Row */
+        /* Stats Grid */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .stat-box { 
-            background: #020617; border: 1px solid var(--border); 
-            padding: 12px 5px; border-radius: 12px; text-align: center; 
-        }
+        .stat-box { background: #020617; border: 1px solid var(--border); padding: 12px 5px; border-radius: 12px; text-align: center; }
         .stat-box span { display: block; font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 5px; }
-        .stat-box b { font-size: 1.2rem; color: white; }
+        .stat-box b { font-size: 1.2rem; }
 
-        /* Match History List */
-        .section-title { font-size: 1rem; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .section-title small { font-size: 0.7rem; color: var(--text-dim); font-weight: normal; }
-
-        .match-row {
-            display: flex; align-items: center; 
-            padding: 12px 0; border-bottom: 1px solid #1e293b;
-        }
-        .match-row:last-child { border-bottom: none; }
-        
+        /* Match History Row */
+        .section-title { font-size: 1rem; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+        .match-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #1e293b; }
         .m-date { font-size: 0.75rem; color: var(--text-dim); width: 45px; }
-        .m-opp { flex: 1; font-size: 0.9rem; font-weight: 500; }
-        .m-score { background: #1e293b; padding: 3px 8px; border-radius: 6px; margin: 0 10px; font-weight: bold; font-size: 0.85rem; }
-        
-        /* Result Badges */
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 900; text-transform: uppercase; width: 45px; text-align: center; }
+        .m-opp { flex: 1; font-size: 0.9rem; }
+        .m-score { background: #1e293b; padding: 3px 8px; border-radius: 6px; margin: 0 10px; font-weight: bold; }
+
+        /* Badges */
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 900; width: 45px; text-align: center; }
         .win { color: var(--win); border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.1); }
         .loss { color: var(--loss); border: 1px solid rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
         .draw { color: var(--draw); border: 1px solid rgba(245, 158, 11, 0.3); background: rgba(245, 158, 11, 0.1); }
 
-        /* H2H Styling */
-        .h2h-select {
-            width: 100%; padding: 14px; background: #020617; color: white;
-            border: 1px solid var(--border); border-radius: 12px; font-size: 0.9rem; outline: none;
-        }
-        .h2h-stats-view {
-            display: flex; justify-content: space-around; margin-top: 20px;
-            animation: fadeIn 0.4s ease;
-        }
-        .h2h-val { font-size: 1.8rem; font-weight: 800; display: block; margin-bottom: 2px; }
-        .h2h-label { font-size: 0.65rem; color: var(--text-dim); letter-spacing: 1px; }
+        /* Squad Section */
+        .squad-img { width: 100%; border-radius: 12px; border: 1.5px solid var(--border); margin-top: 10px; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Season Summary */
+        .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #1e293b; font-size: 0.9rem; }
+        .summary-row span:last-child { font-weight: bold; }
+
+        /* Trophy Grid */
+        .trophy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .trophy-item { background: #020617; border: 1px solid var(--border); border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 12px; }
+        .trophy-icon { font-size: 1.5rem; color: #f59e0b; }
+        .trophy-count { font-size: 1.2rem; font-weight: 900; }
+        .trophy-label { font-size: 0.7rem; color: var(--text-dim); display: block; }
+
+        /* H2H Select */
+        .h2h-select { width: 100%; padding: 14px; background: #020617; color: white; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 15px; }
+
+        #loading { text-align: center; color: var(--text-dim); padding-top: 100px; }
     </style>
 </head>
 <body>
@@ -113,50 +96,76 @@
         <a href="index.html" class="back-link"><i class="fa-solid fa-chevron-left"></i> Back</a>
     </nav>
 
-    <div id="loading" style="text-align: center; color: var(--text-dim); padding: 50px;">
-        <i class="fa-solid fa-circle-notch fa-spin"></i> Synchronizing Profile...
-    </div>
+    <div id="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading Profile...</div>
 
     <div id="playerContent" style="display: none;">
-        <!-- Card 1: Header & Top Stats -->
+        
+        <!-- HEADER STATS -->
         <div class="glass-card">
             <div class="profile-header">
-                <div id="avatarBox" class="p-avatar"></div>
+                <div id="avatar" class="p-avatar"></div>
                 <div class="p-name-area">
-                    <h1 id="pName">---</h1>
-                    <p id="pNick">"---"</p>
+                    <h1 id="pName">Name</h1>
+                    <p id="pNick">"Nickname"</p>
                 </div>
             </div>
-
             <div class="stats-grid">
-                <div class="stat-box"><span>Auction</span><b id="pAuction">0</b></div>
-                <div class="stat-box"><span>Market</span><b id="pMarket" style="color: var(--win);">0</b></div>
-                <div class="stat-box"><span>BDR</span><b id="pBDR">0</b></div>
+                <div class="stat-box"><span>Auction Price</span><b id="pAuction">0</b></div>
+                <div class="stat-box"><span>Market Value</span><b id="pMarket" style="color:var(--accent)">0</b></div>
+                <div class="stat-box"><span>BDR Points</span><b id="pBDR">0</b></div>
             </div>
         </div>
 
-        <!-- Card 2: Match History -->
+        <!-- MATCH HISTORY -->
         <div class="glass-card">
-            <div class="section-title">
-                Match history <small id="matchTotal">Showing last 5</small>
-            </div>
+            <div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Match history</div>
             <div id="historyList"></div>
         </div>
 
-        <!-- Card 3: Head to Head -->
+        <!-- H2H RECORD -->
         <div class="glass-card">
-            <div class="section-title">Head-to-head record</div>
+            <div class="section-title"><i class="fa-solid fa-swords"></i> Head-to-head record</div>
             <select id="h2hSelector" class="h2h-select" onchange="calcH2H()">
-                <option value="">Select an opponent...</option>
+                <option value="">Select opponent...</option>
             </select>
-
-            <div id="h2hDisplay" class="h2h-stats-view" style="display: none;">
-                <div style="text-align: center;"><span class="h2h-val" id="hWins" style="color: var(--win);">0</span><span class="h2h-label">WINS</span></div>
-                <div style="text-align: center;"><span class="h2h-val" id="hDraws" style="color: var(--draw);">0</span><span class="h2h-label">DRAWS</span></div>
-                <div style="text-align: center;"><span class="h2h-val" id="hLoss" style="color: var(--loss);">0</span><span class="h2h-label">LOSSES</span></div>
+            <div id="h2hDisplay" class="stats-grid" style="display: none;">
+                <div class="stat-box"><span>Wins</span><b id="hWins" style="color:var(--win)">0</b></div>
+                <div class="stat-box"><span>Draws</span><b id="hDraws" style="color:var(--draw)">0</b></div>
+                <div class="stat-box"><span>Losses</span><b id="hLoss" style="color:var(--loss)">0</b></div>
             </div>
-            <p id="h2hPlaceholder" style="text-align: center; color: var(--text-dim); font-size: 0.8rem; padding: 20px 0 10px;">Select opponent to view records</p>
         </div>
+
+        <!-- PLAYER SQUAD -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fa-solid fa-users-rectangle"></i> Player squad</div>
+            <img id="squadImg" class="squad-img" src="" alt="Squad Loading...">
+        </div>
+
+        <!-- SEASON SUMMARY -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fa-solid fa-chart-simple"></i> Season summary</div>
+            <div class="stats-grid" style="margin-bottom: 20px;">
+                <div class="stat-box"><span>Wins</span><b id="sWins" style="color:var(--win)">0</b></div>
+                <div class="stat-box"><span>Draws</span><b id="sDraws" style="color:var(--draw)">0</b></div>
+                <div class="stat-box"><span>Losses</span><b id="sLoss" style="color:var(--loss)">0</b></div>
+            </div>
+            <div class="summary-row"><span>Games played</span><span id="sPlayed">0</span></div>
+            <div class="summary-row"><span>Win rate</span><span id="sWinRate">0%</span></div>
+            <div class="summary-row"><span>Goals scored</span><span id="sGoals">0</span></div>
+            <div class="summary-row"><span>Goals per match</span><span id="sGPM">0.0</span></div>
+        </div>
+
+        <!-- TROPHIES -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fa-solid fa-trophy"></i> Trophies</div>
+            <div class="trophy-grid">
+                <div class="trophy-item"><i class="fa-solid fa-award trophy-icon"></i><div><span class="trophy-count" id="tBallon">0</span><span class="trophy-label">Ballon d'Or</span></div></div>
+                <div class="trophy-item"><i class="fa-solid fa-trophy trophy-icon"></i><div><span class="trophy-count" id="tLeague">0</span><span class="trophy-label">Team League</span></div></div>
+                <div class="trophy-item"><i class="fa-solid fa-medal trophy-icon"></i><div><span class="trophy-count" id="tUCL">0</span><span class="trophy-label">UCL</span></div></div>
+                <div class="trophy-item"><i class="fa-solid fa-star trophy-icon"></i><div><span class="trophy-count" id="tWeekly">0</span><span class="trophy-label">Weekly</span></div></div>
+            </div>
+        </div>
+
     </div>
 
     <script>
@@ -166,71 +175,79 @@
 
         let matches = [];
 
-        async function getProfile() {
+        async function fetchProfile() {
             try {
                 const res = await fetch(`${API}/api/players/${playerId}`);
                 const p = await res.json();
                 matches = p.matches || [];
 
-                // Fill Header
+                // Load Data
                 document.getElementById('pName').innerText = p.name;
                 document.getElementById('pNick').innerText = `"${p.nickname}"`;
                 document.getElementById('pAuction').innerText = p.auctionPrice || 0;
                 document.getElementById('pMarket').innerText = p.marketValue || 0;
                 document.getElementById('pBDR').innerText = p.bdrPoints || 0;
                 
-                const avatar = document.getElementById('avatarBox');
-                if(p.image) avatar.innerHTML = `<img src="${p.image}" style="width:100%; height:100%; border-radius:14px; object-fit:cover;">`;
-                else avatar.innerHTML = `<i class="fa-solid fa-user"></i>`;
-
-                // Fill Match List
+                // Avatar
+                document.getElementById('avatar').innerHTML = p.image ? `<img src="${p.image}">` : `<i class="fa-solid fa-user" style="font-size:2rem;color:var(--text-dim)"></i>`;
+                
+                // Match History
                 const list = document.getElementById('historyList');
-                if(matches.length > 0) {
-                    list.innerHTML = matches.slice(0, 5).map(m => {
-                        const date = new Date(m.date).toLocaleDateString('en-GB', {day:'2-digit', month:'short'});
-                        return `
-                            <div class="match-row">
-                                <div class="m-date">${date}</div>
-                                <div class="m-opp">vs ${m.opponentName}</div>
-                                <div class="m-score">${m.myScore}-${m.oppScore}</div>
-                                <div class="badge ${m.result.toLowerCase()}">${m.result}</div>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    list.innerHTML = '<p style="text-align:center; color:var(--text-dim); font-size:0.8rem;">No match records found.</p>';
-                }
+                list.innerHTML = matches.slice(0, 5).map(m => `
+                    <div class="match-row">
+                        <div class="m-date">${new Date(m.date).toLocaleDateString('en-GB', {day:'2-digit', month:'short'})}</div>
+                        <div class="m-opp">vs ${m.opponentName}</div>
+                        <div class="m-score">${m.myScore}-${m.oppScore}</div>
+                        <div class="badge ${m.result.toLowerCase()}">${m.result}</div>
+                    </div>
+                `).join('');
 
-                // Fill H2H Selector
+                // H2H Select
                 const opps = [...new Set(matches.map(m => m.opponentName))];
                 document.getElementById('h2hSelector').innerHTML += opps.map(o => `<option value="${o}">${o}</option>`).join('');
 
-                // Toggle View
+                // Squad
+                document.getElementById('squadImg').src = p.squadImage || "https://via.placeholder.com/400x200?text=No+Squad+Image+Available";
+
+                // Season Summary Calculations
+                const s = p.seasonStats || { wins:0, draws:0, losses:0, goals:0 };
+                const played = s.wins + s.draws + s.losses;
+                document.getElementById('sWins').innerText = s.wins;
+                document.getElementById('sDraws').innerText = s.draws;
+                document.getElementById('sLoss').innerText = s.losses;
+                document.getElementById('sPlayed').innerText = played;
+                document.getElementById('sGoals').innerText = s.goals;
+                document.getElementById('sWinRate').innerText = played > 0 ? ((s.wins / played) * 100).toFixed(0) + "%" : "0%";
+                document.getElementById('sGPM').innerText = played > 0 ? (s.goals / played).toFixed(1) : "0.0";
+
+                // Trophies
+                const t = p.trophies || {};
+                document.getElementById('tBallon').innerText = t.ballonDor || 0;
+                document.getElementById('tLeague').innerText = t.league || 0;
+                document.getElementById('tUCL').innerText = t.ucl || 0;
+                document.getElementById('tWeekly').innerText = t.weekly || 0;
+
+                // Show Content
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('playerContent').style.display = 'block';
 
             } catch (err) {
-                document.getElementById('loading').innerHTML = '<span style="color:red">Failed to load profile.</span>';
+                document.getElementById('loading').innerHTML = "<span style='color:red'>Failed to load profile. Check Backend.</span>";
             }
         }
 
         function calcH2H() {
             const opp = document.getElementById('h2hSelector').value;
             const view = document.getElementById('h2hDisplay');
-            const placeholder = document.getElementById('h2hPlaceholder');
-
-            if(!opp) { view.style.display = 'none'; placeholder.style.display = 'block'; return; }
-
+            if(!opp) { view.style.display = 'none'; return; }
             const filtered = matches.filter(m => m.opponentName === opp);
             document.getElementById('hWins').innerText = filtered.filter(m => m.result === "WIN").length;
             document.getElementById('hDraws').innerText = filtered.filter(m => m.result === "DRAW").length;
             document.getElementById('hLoss').innerText = filtered.filter(m => m.result === "LOSS").length;
-
-            view.style.display = 'flex';
-            placeholder.style.display = 'none';
+            view.style.display = 'grid';
         }
 
-        getProfile();
+        fetchProfile();
     </script>
 </body>
 </html>
