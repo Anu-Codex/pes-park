@@ -197,6 +197,48 @@
 .no-animation {
     display: none !important;
 }
+        /* Ranking Specific Styles */
+.ranking-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+.ranking-header i { font-size: 2rem; color: #f59e0b; }
+.ranking-header h4 { margin: 0; letter-spacing: 1px; font-size: 0.9rem; }
+
+.rank-row {
+    display: flex;
+    align-items: center;
+    padding: 15px 10px;
+    border-bottom: 1px solid #1e293b;
+    gap: 15px;
+}
+
+.rank-num {
+    width: 30px;
+    font-weight: bold;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+.rank-1-icon { color: #f59e0b; font-size: 1.2rem; width: 30px; text-align: center; }
+
+.rank-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #1e293b; /* The line under name */
+    padding-bottom: 5px;
+}
+
+.rank-pts {
+    text-align: right;
+}
+.rank-pts b { display: block; font-size: 1rem; color: #f59e0b; }
+.rank-pts span { font-size: 0.7rem; color: #475569; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -273,15 +315,16 @@
         <!-- 2nd DIV: DASHBOARD VIEW (NOW UNDERNEATH) -->
         <section class="dashboard-section">
             <div class="section-title-row">
-                <h3>DASHBOARD VIEW</h3>
-                <select><option>Total players</option>
+    <h3>DASHBOARD VIEW</h3>
+    <select id="viewSelector" onchange="toggleView()">
+        <option value="total">Total players</option>
+        <option value="bdr">BDR Rankings</option>
                     <option>Auction Tour</option>
                     <option>Quick Tour</option>
                     <option>Solo Tour</option>
                     <option>Weekend Series</option>
                     <option>League Table</option>
                     <option>UCL</option>
-                    <option>BDR Rankings</option>
                     <option>Market Value</option>
                     <option>Trophies</option>
                 
@@ -289,6 +332,7 @@
             </div>
 
             <div class="players-card">
+                <div id="dynamicContent">
                 <div class="total-info">
                     <div class="icon-sq"><i class="fa-solid fa-users-viewfinder"></i></div>
                     <div>
@@ -450,6 +494,72 @@ function runSplashAnimation() {
 
 // Start the check as soon as the page is ready
 window.addEventListener('DOMContentLoaded', manageLoader);
+        let allPlayers = []; // Global variable to store players once fetched
+
+async function loadMainPageData() {
+    const res = await fetch(`${API}/api/players`);
+    allPlayers = await res.json();
+    toggleView(); // Initialize the default view
+}
+
+function toggleView() {
+    const view = document.getElementById('viewSelector').value;
+    const container = document.getElementById('dynamicContent');
+
+    if (view === "bdr") {
+        renderBDRRankings(container);
+    } else {
+        renderTotalPlayers(container);
+    }
+}
+
+function renderBDRRankings(container) {
+    // 1. Sort players by BDR Points (Highest first)
+    const sorted = [...allPlayers].sort((a, b) => (b.bdrPoints || 0) - (a.bdrPoints || 0));
+
+    let html = `
+        <div class="ranking-header">
+            <i class="fa-solid fa-trophy"></i>
+            <div>
+                <span style="color: #64748b; font-size: 0.7rem; font-weight: bold;">BDR RANKING</span>
+                <h4>BALLOND'OR</h4>
+            </div>
+        </div>
+    `;
+
+    html += sorted.map((p, index) => {
+        const rank = index + 1;
+        const isFirst = rank === 1;
+
+        return `
+            <div class="rank-row" onclick="window.location.href='player.html?id=${p._id}'" style="cursor:pointer">
+                <div class="${isFirst ? 'rank-1-icon' : 'rank-num'}">
+                    ${isFirst ? '<i class="fa-solid fa-crown"></i>' : '#' + rank}
+                </div>
+                <img src="${p.image || 'https://via.placeholder.com/45'}" class="p-img" style="width:45px; height:45px; border-radius:8px;">
+                <div class="rank-info">
+                    <span style="font-weight: bold; font-size: 1rem;">${p.name}</span>
+                    <div class="rank-pts">
+                        <b>${p.bdrPoints || 0}</b>
+                        <span>pts</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
+}
+
+function renderTotalPlayers(container) {
+    // Re-use your existing code for the default player list table
+    container.innerHTML = `
+        <div class="total-info">...</div>
+        <div class="search-box">...</div>
+        <!-- etc... -->
+    `;
+    // (Inject your original player table mapping here)
+}
     </script>
 </body>
 </html>
