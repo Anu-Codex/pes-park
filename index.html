@@ -339,17 +339,65 @@
         </section>
 
     </div>
-
     <script>
-    // 1. SET YOUR BACKEND URL HERE
     const API = "https://pes-park-backend.onrender.com"; 
+    let allPlayers = []; // Global store for players
 
-    async function loadMainPageData() {
+    // 1. Initial Loader & Data Fetching
+    async function manageLoader() {
+        const overlay = document.getElementById('loader-overlay');
+        const hasSeenLoader = sessionStorage.getItem('hasSeenLoader');
+
+        if (hasSeenLoader === 'true') {
+            overlay.classList.add('no-animation');
+            initPage();
+        } else {
+            runSplashAnimation();
+            sessionStorage.setItem('hasSeenLoader', 'true');
+        }
+    }
+
+    function runSplashAnimation() {
+        const overlay = document.getElementById('loader-overlay');
+        const fill = document.getElementById('progress-fill');
+        const status = document.getElementById('status-text');
+        let progress = 0;
+        const duration = 5000; 
+        const intervalTime = 50; 
+        const step = 100 / (duration / intervalTime);
+
+        const messages = [
+            { point: 0, text: "Connecting to Server..." },
+            { point: 25, text: "Establishing Secure Connection..." },
+            { point: 50, text: "Fetching PES PARK Database..." },
+            { point: 75, text: "Synchronizing Player Records..." },
+            { point: 90, text: "Server Connected Successfully!" }
+        ];
+
+        const timer = setInterval(() => {
+            progress += step;
+            if (progress > 100) progress = 100;
+            fill.style.width = progress + "%";
+            messages.forEach(msg => { if (progress >= msg.point) status.innerText = msg.text; });
+
+            if (progress >= 100) {
+                clearInterval(timer);
+                setTimeout(() => {
+                    overlay.style.opacity = "0";
+                    setTimeout(() => { overlay.style.display = "none"; }, 800);
+                }, 500);
+            }
+        }, intervalTime);
+
+        initPage();
+    }
+
+    // 2. Fetch Data and Setup UI
+    async function initPage() {
         try {
-            // --- FETCH LEAGUE STATS (The 4 Boxes) ---
+            // Fetch Stats (The top 4 boxes)
             const statsRes = await fetch(`${API}/api/stats`);
             const stats = await statsRes.json();
-            
             if (stats) {
                 document.getElementById('bdrVal').innerText = stats.bdrValue || 0;
                 document.getElementById('bdrName').innerText = stats.bdrLeader || "None";
@@ -358,176 +406,122 @@
                 document.getElementById('teamCount').innerText = stats.teamsCount || 0;
             }
 
-            // --- FETCH PLAYER LIST (The Table) ---
+            // Fetch Players
             const playerRes = await fetch(`${API}/api/players`);
-            const players = await playerRes.json();
+            allPlayers = await playerRes.json();
 
-            // Update the "Total Registered" number
-            document.getElementById('playerCount').innerText = players.length;
-            document.getElementById('totalReg').innerText = `${players.length} registered`;
+            // Update registered count in top boxes
+            document.getElementById('playerCount').innerText = allPlayers.length;
 
-            const container = document.getElementById('playerList');
-            
-            // If no players exist yet
-            if (players.length === 0) {
-                container.innerHTML = '<p style="text-align:center; padding:20px; color:#94a3b8;">No players found.</p>';
-                return;
-            }
-
-            // Generate the rows dynamically
-            container.innerHTML = players.map(p => `
-                <div class="player-row" onclick="window.location.href='player.html?id=${p._id}'" style="cursor:pointer">
-                    <div class="p-details">
-                        <img src="${p.image || 'https://via.placeholder.com/45'}" class="p-img" onerror="this.src='https://via.placeholder.com/45'">
-                        <div>
-                            <span style="display:block; font-weight:bold;">${p.name}</span>
-                            <span style="font-size:0.8rem; color:#94a3b8;">"${p.nickname || ''}"</span>
-                        </div>
-                    </div>
-                    <div class="t-details">
-                        ${p.teamName ? `
-                            <img src="${p.teamLogo || 'https://via.placeholder.com/25'}" class="t-logo">
-                            <span style="font-size:0.8rem; color:#94a3b8; text-transform:uppercase;">${p.teamName}</span>
-                        ` : '<span style="color:#334155;">—</span>'}
-                    </div>
-                </div>
-            `).join('');
+            // Trigger the dashboard view
+            toggleView();
 
         } catch (error) {
-            console.error("Error loading data:", error);
-            document.getElementById('playerList').innerHTML = '<p style="text-align:center; color:red;">Failed to load data. Check console.</p>';
+            console.error("Initialization Error:", error);
+            document.getElementById('dynamicContent').innerHTML = '<p style="text-align:center; color:red;">Failed to connect to server.</p>';
         }
     }
 
-    // Run the function when page loads
-    window.onload = loadMainPageData;
-        function manageLoader() {
-    const overlay = document.getElementById('loader-overlay');
-    
-    // Check if the user has already seen the animation in this session
-    const hasSeenLoader = sessionStorage.getItem('hasSeenLoader');
+    // 3. View Toggler (BDR vs Total Players)
+    function toggleView() {
+        const view = document.getElementById('viewSelector').value;
+        const container = document.getElementById('dynamicContent');
 
-    if (hasSeenLoader === 'true') {
-        // User has already seen it, hide it immediately with no animation
-        overlay.classList.add('no-animation');
-        loadMainPageData(); // Just load the data
-    } else {
-        // First time visit: Run the animation
-        runSplashAnimation();
-        // Set the flag so it doesn't show again
-        sessionStorage.setItem('hasSeenLoader', 'true');
-    }
-}
-
-function runSplashAnimation() {
-    const overlay = document.getElementById('loader-overlay');
-    const fill = document.getElementById('progress-fill');
-    const status = document.getElementById('status-text');
-    
-    let progress = 0;
-    const duration = 5000; 
-    const intervalTime = 50; 
-    const step = 100 / (duration / intervalTime);
-
-    const messages = [
-        { point: 0, text: "Connecting to Server..." },
-        { point: 25, text: "Establishing Secure Connection..." },
-        { point: 50, text: "Fetching PES PARK Database..." },
-        { point: 75, text: "Synchronizing Player Records..." },
-        { point: 90, text: "Server Connected Successfully!" }
-    ];
-
-    const timer = setInterval(() => {
-        progress += step;
-        if (progress > 100) progress = 100;
-        fill.style.width = progress + "%";
-
-        messages.forEach(msg => {
-            if (progress >= msg.point) status.innerText = msg.text;
-        });
-
-        if (progress >= 100) {
-            clearInterval(timer);
-            setTimeout(() => {
-                overlay.style.opacity = "0";
-                setTimeout(() => {
-                    overlay.style.display = "none";
-                }, 800);
-            }, 500);
+        if (view === "bdr") {
+            renderBDRRankings(container);
+        } else {
+            renderTotalPlayers(container);
         }
-    }, intervalTime);
-
-    loadMainPageData(); // Start fetching data in the background
-}
-
-// Start the check as soon as the page is ready
-window.addEventListener('DOMContentLoaded', manageLoader);
-        let allPlayers = []; // Global variable to store players once fetched
-
-async function loadMainPageData() {
-    const res = await fetch(`${API}/api/players`);
-    allPlayers = await res.json();
-    toggleView(); // Initialize the default view
-}
-
-function toggleView() {
-    const view = document.getElementById('viewSelector').value;
-    const container = document.getElementById('dynamicContent');
-
-    if (view === "bdr") {
-        renderBDRRankings(container);
-    } else {
-        renderTotalPlayers(container);
     }
-}
 
-function renderBDRRankings(container) {
-    // 1. Sort players by BDR Points (Highest first)
-    const sorted = [...allPlayers].sort((a, b) => (b.bdrPoints || 0) - (a.bdrPoints || 0));
-
-    let html = `
-        <div class="ranking-header">
-            <i class="fa-solid fa-trophy"></i>
-            <div>
-                <span style="color: #64748b; font-size: 0.7rem; font-weight: bold;">BDR RANKING</span>
-                <h4>BALLOND'OR</h4>
-            </div>
-        </div>
-    `;
-
-    html += sorted.map((p, index) => {
-        const rank = index + 1;
-        const isFirst = rank === 1;
-
-        return `
-            <div class="rank-row" onclick="window.location.href='player.html?id=${p._id}'" style="cursor:pointer">
-                <div class="${isFirst ? 'rank-1-icon' : 'rank-num'}">
-                    ${isFirst ? '<i class="fa-solid fa-crown"></i>' : '#' + rank}
+    function renderTotalPlayers(container) {
+        container.innerHTML = `
+            <div class="total-info">
+                <div class="icon-sq"><i class="fa-solid fa-users-viewfinder"></i></div>
+                <div>
+                    <span style="font-size: 0.7rem; color: var(--text-dim); display:block;">TOTAL PLAYERS</span>
+                    <h4 style="margin: 0;">${allPlayers.length} registered</h4>
                 </div>
-                <img src="${p.image || 'https://via.placeholder.com/45'}" class="p-img" style="width:45px; height:45px; border-radius:8px;">
-                <div class="rank-info">
-                    <span style="font-weight: bold; font-size: 1rem;">${p.name}</span>
-                    <div class="rank-pts">
-                        <b>${p.bdrPoints || 0}</b>
-                        <span>pts</span>
+            </div>
+
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass" style="color: var(--text-dim);"></i>
+                <input type="text" id="searchInput" placeholder="Search players or teams..." onkeyup="filterList()">
+            </div>
+
+            <div class="table-header">
+                <span>Player</span>
+                <span>Team</span>
+            </div>
+
+            <div id="playerTableList">
+                ${allPlayers.map(p => `
+                    <div class="player-row" onclick="window.location.href='player.html?id=${p._id}'" style="cursor:pointer">
+                        <div class="p-details">
+                            <img src="${p.image || 'https://via.placeholder.com/45'}" class="p-img" onerror="this.src='https://via.placeholder.com/45'">
+                            <div>
+                                <span style="display:block; font-weight:bold;">${p.name}</span>
+                                <span style="font-size:0.8rem; color:var(--text-dim);">"${p.nickname || ''}"</span>
+                            </div>
+                        </div>
+                        <div class="t-details">
+                            ${p.teamName ? `
+                                <img src="${p.teamLogo || 'https://via.placeholder.com/25'}" class="t-logo">
+                                <span style="font-size:0.8rem; color:var(--text-dim); text-transform:uppercase;">${p.teamName}</span>
+                            ` : '<span style="color:#334155;">—</span>'}
+                        </div>
                     </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function renderBDRRankings(container) {
+        const sorted = [...allPlayers].sort((a, b) => (b.bdrPoints || 0) - (a.bdrPoints || 0));
+        let html = `
+            <div class="ranking-header">
+                <i class="fa-solid fa-trophy"></i>
+                <div>
+                    <span style="color: #64748b; font-size: 0.7rem; font-weight: bold;">BDR RANKING</span>
+                    <h4>BALLOND'OR</h4>
                 </div>
             </div>
         `;
-    }).join('');
 
-    container.innerHTML = html;
-}
+        html += sorted.map((p, index) => {
+            const rank = index + 1;
+            const isFirst = rank === 1;
+            return `
+                <div class="rank-row" onclick="window.location.href='player.html?id=${p._id}'" style="cursor:pointer">
+                    <div class="${isFirst ? 'rank-1-icon' : 'rank-num'}">
+                        ${isFirst ? '<i class="fa-solid fa-crown"></i>' : '#' + rank}
+                    </div>
+                    <img src="${p.image || 'https://via.placeholder.com/45'}" class="p-img" style="width:45px; height:45px; border-radius:8px;">
+                    <div class="rank-info">
+                        <span style="font-weight: bold; font-size: 1rem;">${p.name}</span>
+                        <div class="rank-pts">
+                            <b>${p.bdrPoints || 0}</b>
+                            <span>pts</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        container.innerHTML = html;
+    }
 
-function renderTotalPlayers(container) {
-    // Re-use your existing code for the default player list table
-    container.innerHTML = `
-        <div class="total-info">...</div>
-        <div class="search-box">...</div>
-        <!-- etc... -->
-    `;
-    // (Inject your original player table mapping here)
-}
+    // 4. Search Filter Logic
+    function filterList() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const rows = document.getElementsByClassName('player-row');
+        for (let row of rows) {
+            row.style.display = row.innerText.toLowerCase().includes(input) ? "flex" : "none";
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', manageLoader);
     </script>
+
+                    
 </body>
 </html>
