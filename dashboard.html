@@ -247,6 +247,24 @@
         <button type="submit" class="btn-green" style="background:#ef4444">Save Quick Tour Match</button>
     </form>
 </div>
+    <!-- SECTION: MANUAL TEAM MANAGER -->
+<div class="admin-section" style="border-color: #3b82f6;">
+    <h3 style="color: #3b82f6;"><i class="fa-solid fa-shuttle-space"></i> Manual Team Manager</h3>
+    <form id="teamAssignForm">
+        <div class="grid-2">
+            <input type="text" id="tManageName" placeholder="Team Name (e.g. RANGERS)" required>
+            <input type="text" id="tManageLogo" placeholder="Team Logo URL" required>
+        </div>
+        
+        <p style="margin: 15px 0 5px; font-size: 0.8rem; color: var(--text-dim);">Select Players to add to this team:</p>
+        <div id="transferPlayerList" style="max-height: 200px; overflow-y: auto; background: #060b13; padding: 10px; border-radius: 10px; border: 1px solid var(--border);">
+            <!-- Checkboxes will be injected here -->
+            Loading players...
+        </div>
+
+        <button type="submit" class="btn-green" style="background: #3b82f6; margin-top: 15px;">Assign Players to Team</button>
+    </form>
+</div>
     
     <script>
         const API = "https://pes-park-backend.onrender.com";
@@ -439,6 +457,54 @@
         });
         alert("Quick Tour Match Saved!");
     };
+        async function loadPlayersForTransfer() {
+        const res = await fetch(`${API}/api/players`);
+        const players = await res.json();
+        const container = document.getElementById('transferPlayerList');
+        
+        container.innerHTML = players.map(p => `
+            <div style="display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid #1e293b;">
+                <input type="checkbox" class="player-checkbox" value="${p._id}" style="width: auto; margin: 0;">
+                <label style="font-size: 0.9rem;">${p.name} <small style="color:var(--text-dim)">(${p.teamName || 'No Team'})</small></label>
+            </div>
+        `).join('');
+    }
+
+    // 2. Handle the Form Submission
+    document.getElementById('teamAssignForm').onsubmit = async (e) => {
+        e.preventDefault();
+        
+        // Get all checked player IDs
+        const checkedBoxes = document.querySelectorAll('.player-checkbox:checked');
+        const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+        if (selectedIds.length === 0) {
+            alert("Please select at least one player!");
+            return;
+        }
+
+        const data = {
+            teamName: document.getElementById('tManageName').value,
+            teamLogo: document.getElementById('tManageLogo').value,
+            playerIds: selectedIds
+        };
+
+        const response = await fetch(`${API}/api/teams/assign`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert(`Successfully added ${selectedIds.length} players to ${data.teamName}`);
+            location.reload();
+        } else {
+            alert("Error updating team.");
+        }
+    };
+
+    // Call this when dashboard loads
+    loadPlayersForTransfer();
     </script>
 </body>
 </html>
