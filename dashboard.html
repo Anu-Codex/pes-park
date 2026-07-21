@@ -265,6 +265,18 @@
         <button type="submit" class="btn-green" style="background: #3b82f6; margin-top: 15px;">Assign Players to Team</button>
     </form>
 </div>
+    <div class="admin-section" style="border-color: #f59e0b;">
+    <h3 style="color: #f59e0b;"><i class="fa-solid fa-crown"></i> Captaincy Manager</h3>
+    <div class="grid-2">
+        <select id="capPlayerSelector" style="width: 100%;">
+            <option value="">Select Player...</option>
+        </select>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="updateCaptain(true)" class="btn-gold" style="margin:0; flex:1;">Make Captain</button>
+            <button onclick="updateCaptain(false)" class="delete-btn" style="margin:0; flex:1; border-radius: 10px;">Remove</button>
+        </div>
+    </div>
+    </div>
     
     <script>
         const API = "https://pes-park-backend.onrender.com";
@@ -505,6 +517,21 @@
 
     // Call this when dashboard loads
     loadPlayersForTransfer();
+        async function updateCaptain(status) {
+        const id = document.getElementById('capPlayerSelector').value;
+        if(!id) return alert("Please select a player!");
+
+        const res = await fetch(`${API}/api/players/${id}/captain`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isCaptain: status })
+        });
+
+        if(res.ok) {
+            alert(status ? "Player Promoted to Captain!" : "Captaincy Removed!");
+            location.reload();
+        }
+        }
     </script>
 </body>
 </html>
