@@ -400,6 +400,24 @@
 
     async function deletePlayer(id) { if(confirm("Delete Player?")) { await fetch(`${API}/api/players/${id}`, { method: 'DELETE' }); location.reload(); } }
     async function deleteAchieve(id) { if(confirm("Remove Legend?")) { await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' }); location.reload(); } }
+        async function createSmartFixture() {
+    const tourId = document.getElementById('sfTourSelect').value; // Must be the ID from dropdown
+    if(!tourId) return alert("Select a Tournament first!");
+
+    const data = {
+        tourId: tourId, // Send the ID
+        playerA: document.getElementById('sfPlayerA').value,
+        playerB: document.getElementById('sfPlayerB').value,
+        status: "Upcoming"
+    };
+
+    await fetch(`${API}/api/smart/create-fixture`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    alert("Fixture Created!");
+        }
 
     window.onload = () => {
         loadAllDashboardData();
