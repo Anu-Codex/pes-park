@@ -674,7 +674,7 @@
                     <i class="fa-solid fa-user-check" style="color: #a855f7;"></i>
                     <span class="label">Players</span>
                     <span class="val" id="playerCount">117</span>
-                    <span class="label">registered</span>
+                    <span class="label">Registered</span>
                 </div>
             </div>
         </section>
@@ -763,7 +763,7 @@ try {
 
     if (stats) {
         // FIX: BDR Box (Ensures value and name are correctly matched)
-        document.getElementById('bdrVal').innerText = stats.bdrValue ?? 0;
+        document.getElementById('bdrVal').innerText = (stats.bdrValue ?? 0) + "Pts";
         document.getElementById('bdrName').innerText = stats.bdrName || "None";
 
         // FIX: MV Box (Adds the "M" suffix and matches the name correctly)
