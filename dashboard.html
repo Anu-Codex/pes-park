@@ -215,6 +215,11 @@
             </div>
         </div>
     </div>
+    <div class="sub-box" style="border: 1px solid var(--gold); margin-top:15px;">
+    <h4 style="color:var(--gold)">Database Tools</h4>
+    <p style="font-size:0.7rem; color:var(--text-dim);">Click this to calculate goals from all past matches into the Golden Boot list.</p>
+    <button onclick="triggerGoalSync()" class="btn-gold">Sync All Previous Goals</button>
+    </div>
 </div>
         <div id="sec-smart" class="admin-section">
     <!-- Inside Part 1: Tournament Setup -->
@@ -610,6 +615,15 @@ async function createSmartTour() {
                 <label style="font-size:0.85rem;">${p.name}</label>
             </div>
         `).join('');
+    }
+        }
+        async function triggerGoalSync() {
+    if(!confirm("Recalculate Golden Boot from all previous scores?")) return;
+    const res = await fetch(`${API}/api/smart/sync-all-goals`);
+    const data = await res.json();
+    if(data.success) {
+        alert("✅ All historical goals have been added to the rankings!");
+        location.reload();
     }
         }
     </script>
