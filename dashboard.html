@@ -183,6 +183,32 @@
                     <button onclick="updateCaptain(false)" class="delete-btn">Remove</button>
                 </div>
             </div>
+            <div class="admin-section">
+    <h3><i class="fa-solid fa-pen-to-square"></i> Advanced Hall of Fame Manager</h3>
+    <input type="text" id="hofSeasonName" placeholder="Season Name (e.g. Season 1 • 2026)">
+    
+    <div class="sub-box">
+        <h4>Special Highlights (Top Section)</h4>
+        <div id="highlightInputs">
+            <div class="grid-2"><input type="text" placeholder="Title (e.g. Highest BDR)"> <input type="text" placeholder="Winner (e.g. Zubair)"></div>
+        </div>
+        <button onclick="addInputRow('highlightInputs')" style="background:#1e293b; margin-top:5px; font-size:0.7rem">+ Add More</button>
+    </div>
+
+    <div class="sub-box">
+        <h4>Trophy Winners (Bottom Section)</h4>
+        <div id="trophyInputs">
+            <div style="border:1px solid #1e293b; padding:10px; border-radius:10px; margin-bottom:10px;">
+                <input type="text" placeholder="Trophy Title (e.g. Ballon d'Or)">
+                <input type="text" placeholder="Winner Name">
+                <select><option value="ballon">Ballon Icon</option><option value="ucl">UCL Icon</option><option value="league">League Icon</option></select>
+            </div>
+        </div>
+        <button onclick="addTrophyRow()" style="background:#1e293b; margin-top:5px; font-size:0.7rem">+ Add Trophy</button>
+    </div>
+
+    <button onclick="saveHof()" class="btn-green">Publish Season Records</button>
+</div>
         </div> 
 <!-- 6. DANGER ZONE -->
 <div id="sec-danger" class="admin-section">
@@ -689,6 +715,40 @@ async function triggerGoalSync() {
     const data = await res.json();
     if(data.success) alert("✅ System Optimized: All tours, players, and rankings are now perfectly synced!");
         }
+        function addInputRow(divId) {
+        const div = document.getElementById(divId);
+        const row = document.createElement('div');
+        row.className = "grid-2";
+        row.innerHTML = `<input type="text" placeholder="Label"> <input type="text" placeholder="Value">`;
+        div.appendChild(row);
+    }
+
+    async function saveHof() {
+        // Collect dynamic inputs into arrays
+        const highlights = Array.from(document.querySelectorAll('#highlightInputs .grid-2')).map(row => ({
+            label: row.querySelectorAll('input')[0].value,
+            value: row.querySelectorAll('input')[1].value
+        }));
+
+        const trophies = Array.from(document.querySelectorAll('#trophyInputs div')).map(row => ({
+            title: row.querySelectorAll('input')[0].value,
+            winner: row.querySelectorAll('input')[1].value,
+            iconType: row.querySelector('select').value
+        }));
+
+        const data = {
+            seasonName: document.getElementById('hofSeasonName').value,
+            specialHighlights: highlights,
+            trophyWinners: trophies
+        };
+
+        await fetch(`${API}/hof/save`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        alert("Season records saved!");
+    }
     </script>
 
 </body>
