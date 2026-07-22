@@ -981,47 +981,36 @@ async function switchTourTab(type) {
     const res = await fetch(`${API}/api/smart/standings/${tourId}`);
     let data = await res.json();
 
-    // 1. SORTING: Points first, then Goal Difference, then Wins
-    data.sort((a, b) => {
-        const gdA = (a.gf || 0) - (a.ga || 0);
-        const gdB = (b.gf || 0) - (b.ga || 0);
-        return b.points - a.points || gdB - gdA || b.wins - a.wins;
-    });
+    // Sort: Pts > GD > GF
+    data.sort((a, b) => (b.points - a.points) || ((b.gf-b.ga) - (a.gf-a.ga)) || (b.gf - a.gf));
 
     content.innerHTML = `
-        <table class="ranking-table" style="width:100%; border-collapse:collapse; font-size:0.8rem;">
+    <div class="table-responsive">
+        <table class="pts-table">
             <thead>
-                <tr style="color:var(--text-dim); border-bottom:1px solid var(--border);">
-                    <th style="text-align:left; padding:10px;">#</th>
-                    <th style="text-align:left;">Team</th>
-                    <th>P</th><th>W</th><th>D</th><th>L</th>
-                    <th>GF</th><th>GA</th><th>GD</th>
-                    <th style="color:var(--gold);">Pts</th>
+                <tr>
+                    <th>#</th><th style="text-align:left">TEAM</th>
+                    <th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th style="color:var(--accent)">PTS</th>
                 </tr>
             </thead>
             <tbody>
                 ${data.map((s, i) => {
-                    // Calculate GD
                     const gd = (s.gf || 0) - (s.ga || 0);
-                    const gdClass = gd > 0 ? 'gd-positive' : (gd < 0 ? 'gd-negative' : 'gd-neutral');
-                    const gdPrefix = gd > 0 ? '+' : '';
-
                     return `
-                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-                        <td style="padding:12px 10px; color:var(--accent); font-weight:bold;">${i + 1}</td>
-                        <td style="text-align:left; font-weight:600; color:white;">${s.participant}</td>
+                    <tr class="${i === 0 ? 'row-highlight' : ''}">
+                        <td style="color:var(--accent); font-weight:bold">${i + 1}</td>
+                        <td style="text-align:left; color:white; font-weight:600">${s.participant}</td>
                         <td>${s.played}</td>
                         <td>${s.wins}</td>
                         <td>${s.draws}</td>
                         <td>${s.losses}</td>
-                        <td>${s.gf || 0}</td>
-                        <td>${s.ga || 0}</td>
-                        <td class="${gdClass}">${gdPrefix}${gd}</td>
-                        <td style="font-weight:bold; color:var(--gold); font-size:0.9rem;">${s.points}</td>
+                        <td style="color:${gd > 0 ? '#10b981' : (gd < 0 ? '#ef4444' : 'inherit')}">${gd > 0 ? '+'+gd : gd}</td>
+                        <td class="col-pts-bold">${s.points}</td>
                     </tr>`;
                 }).join('')}
             </tbody>
-        </table>`;
+        </table>
+    </div>`;
         }
         // --- 2. FIXTURES ---
         else if (category === 'fixtures') {
