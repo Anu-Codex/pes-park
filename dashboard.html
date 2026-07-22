@@ -240,6 +240,9 @@
     <button onclick="syncTourTable()" class="btn-gold">
         <i class="fa-solid fa-table-list"></i> Sync Points Table from History
     </button>
+        <button onclick="syncAllSystemStats()" class="btn-gold" style="background: #ef4444; color: white;">
+    <i class="fa-solid fa-radiation"></i> Sync All System Rewards (Full Recalculation)
+        </button>
     </div>
 </div>
         <div id="sec-smart" class="admin-section">
@@ -679,6 +682,13 @@ async function triggerGoalSync() {
         alert("✅ All historical goals have been added to the rankings!");
     }
 }
+        async function syncAllSystemStats() {
+    if(!confirm("DANGER: This will reset all BDR, Market Value, and Points and rebuild them from match history. Proceed?")) return;
+    
+    const res = await fetch(`${API}/api/smart/sync-all-rewards`);
+    const data = await res.json();
+    if(data.success) alert("✅ System Optimized: All tours, players, and rankings are now perfectly synced!");
+        }
     </script>
 
 </body>
