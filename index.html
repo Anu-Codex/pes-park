@@ -510,35 +510,52 @@
 .table-responsive {
     width: 100%;
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
     margin-top: 10px;
     border-radius: 12px;
+    background: rgba(0,0,0,0.2);
 }
 
 .pts-table {
     width: 100%;
-    min-width: 450px; /* Ensures columns don't crush on small screens */
+    min-width: 500px; /* Minimum width to keep columns readable */
     border-collapse: collapse;
-    font-size: 0.8rem;
+    font-size: 0.75rem; /* Slightly smaller for more columns */
 }
 
 .pts-table th {
     background: rgba(255,255,255,0.03);
     color: var(--text-dim);
-    padding: 12px 8px;
+    padding: 10px 5px;
     text-transform: uppercase;
-    font-size: 0.7rem;
-    letter-spacing: 1px;
+    font-weight: 700;
 }
 
 .pts-table td {
-    padding: 12px 8px;
+    padding: 12px 5px;
     border-bottom: 1px solid rgba(255,255,255,0.05);
     text-align: center;
+    color: #e2e8f0;
 }
 
+.col-team-name {
+    text-align: left !important;
+    padding-left: 10px !important;
+    color: white !important;
+    font-weight: 600;
+    width: 120px; /* Give team name more space */
+}
+
+.col-pts-bold {
+    font-weight: 800;
+    color: var(--gold) !important;
+    font-size: 0.85rem;
+}
+
+.row-leader {
+    background: rgba(245, 158, 11, 0.05);
+    border-left: 3px solid var(--gold);
+}
 .row-highlight { background: rgba(16, 185, 129, 0.05); border-left: 3px solid var(--accent); }
-.col-pts-bold { font-weight: 800; color: white; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -981,30 +998,42 @@ async function switchTourTab(type) {
     const res = await fetch(`${API}/api/smart/standings/${tourId}`);
     let data = await res.json();
 
-    // Sort: Pts > GD > GF
-    data.sort((a, b) => (b.points - a.points) || ((b.gf-b.ga) - (a.gf-a.ga)) || (b.gf - a.gf));
+    // SORTING: Points > GD > GF
+    data.sort((a, b) => {
+        const gdA = (a.gf || 0) - (a.ga || 0);
+        const gdB = (b.gf || 0) - (b.ga || 0);
+        return (b.points - a.points) || (gdB - gdA) || (b.gf - a.gf);
+    });
 
     content.innerHTML = `
     <div class="table-responsive">
         <table class="pts-table">
             <thead>
                 <tr>
-                    <th>#</th><th style="text-align:left">TEAM</th>
-                    <th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th style="color:var(--accent)">PTS</th>
+                    <th>#</th>
+                    <th style="text-align:left; padding-left:10px;">TEAM</th>
+                    <th>P</th><th>W</th><th>D</th><th>L</th>
+                    <th>GF</th><th>GA</th><th>GD</th>
+                    <th>PTS</th>
                 </tr>
             </thead>
             <tbody>
                 ${data.map((s, i) => {
                     const gd = (s.gf || 0) - (s.ga || 0);
+                    const gdClass = gd > 0 ? 'gd-positive' : (gd < 0 ? 'gd-negative' : '');
                     return `
-                    <tr class="${i === 0 ? 'row-highlight' : ''}">
-                        <td style="color:var(--accent); font-weight:bold">${i + 1}</td>
-                        <td style="text-align:left; color:white; font-weight:600">${s.participant}</td>
+                    <tr class="${i === 0 ? 'row-leader' : ''}">
+                        <td style="color:var(--accent); font-weight:bold;">${i + 1}</td>
+                        <td class="col-team-name">${s.participant}</td>
                         <td>${s.played}</td>
                         <td>${s.wins}</td>
                         <td>${s.draws}</td>
                         <td>${s.losses}</td>
-                        <td style="color:${gd > 0 ? '#10b981' : (gd < 0 ? '#ef4444' : 'inherit')}">${gd > 0 ? '+'+gd : gd}</td>
+                        <td>${s.gf || 0}</td>
+                        <td>${s.ga || 0}</td>
+                        <td style="font-weight:bold; color:${gd > 0 ? '#10b981' : (gd < 0 ? '#ef4444' : '#94a3b8')}">
+                            ${gd > 0 ? '+' + gd : gd}
+                        </td>
                         <td class="col-pts-bold">${s.points}</td>
                     </tr>`;
                 }).join('')}
