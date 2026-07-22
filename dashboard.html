@@ -277,6 +277,21 @@
         </div>
     </div>
     </div>
+    <div class="admin-section" style="border-color: #10b981;">
+    <h3 style="color: #10b981;"><i class="fa-solid fa-ranking-star"></i> Team Points Manager</h3>
+    <form id="teamPointsForm">
+        <input type="text" id="tpName" placeholder="Team Name (Must match exactly)" required>
+        <div class="grid-2">
+            <input type="number" id="tpWins" placeholder="Total Wins">
+            <input type="number" id="tpDraws" placeholder="Total Draws">
+            <input type="number" id="tpLoss" placeholder="Total Losses">
+        </div>
+        <button type="submit" class="btn-green">Update Team Standings</button>
+    </form>
+    <p style="font-size: 0.7rem; color: #64748b; margin-top: 10px;">
+        Points Calculation: Win (3), Draw (1), Loss (-2)
+    </p>
+    </div>
     
     <script>
         const API = "https://pes-park-backend.onrender.com";
@@ -559,6 +574,26 @@ async function fillAllSelectors() {
 
 // Make sure to call this new function at the bottom of your script
 fillAllSelectors();
+        document.getElementById('teamPointsForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const data = {
+            name: document.getElementById('tpName').value,
+            wins: parseInt(document.getElementById('tpWins').value) || 0,
+            draws: parseInt(document.getElementById('tpDraws').value) || 0,
+            losses: parseInt(document.getElementById('tpLoss').value) || 0
+        };
+
+        const res = await fetch(`${API}/api/teams/update-stats`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            alert("Team points updated! Refresh main site to see leader.");
+            location.reload();
+        }
+    };
     </script>
 </body>
 </html>
