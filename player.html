@@ -244,7 +244,7 @@
             document.getElementById('pName').innerText = p.name;
             document.getElementById('pNick').innerText = p.nickname ? `"${p.nickname}"` : "";
             document.getElementById('pAuction').innerText = p.auctionPrice || 0;
-            document.getElementById('pMarket').innerText = p.marketValue || 0;
+            document.getElementById('pMarket').innerText = (p.marketValue || 0) + "M";
             document.getElementById('pBDR').innerText = p.bdrPoints || 0;
             document.getElementById('squadImg').src = p.squadImage || "https://via.placeholder.com/400x200?text=No+Squad+Uploaded";
             
