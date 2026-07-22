@@ -303,8 +303,6 @@
     if(sfTour) sfTour.innerHTML = '<option value="">Select Tournament...</option>' + tourOptions;
     if(srTour) srTour.innerHTML = '<option value="">Select Tournament...</option>' + tourOptions;
 
-} catch (e) { console.error("Smart Tours Load Error:", e); }
-
                 // Teams List
                 const tRes = await fetch(`${API}/api/teams/all`);
                 const teams = await tRes.json();
