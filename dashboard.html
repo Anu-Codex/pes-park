@@ -329,9 +329,7 @@
     if(srTour) srTour.innerHTML = '<option value="">Select Tournament...</option>' + tourOptions;
             // --- Add these lines inside your existing data loading logic ---
 
-// 1. Fill the Tournament Selector
-
-const tours = await tourRes.json();
+// 1. Fill the Tournament Selecto
 const regTourSel = document.getElementById('regTourSelect');
 if(regTourSel) regTourSel.innerHTML = '<option value="">Select Tournament...</option>' + 
     tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
