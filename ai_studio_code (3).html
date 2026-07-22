@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - PES PARK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg: #060b13;
+            --card-bg: #101926;
+            --border: #1e293b;
+            --accent: #10b981;
+            --gold: #f59e0b;
+            --danger: #ef4444;
+            --text-dim: #94a3b8;
+        }
+
+        body { 
+            background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; 
+            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
+        }
+
+        .dashboard-wrapper { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 20px; }
+        h1 { text-align: center; font-size: 1.5rem; margin-bottom: 10px; }
+
+        /* Navigation Menu */
+        .admin-nav { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; white-space: nowrap; width: 100%; }
+        .nav-tab { background: var(--card-bg); color: var(--text-dim); border: 1px solid var(--border); padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .nav-tab.active { background: var(--accent); color: #060b13; border-color: var(--accent); }
+
+        /* Section Styling */
+        .admin-section { display: none; background: var(--card-bg); padding: 25px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .admin-section.active-section { display: block; animation: fadeIn 0.4s ease; }
+
+        .sub-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        h3 { margin-top: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        h4 { margin: 0 0 15px 0; font-size: 0.9rem; text-transform: uppercase; color: var(--text-dim); }
+
+        /* Forms */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        input, select { width: 100%; padding: 12px; background: #060b13; border: 1px solid var(--border); color: white; border-radius: 10px; outline: none; font-size: 0.9rem; box-sizing: border-box; margin-bottom: 10px; }
+        button { width: 100%; padding: 14px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 5px; }
+        .btn-green { background: var(--accent); color: #060b13; }
+        .btn-gold { background: var(--gold); color: black; }
+        .delete-btn { background: var(--danger); color: white; padding: 8px; border-radius: 8px; }
+
+        /* List Styling */
+        .list-container { max-height: 300px; overflow-y: auto; margin-top: 10px; }
+        .row-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-wrapper">
+        <h1>Admin Dashboard</h1>
+
+        <div class="admin-nav">
+            <button class="nav-tab active" onclick="showSection('sec-league', this)">General</button>
+            <button class="nav-tab" onclick="showSection('sec-players', this)">Players</button>
+            <button class="nav-tab" onclick="showSection('sec-tours', this)">Tournaments</button>
+            <button class="nav-tab" onclick="showSection('sec-teams', this)">Teams</button>
+            <button class="nav-tab" onclick="showSection('sec-prestige', this)">Prestige</button>
+        </div>
+
+        <!-- 1. GENERAL -->
+        <div id="sec-league" class="admin-section active-section">
+            <h3 style="color: var(--accent);"><i class="fa-solid fa-chart-line"></i> League Overview</h3>
+            <form id="statsForm">
+                <div class="grid-2">
+                    <input type="text" id="bdrLeader" placeholder="BDR Leader Name">
+                    <input type="number" id="bdrValue" placeholder="BDR Points">
+                    <input type="text" id="highestMV" placeholder="Highest MV Name">
+                    <input type="number" id="mvValue" placeholder="MV Value">
+                </div>
+                <input type="number" id="teamsCount" placeholder="Total Teams Count">
+                <button type="submit" class="btn-green">Update Main Stats</button>
+            </form>
+        </div>
+
+        <!-- 2. PLAYERS -->
+        <div id="sec-players" class="admin-section">
+            <div class="sub-box">
+                <h4><i class="fa-solid fa-user-plus"></i> Add New Player</h4>
+                <form id="playerForm">
+                    <div class="grid-2">
+                        <input type="text" id="pName" placeholder="Full Name" required>
+                        <input type="text" id="pNick" placeholder="Nickname">
+                        <input type="text" id="pTeam" placeholder="Team Name">
+                        <input type="text" id="pTeamLogo" placeholder="Team Logo URL">
+                    </div>
+                    <input type="text" id="pImage" placeholder="Player Image URL">
+                    <button type="submit" class="btn-green">Add to Database</button>
+                </form>
+            </div>
+
+            <div class="sub-box">
+                <h4><i class="fa-solid fa-address-card"></i> Edit Player Stats</h4>
+                <select id="playerSelector"><option value="">Select a player...</option></select>
+                <form id="updateStatsForm">
+                    <div class="grid-2">
+                        <input type="number" id="upAuction" placeholder="Auction Price">
+                        <input type="number" id="upMarket" placeholder="Market Value">
+                        <input type="number" id="upBDR" placeholder="BDR Points">
+                        <input type="text" id="upSquad" placeholder="Squad Image URL">
+                    </div>
+                    <button type="submit" class="btn-green">Update Profile</button>
+                </form>
+            </div>
+
+            <div class="sub-box">
+                <h4><i class="fa-solid fa-users-gear"></i> Delete Players</h4>
+                <div id="adminPlayerList" class="list-container"></div>
+            </div>
+        </div>
+
+        <!-- 3. TOURNAMENTS -->
+        <div id="sec-tours" class="admin-section">
+            <div class="sub-box" style="border-left: 4px solid var(--accent);">
+                <h4>Auction Tour</h4>
+                <form id="tourMatchForm">
+                    <div class="grid-2">
+                        <input type="text" id="tmA" placeholder="Player A">
+                        <input type="text" id="tmB" placeholder="Player B">
+                        <input type="number" id="tsA" placeholder="Score A">
+                        <input type="number" id="tsB" placeholder="Score B">
+                        <select id="tmType"><option value="League">League</option><option value="Knockout">Knockout</option></select>
+                        <select id="tmStatus"><option value="Upcoming">Upcoming</option><option value="Completed">Completed</option></select>
+                    </div>
+                    <button type="submit" class="btn-green">Update Match</button>
+                </form>
+                <hr style="opacity:0.1; margin:15px 0">
+                <form id="tourRankForm">
+                    <div class="grid-2">
+                        <input type="text" id="trName" placeholder="Player Name">
+                        <input type="number" id="trVal" placeholder="Goals/Rating">
+                        <select id="trCat"><option value="Golden Boot">Golden Boot</option><option value="Best Player">Best Player</option></select>
+                    </div>
+                    <button type="submit" class="btn-gold">Save Ranking</button>
+                </form>
+            </div>
+
+            <div class="sub-box" style="border-left: 4px solid #a855f7;">
+                <h4>Solo Tour</h4>
+                <form id="soloMatchForm">
+                    <div class="grid-2">
+                        <input type="text" id="smA" placeholder="Player A"><input type="text" id="smB" placeholder="Player B">
+                        <input type="number" id="ssA" placeholder="Score A"><input type="number" id="ssB" placeholder="Score B">
+                        <select id="smType"><option value="League">League</option><option value="Knockout">Knockout</option></select>
+                        <select id="smStatus"><option value="Upcoming">Upcoming</option><option value="Completed">Completed</option></select>
+                    </div>
+                    <button type="submit" style="background:#a855f7; color:white;">Save Solo Match</button>
+                </form>
+            </div>
+
+            <div class="sub-box" style="border-left: 4px solid #3b82f6;">
+                <h4>Weekend Series</h4>
+                <form id="weekendMatchForm">
+                    <div class="grid-2">
+                        <input type="text" id="wmA" placeholder="Player A"><input type="text" id="wmB" placeholder="Player B">
+                        <input type="number" id="wsA" placeholder="Score A"><input type="number" id="wsB" placeholder="Score B">
+                        <select id="wmType"><option value="League">League</option><option value="Knockout">Knockout</option></select>
+                        <select id="wmStatus"><option value="Upcoming">Upcoming</option><option value="Completed">Completed</option></select>
+                    </div>
+                    <button type="submit" style="background:#3b82f6; color:white;">Save Weekend Match</button>
+                </form>
+            </div>
+
+            <div class="sub-box" style="border-left: 4px solid #ef4444;">
+                <h4>Quick Tour</h4>
+                <form id="quickMatchForm">
+                    <div class="grid-2">
+                        <input type="text" id="qmA" placeholder="Player A"><input type="text" id="qmB" placeholder="Player B">
+                        <input type="number" id="qsA" placeholder="Score A"><input type="number" id="qsB" placeholder="Score B">
+                        <select id="qmType"><option value="League">League</option><option value="Knockout">Knockout</option></select>
+                        <select id="qmStatus"><option value="Upcoming">Upcoming</option><option value="Completed">Completed</option></select>
+                    </div>
+                    <button type="submit" style="background:#ef4444; color:white;">Save Quick Match</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 4. TEAMS -->
+        <div id="sec-teams" class="admin-section">
+            <div class="sub-box">
+                <h4>Assign Players to Team</h4>
+                <form id="teamAssignForm">
+                    <div class="grid-2"><input type="text" id="tManageName" placeholder="Team Name"><input type="text" id="tManageLogo" placeholder="Logo URL"></div>
+                    <div id="transferPlayerList" style="max-height: 150px; overflow-y: auto; background: #060b13; padding: 10px; border-radius: 10px; border: 1px solid var(--border);"></div>
+                    <button type="submit" style="background: #3b82f6; color:white; margin-top:10px;">Assign Players</button>
+                </form>
+            </div>
+
+            <div class="sub-box">
+                <h4>Record Match History (Individual)</h4>
+                <form id="matchForm">
+                    <select id="matchPlayerA" required><option value="">Select Player...</option></select>
+                    <div class="grid-2">
+                        <input type="text" id="matchOpponent" placeholder="Opponent Name">
+                        <div style="display:flex; gap:5px"><input type="number" id="myScore" placeholder="My"><input type="number" id="oppScore" placeholder="Opp"></div>
+                    </div>
+                    <button type="submit" class="btn-green">Record Match</button>
+                </form>
+            </div>
+
+            <div class="sub-box">
+                <h4>Team Points (League Table)</h4>
+                <form id="teamPointsForm">
+                    <input type="text" id="tpName" placeholder="Team Name">
+                    <div class="grid-2">
+                        <input type="number" id="tpWins" placeholder="Wins"><input type="number" id="tpDraws" placeholder="Draws"><input type="number" id="tpLoss" placeholder="Losses">
+                    </div>
+                    <button type="submit" class="btn-green">Update Standing</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 5. PRESTIGE -->
+        <div id="sec-prestige" class="admin-section">
+            <div class="sub-box">
+                <h4>Hall of Fame</h4>
+                <form id="hofForm">
+                    <div class="grid-2">
+                        <input type="text" id="hSeason" placeholder="Season"><input type="text" id="hName" placeholder="Winner">
+                        <input type="text" id="hTeam" placeholder="Team"><select id="hTitle"><option value="Champion">Champion</option><option value="MVP">MVP</option></select>
+                    </div>
+                    <input type="text" id="hImg" placeholder="Image URL">
+                    <button type="submit" class="btn-gold">Add Legend</button>
+                </form>
+                <div id="hofAdminList" class="list-container"></div>
+            </div>
+
+            <div class="sub-box">
+                <h4>Captaincy Manager</h4>
+                <select id="capPlayerSelector"><option value="">Select Player...</option></select>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="updateCaptain(true)" class="btn-gold">Promote</button>
+                    <button onclick="updateCaptain(false)" class="delete-btn" style="width:100%">Remove</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = "https://pes-park-backend.onrender.com";
+
+        if (localStorage.getItem('isAdmin') !== 'true') { window.location.href = 'login.html'; }
+
+        function showSection(sectionId, btnElement) {
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active-section'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active-section');
+            btnElement.classList.add('active');
+        }
+
+        async function loadAllData() {
+            // Stats
+            const sRes = await fetch(`${API}/api/stats`);
+            const s = await sRes.json();
+            if(s) {
+                document.getElementById('bdrLeader').value = s.bdrLeader || '';
+                document.getElementById('bdrValue').value = s.bdrValue || 0;
+                document.getElementById('highestMV').value = s.highestMV || '';
+                document.getElementById('mvValue').value = s.mvValue || 0;
+                document.getElementById('teamsCount').value = s.teamsCount || 0;
+            }
+
+            // Players
+            const pRes = await fetch(`${API}/api/players`);
+            const players = await pRes.json();
+            
+            document.getElementById('adminPlayerList').innerHTML = players.map(p => `
+                <div class="row-item"><span><b>${p.name}</b></span><button class="delete-btn" onclick="deletePlayer('${p._id}')">Delete</button></div>
+            `).join('');
+
+            const opts = players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+            document.getElementById('playerSelector').innerHTML += opts;
+            document.getElementById('matchPlayerA').innerHTML += opts;
+            document.getElementById('capPlayerSelector').innerHTML += opts;
+
+            document.getElementById('transferPlayerList').innerHTML = players.map(p => `
+                <div style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="player-checkbox" value="${p._id}"> <label>${p.name}</label></div>
+            `).join('');
+
+            // HOF
+            const hRes = await fetch(`${API}/api/achievements`);
+            const hof = await hRes.json();
+            document.getElementById('hofAdminList').innerHTML = hof.map(h => `
+                <div class="row-item"><span>${h.season}: ${h.winnerName}</span><button class="delete-btn" onclick="deleteAchieve('${h._id}')">Remove</button></div>
+            `).join('');
+        }
+
+        // --- All Form Handlers (UNCHANGED) ---
+        document.getElementById('statsForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = { bdrLeader: document.getElementById('bdrLeader').value, bdrValue: document.getElementById('bdrValue').value, highestMV: document.getElementById('highestMV').value, mvValue: document.getElementById('mvValue').value, teamsCount: document.getElementById('teamsCount').value };
+            await fetch(`${API}/api/stats`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            alert("Stats Updated!");
+        };
+
+        document.getElementById('playerForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = { name: document.getElementById('pName').value, nickname: document.getElementById('pNick').value, image: document.getElementById('pImage').value, teamName: document.getElementById('pTeam').value, teamLogo: document.getElementById('pTeamLogo').value };
+            await fetch(`${API}/api/players`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            location.reload();
+        };
+
+        document.getElementById('updateStatsForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('playerSelector').value;
+            const data = { auctionPrice: document.getElementById('upAuction').value, marketValue: document.getElementById('upMarket').value, bdrPoints: document.getElementById('upBDR').value, squadImage: document.getElementById('upSquad').value };
+            await fetch(`${API}/api/players/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            alert("Updated!");
+        };
+
+        document.getElementById('matchForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('matchPlayerA').value;
+            const data = { opponentName: document.getElementById('matchOpponent').value, myScore: document.getElementById('myScore').value, oppScore: document.getElementById('oppScore').value };
+            await fetch(`${API}/api/players/${id}/matches`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            alert("Recorded!");
+        };
+
+        // ... Fixture Handlers (Auction, Solo, Weekend, Quick) ...
+        document.getElementById('tourMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('tmA').value, playerB: document.getElementById('tmB').value, scoreA: document.getElementById('tsA').value, scoreB: document.getElementById('tsB').value, type: document.getElementById('tmType').value, status: document.getElementById('tmStatus').value }; await fetch(`${API}/api/auction/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Saved!"); };
+        document.getElementById('soloMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('smA').value, playerB: document.getElementById('smB').value, scoreA: document.getElementById('ssA').value, scoreB: document.getElementById('ssB').value, type: document.getElementById('smType').value, status: document.getElementById('smStatus').value }; await fetch(`${API}/api/solo/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Saved!"); };
+        document.getElementById('weekendMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('wmA').value, playerB: document.getElementById('wmB').value, scoreA: document.getElementById('wsA').value, scoreB: document.getElementById('wsB').value, type: document.getElementById('wmType').value, status: document.getElementById('wmStatus').value }; await fetch(`${API}/api/weekend/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Saved!"); };
+        document.getElementById('quickMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('qmA').value, playerB: document.getElementById('qmB').value, scoreA: document.getElementById('qsA').value, scoreB: document.getElementById('qsB').value, type: document.getElementById('qmType').value, status: document.getElementById('qmStatus').value }; await fetch(`${API}/api/quick/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Saved!"); };
+
+        document.getElementById('teamAssignForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const ids = Array.from(document.querySelectorAll('.player-checkbox:checked')).map(cb => cb.value);
+            const data = { teamName: document.getElementById('tManageName').value, teamLogo: document.getElementById('tManageLogo').value, playerIds: ids };
+            await fetch(`${API}/api/teams/assign`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            alert("Assigned!");
+        };
+
+        document.getElementById('teamPointsForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const data = { name: document.getElementById('tpName').value, wins: document.getElementById('tpWins').value, draws: document.getElementById('tpDraws').value, losses: document.getElementById('tpLoss').value };
+            await fetch(`${API}/api/teams/update-stats`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            alert("Standing Updated!");
+        };
+
+        document.getElementById('hofForm').onsubmit = async (e) => { e.preventDefault(); const data = { season: document.getElementById('hSeason').value, winnerName: document.getElementById('hName').value, winnerImage: document.getElementById('hImg').value, teamName: document.getElementById('hTeam').value, title: document.getElementById('hTitle').value }; await fetch(`${API}/api/achievements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }); location.reload(); };
+
+        async function updateCaptain(status) {
+            const id = document.getElementById('capPlayerSelector').value;
+            await fetch(`${API}/api/players/${id}/captain`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isCaptain: status }) });
+            alert("Captaincy Updated!");
+        }
+
+        async function deletePlayer(id) { if(confirm("Delete?")) { await fetch(`${API}/api/players/${id}`, { method: 'DELETE' }); location.reload(); } }
+        async function deleteAchieve(id) { if(confirm("Remove?")) { await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' }); location.reload(); } }
+
+        loadAllData();
+    </script>
+</body>
+</html>
