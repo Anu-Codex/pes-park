@@ -883,16 +883,19 @@ async function switchTourTab(type) {
     const category = document.getElementById('tourTabSelector').value;
     const content = document.getElementById('tourContent');
 
-    if(!tourId) return;
+    if (!tourId || tourId === "" || tourId === "undefined") {
+        content.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-dim);">Please select a Tournament Name first.</p>';
+        return;
+    }
 
-    content.innerHTML = '<p style="text-align:center; padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching...</p>';
+    content.innerHTML = '<p style="text-align:center; padding:30px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading Data...</p>';
 
     try {
+        // --- 1. POINTS TABLE ---
         if (category === 'table') {
-            // Fetch Standings for the specific tournament ID
             const res = await fetch(`${API}/api/smart/standings/${tourId}`);
             const data = await res.json();
-            data.sort((a,b) => b.points - a.points);
+            data.sort((a, b) => b.points - a.points || b.wins - a.wins);
 
             content.innerHTML = `
                 <table class="ranking-table">
@@ -900,36 +903,65 @@ async function switchTourTab(type) {
                     <tbody>
                         ${data.map((s, i) => `
                             <tr>
-                                <td class="rank-col">${i+1}</td>
-                                <td>${s.participant}</td>
+                                <td class="rank-col">${i + 1}</td>
+                                <td style="font-weight:600">${s.participant}</td>
                                 <td>${s.played}</td>
                                 <td style="color:var(--accent); font-weight:bold;">${s.points}</td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>`;
-        } else if (category === 'fixtures') {
-    const tourId = document.getElementById('tourNameSelector').value;
+        } 
+        // --- 2. FIXTURES ---
+        else if (category === 'fixtures') {
+            const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
+            const matches = await res.json();
 
-    // Safety: If the dropdown is still on "Loading..." or empty
-    if (!tourId || tourId.length < 10) {
-        content.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-dim);">Select a Tournament Name to see fixtures.</p>';
-        return;
-    }
+            if (!matches || matches.length === 0) {
+                content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);">No fixtures found.</p>';
+                return;
+            }
 
-    try {
-        const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
-        if (!res.ok) throw new Error("Fetch Failed");
-        const matches = await res.json();
-        // ... (rest of your mapping code)
-    } catch (e) {
-        content.innerHTML = '<p style="text-align:center; color:red; padding:20px;">Database Error: Could not reach server.</p>';
-    }
-}
-        
-        // ... (Repeat logic for boot/knockouts)
-    } catch (e) {
-        content.innerHTML = '<p style="color:red; text-align:center;">Error loading database.</p>';
+            content.innerHTML = matches.map(m => `
+                <div class="match-card" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:15px; border-radius:15px; margin-bottom:10px; border:1px solid var(--border);">
+                    <div style="flex:1; font-weight:600; font-size:0.9rem;">${m.playerA}</div>
+                    <div style="text-align:center; min-width:80px;">
+                        <b style="background:var(--bg); padding:5px 10px; border-radius:8px; color:var(--accent);">
+                            ${m.status === 'Completed' ? `${m.scoreA}-${m.scoreB}` : 'VS'}
+                        </b>
+                    </div>
+                    <div style="flex:1; text-align:right; font-weight:600; font-size:0.9rem;">${m.playerB}</div>
+                </div>
+            `).join('');
+        }
+        // --- 3. GOLDEN BOOT ---
+        else if (category === 'boot') {
+            const res = await fetch(`${API}/api/tour-ranks/${type}/boot`);
+            const data = await res.json();
+            
+            content.innerHTML = `
+                <table class="ranking-table">
+                    <thead><tr><th>#</th><th>Player</th><th>Team</th><th style="text-align:right">Goals</th></tr></thead>
+                    <tbody>
+                        ${data.map((d, i) => `
+                            <tr>
+                                <td class="rank-col">${i + 1}</td>
+                                <td class="player-col-name">${d.playerName}</td>
+                                <td class="team-col-name">${d.teamName || '—'}</td>
+                                <td class="val-col-data">${d.totalValue}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>`;
+        }
+        // --- 4. KNOCKOUTS ---
+        else if (category === 'knockouts') {
+            content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);">Knockouts brackets coming soon.</p>';
+        }
+
+    } catch (err) {
+        console.error("Fetch Error:", err);
+        content.innerHTML = '<p style="text-align:center; color:red; padding:20px;">Database Error. Check server connection.</p>';
     }
 }
         function renderSoloTour(container) {
