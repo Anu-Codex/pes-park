@@ -361,7 +361,18 @@
         };
 
         document.getElementById('hofForm').onsubmit = async (e) => { e.preventDefault(); const data = { season: document.getElementById('hSeason').value, winnerName: document.getElementById('hName').value, winnerImage: document.getElementById('hImg').value, teamName: document.getElementById('hTeam').value, title: document.getElementById('hTitle').value }; await fetch(`${API}/api/achievements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }); location.reload(); };
+        const hRes = await fetch(`${API}/api/achievements`);
+const hofList = await hRes.json();
+const hofAdminList = document.getElementById('hofAdminList');
 
+if (hofAdminList) {
+    hofAdminList.innerHTML = hofList.map(h => `
+        <div class="row-item">
+            <span>${h.season}: <b>${h.winnerName}</b></span>
+            <button class="delete-btn" onclick="deleteAchieve('${h._id}')">Remove</button>
+        </div>
+    `).join('');
+}
         async function updateCaptain(status) {
             const id = document.getElementById('capPlayerSelector').value;
             await fetch(`${API}/api/players/${id}/captain`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isCaptain: status }) });
@@ -371,6 +382,7 @@
         async function deletePlayer(id) { if(confirm("Delete?")) { await fetch(`${API}/api/players/${id}`, { method: 'DELETE' }); location.reload(); } }
         async function deleteAchieve(id) { if(confirm("Remove?")) { await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' }); location.reload(); } }
 
+        loadAllData();
         
         async function fillAllSelectors() {
     try {
@@ -401,7 +413,7 @@
 
 // Call this function when the page loads
 fillAllSelectors();
-loadAllData();
+
     </script>
 </body>
 </html>
