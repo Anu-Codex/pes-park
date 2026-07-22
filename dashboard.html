@@ -219,8 +219,26 @@
     <h4 style="color:var(--gold)">Database Tools</h4>
     <p style="font-size:0.7rem; color:var(--text-dim);">Click this to calculate goals from all past matches into the Golden Boot list.</p>
     <button onclick="triggerGoalSync()" class="btn-gold">Sync All Previous Goals</button>
-    <button onclick="syncTourTable()" class="btn-gold" style="margin-top: 10px;">
-    <i class="fa-solid fa-sync"></i> Sync Points Table from History
+    </div>
+    <div class="sub-box" style="border: 1px solid var(--gold); margin-top:15px;">
+    <h4 style="color:var(--gold)"><i class="fa-solid fa-database"></i> Database Tools</h4>
+    
+    <!-- NEW SELECTOR INSIDE THE BOX -->
+    <p style="font-size:0.75rem; color:var(--text-dim); margin-bottom:5px;">1. Select Tournament to Sync:</p>
+    <select id="syncTourSelect" style="border-color: var(--gold); color: var(--gold);">
+        <option value="">Select Tournament...</option>
+    </select>
+
+    <p style="font-size:0.7rem; color:var(--text-dim); margin-top:15px;">2. Choose Sync Action:</p>
+    
+    <!-- Goal Sync Button -->
+    <button onclick="triggerGoalSync()" class="btn-gold" style="margin-bottom:10px;">
+        <i class="fa-solid fa-bullseye"></i> Sync All Previous Goals
+    </button>
+
+    <!-- Table Sync Button -->
+    <button onclick="syncTourTable()" class="btn-gold">
+        <i class="fa-solid fa-table-list"></i> Sync Points Table from History
     </button>
     </div>
 </div>
@@ -355,6 +373,8 @@
                 const el = document.getElementById(id);
                 if(el) el.innerHTML = '<option value="">Select Tournament...</option>' + tourOpts;
             });
+            const syncTourSel = document.getElementById('syncTourSelect');
+if (syncTourSel) syncTourSel.innerHTML = '<option value="">Select Tournament...</option>' + tourOpts;
             // --- ADD THIS CODE TO FILL THE PARTICIPANT CHECKBOXES ---
 const stContainer = document.getElementById('stParticipantList');
 if (stContainer && players.length > 0) {
@@ -629,11 +649,12 @@ async function createSmartTour() {
         location.reload();
     }
         }
-        async function syncTourTable() {
-    const tourId = document.getElementById('srTourSelect').value;
-    if (!tourId) return alert("Select a tournament first!");
+        // Updated Sync Table Function
+async function syncTourTable() {
+    const tourId = document.getElementById('syncTourSelect').value;
+    if (!tourId) return alert("❌ Please select a tournament from the menu above first!");
 
-    if (!confirm("This will rebuild the points table using all completed fixtures. Continue?")) return;
+    if (!confirm("This will rebuild the points table (GF, GA, GD, Pts) using all completed fixtures. Continue?")) return;
 
     try {
         const res = await fetch(`${API}/api/smart/recalculate-table/${tourId}`);
@@ -642,9 +663,22 @@ async function createSmartTour() {
             alert("✅ " + result.message);
         }
     } catch (e) {
-        alert("❌ Sync failed.");
+        alert("❌ Sync failed. Check server connection.");
     }
-        }
+}
+
+// Updated Goal Sync Function (If you want it to be per tour)
+async function triggerGoalSync() {
+    // Note: The previous sync-all-goals route clears EVERYTHING. 
+    // If you want to keep it global, you don't need the ID check here.
+    if(!confirm("Recalculate Golden Boot from all previous scores?")) return;
+    
+    const res = await fetch(`${API}/api/smart/sync-all-goals`);
+    const data = await res.json();
+    if(data.success) {
+        alert("✅ All historical goals have been added to the rankings!");
+    }
+}
     </script>
 
 </body>
