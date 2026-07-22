@@ -273,6 +273,22 @@
     <script>
     const API = "https://pes-park-backend.onrender.com";
 
+        // 1. CATCH ERRORS AND SEND TO RENDER CONSOLE
+window.onerror = function (msg, url, line) {
+    const errorData = {
+        error: `Error: ${msg} \nLine: ${line} \nURL: ${url}`
+    };
+    // Send to Render backend
+    fetch("https://pes-park-backend.onrender.com/api/debug", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(errorData)
+    });
+    // Also show an alert on your phone screen so you can see it immediately
+    alert("LOGGED ERROR: " + msg + " at line " + line);
+    return false;
+};
+
     // 1. Security Check
     if (localStorage.getItem('isAdmin') !== 'true') { 
         window.location.href = 'login.html'; 
@@ -414,13 +430,16 @@
         alert("Leaderboard Updated!");
     };
 
-    document.getElementById('hofForm').onsubmit = async (e) => {
+    const hofForm = document.getElementById('hofForm');
+if (hofForm) {
+    hofForm.onsubmit = async (e) => {
         e.preventDefault();
         const data = { season: document.getElementById('hSeason').value, winnerName: document.getElementById('hName').value, winnerImage: document.getElementById('hImg').value, teamName: document.getElementById('hTeam').value, title: document.getElementById('hTitle').value };
         await fetch(`${API}/api/achievements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        alert("Hall of Fame Legend Added!");
+        alert("Legend Added!");
         location.reload();
     };
+        }
 
     // Global Action Functions
     async function updateCaptain(status) {
