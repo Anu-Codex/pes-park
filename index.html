@@ -830,8 +830,7 @@ async function switchTourTab() {
                 </div>
             `).join('');
 
-        } else {
-            if (tab === 'boot' || tab === 'best') {
+        } else if (tab === 'boot' || tab === 'best') {
         const res = await fetch(`${API}/api/tour-ranks/${tourType}/${tab}`);
         const data = await res.json();
         
