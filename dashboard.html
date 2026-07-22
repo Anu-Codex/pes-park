@@ -422,7 +422,7 @@
 
             // --- POPULATE TOURNAMENT DROPDOWNS ---
             const tourOpts = tours.map(t => `<option value="${t._id}">${t.name} (${t.type})</option>`).join('');
-            const tourSelectors = ['regTourSelect', 'sfTourSelect', 'srTourSelect'];
+            const tourSelectors = ['regTourSelect', 'sfTourSelect', 'srTourSelect', 'akTourSelect'];
             tourSelectors.forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.innerHTML = '<option value="">Select Tournament...</option>' + tourOpts;
