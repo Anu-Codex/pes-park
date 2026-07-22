@@ -160,6 +160,24 @@
                     <button type="submit" class="btn-green">Update Standing</button>
                 </form>
             </div>
+            <!-- Inside <div id="sec-teams" ...> -->
+<div class="sub-box" style="border-left: 4px solid var(--accent);">
+    <h4><i class="fa-solid fa-users-rays"></i> Create New Team</h4>
+    <form id="createTeamForm">
+        <div class="grid-2">
+            <input type="text" id="ntName" placeholder="Team Name (e.g. GOMMA eSPORTS)" required>
+            <input type="text" id="ntLogo" placeholder="Team Logo URL" required>
+        </div>
+
+        <p style="font-size:0.75rem; color:var(--text-dim); margin: 10px 0 5px;">Select Team Members:</p>
+        <div id="teamMemberList" class="list-container" style="max-height:150px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 10px; border-radius: 10px; overflow-y: auto;">
+            <!-- Player checkboxes will be injected here -->
+            <p style="text-align:center; font-size:0.8rem; color:var(--text-dim);">Loading players...</p>
+        </div>
+
+        <button type="submit" class="btn-green" style="margin-top: 15px;">Create Team</button>
+    </form>
+</div>
         </div>
 
         <!-- 5. PRESTIGE -->
@@ -419,6 +437,15 @@
                 const el = document.getElementById(id);
                 if(el) el.innerHTML = '<option value="">Select Name...</option>' + pNameOpts;
             });
+            const memberContainer = document.getElementById('teamMemberList');
+if (memberContainer && players.length > 0) {
+    memberContainer.innerHTML = players.map(p => `
+        <div style="display:flex; align-items:center; gap:10px; padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <input type="checkbox" class="nt-member-cb" value="${p.name}" style="width:16px; height:16px; margin:0;">
+            <label style="font-size:0.85rem;">${p.name}</label>
+        </div>
+    `).join('');
+}
 
             // --- POPULATE TOURNAMENT DROPDOWNS ---
             const tourOpts = tours.map(t => `<option value="${t._id}">${t.name} (${t.type})</option>`).join('');
@@ -824,6 +851,36 @@ async function saveAdvancedHof() {
         console.error("Error loading knockout participants:", err);
     }
         }
+        document.getElementById('createTeamForm').onsubmit = async (e) => {
+    e.preventDefault();
+
+    // Get selected member names
+    const selectedMembers = Array.from(document.querySelectorAll('.nt-member-cb:checked')).map(cb => cb.value);
+
+    const data = {
+        name: document.getElementById('ntName').value,
+        logo: document.getElementById('ntLogo').value,
+        members: selectedMembers
+    };
+
+    try {
+        const res = await fetch(`${API}/api/teams/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            alert("✅ Team Created Successfully!");
+            location.reload(); // Refresh to update team dropdowns in other sections
+        } else {
+            alert("❌ Error: " + result.error);
+        }
+    } catch (err) {
+        alert("❌ Failed to connect to server.");
+    }
+};
     </script>
 
 </body>
