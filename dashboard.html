@@ -736,25 +736,36 @@ async function triggerGoalSync() {
         container.appendChild(div);
     }
         async function saveAdvancedHof() {
-        const highlights = Array.from(document.querySelectorAll('#highlightInputs .grid-2')).map(row => ({
-            label: row.querySelectorAll('input')[0].value,
-            value: row.querySelectorAll('input')[1].value
-        })).filter(x => x.label);
+    const seasonName = document.getElementById('hofSeasonName').value;
+    if(!seasonName) return alert("Enter Season Name!");
 
-        const trophies = Array.from(document.querySelectorAll('#trophyInputs .grid-2')).map(row => ({
-            title: row.querySelectorAll('input')[0].value,
-            winner: row.querySelectorAll('input')[1].value
-        })).filter(x => x.title);
+    // Map Special Highlights (Yellow Area Top)
+    const highlights = Array.from(document.querySelectorAll('#highlightInputs .grid-2')).map(row => ({
+        label: row.querySelectorAll('input')[0].value,
+        value: row.querySelectorAll('input')[1].value
+    })).filter(item => item.label !== "");
 
-        const data = {
-            seasonName: document.getElementById('hofSeasonName').value,
-            specialHighlights: highlights,
-            trophyWinners: trophies
-        };
+    // Map Trophy Winners (Yellow Area Bottom)
+    const trophies = Array.from(document.querySelectorAll('#trophyInputs .grid-2')).map(row => ({
+        title: row.querySelectorAll('input')[0].value,
+        winner: row.querySelectorAll('input')[1].value
+    })).filter(item => item.title !== "");
 
-        const res = await fetch(`${API}/api/hof/save`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        if(res.ok) alert("Advanced Hall of Fame Published!");
-            }
+    const payload = {
+        seasonName: seasonName,
+        specialHighlights: highlights,
+        trophyWinners: trophies
+    };
+
+    try {
+        const res = await fetch(`${API}/api/hof/save`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if(res.ok) alert("✅ Hall of Fame Published Successfully!");
+    } catch (e) { alert("Error publishing HOF"); }
+        }
     </script>
 
 </body>
