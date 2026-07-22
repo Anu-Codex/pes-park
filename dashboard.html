@@ -723,18 +723,28 @@ async function triggerGoalSync() {
         div.appendChild(row);
     }
 
-    async function saveHof() {
-        // Collect dynamic inputs into arrays
+    function addHofRow(containerId, type) {
+        const container = document.getElementById(containerId);
+        const div = document.createElement('div');
+        div.className = "grid-2";
+        div.style.marginBottom = "10px";
+        if(type === 'highlight') {
+            div.innerHTML = `<input type="text" placeholder="Label (e.g. BDR Leader)"> <input type="text" placeholder="Value (e.g. ZUBAIR)">`;
+        } else {
+            div.innerHTML = `<input type="text" placeholder="Trophy Name"> <input type="text" placeholder="Winner Name">`;
+        }
+        container.appendChild(div);
+    }
+        async function saveAdvancedHof() {
         const highlights = Array.from(document.querySelectorAll('#highlightInputs .grid-2')).map(row => ({
             label: row.querySelectorAll('input')[0].value,
             value: row.querySelectorAll('input')[1].value
-        }));
+        })).filter(x => x.label);
 
-        const trophies = Array.from(document.querySelectorAll('#trophyInputs div')).map(row => ({
+        const trophies = Array.from(document.querySelectorAll('#trophyInputs .grid-2')).map(row => ({
             title: row.querySelectorAll('input')[0].value,
-            winner: row.querySelectorAll('input')[1].value,
-            iconType: row.querySelector('select').value
-        }));
+            winner: row.querySelectorAll('input')[1].value
+        })).filter(x => x.title);
 
         const data = {
             seasonName: document.getElementById('hofSeasonName').value,
@@ -742,13 +752,9 @@ async function triggerGoalSync() {
             trophyWinners: trophies
         };
 
-        await fetch(`${API}/hof/save`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        alert("Season records saved!");
-    }
+        const res = await fetch(`${API}/api/hof/save`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        if(res.ok) alert("Advanced Hall of Fame Published!");
+            }
     </script>
 
 </body>
