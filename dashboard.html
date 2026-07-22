@@ -196,29 +196,41 @@
                 </form>
             </div>
 
-            <div class="sub-box">
-                <h4>Record Match History (Individual)</h4>
-                <form id="matchForm">
-                    <select id="matchPlayerA" required><option value="">Select Player...</option></select>
-                    <div class="grid-2">
-                        <input type="text" id="matchOpponent" placeholder="Opponent Name">
-                        <div style="display:flex; gap:5px"><input type="number" id="myScore" placeholder="My"><input type="number" id="oppScore" placeholder="Opp"></div>
-                    </div>
-                    <button type="submit" class="btn-green">Record Match</button>
-                </form>
-            </div>
-
-            <div class="sub-box">
-                <h4>Team Points (League Table)</h4>
-                <form id="teamPointsForm">
-                    <input type="text" id="tpName" placeholder="Team Name">
-                    <div class="grid-2">
-                        <input type="number" id="tpWins" placeholder="Wins"><input type="number" id="tpDraws" placeholder="Draws"><input type="number" id="tpLoss" placeholder="Losses">
-                    </div>
-                    <button type="submit" class="btn-green">Update Standing</button>
-                </form>
+            <!-- Inside GROUP 4: TEAMS (Record Match History) -->
+<div class="sub-box">
+    <h4>Record Match History (Individual)</h4>
+    <form id="matchForm">
+        <select id="matchPlayerA" required><option value="">Select My Player...</option></select>
+        <div class="grid-2">
+            <!-- CHANGED: Now a dropdown for Opponent -->
+            <select id="matchOpponent" required>
+                <option value="">Select Opponent...</option>
+            </select>
+            <div style="display:flex; gap:5px">
+                <input type="number" id="myScore" placeholder="My">
+                <input type="number" id="oppScore" placeholder="Opp">
             </div>
         </div>
+        <button type="submit" class="btn-green">Record Match</button>
+    </form>
+</div>
+
+<!-- Inside GROUP 4: TEAMS (Team Points Manager) -->
+<div class="sub-box">
+    <h4>Team Points (League Table)</h4>
+    <form id="teamPointsForm">
+        <!-- CHANGED: Now a dropdown for Team names -->
+        <select id="tpName" required>
+            <option value="">Select Team Name...</option>
+        </select>
+        <div class="grid-2">
+            <input type="number" id="tpWins" placeholder="Wins">
+            <input type="number" id="tpDraws" placeholder="Draws">
+            <input type="number" id="tpLoss" placeholder="Losses">
+        </div>
+        <button type="submit" class="btn-green">Update Standing</button>
+    </form>
+</div>
 
         <!-- 5. PRESTIGE -->
         <div id="sec-prestige" class="admin-section">
@@ -359,6 +371,35 @@
         async function deleteAchieve(id) { if(confirm("Remove?")) { await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' }); location.reload(); } }
 
         loadAllData();
+        async function fillAllSelectors() {
+    try {
+        // 1. Fetch Players for both Match Result dropdowns
+        const pRes = await fetch(`${API}/api/players`);
+        const players = await pRes.json();
+        
+        const playerOpts = players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+        // To show name instead of ID in opponent field for easy reading:
+        const opponentOpts = players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+
+        document.getElementById('playerSelector').innerHTML = '<option value="">Select player...</option>' + playerOpts;
+        document.getElementById('matchPlayerA').innerHTML = '<option value="">Select My Player...</option>' + playerOpts;
+        document.getElementById('matchOpponent').innerHTML = '<option value="">Select Opponent...</option>' + opponentOpts;
+        document.getElementById('capPlayerSelector').innerHTML = '<option value="">Select Player...</option>' + playerOpts;
+
+        // 2. Fetch Teams for the Team Points dropdown
+        const tRes = await fetch(`${API}/api/teams/all`);
+        const teams = await tRes.json();
+        
+        const teamOpts = teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+        document.getElementById('tpName').innerHTML = '<option value="">Select Team Name...</option>' + teamOpts;
+
+    } catch (err) {
+        console.error("Error filling selectors:", err);
+    }
+}
+
+// Call this function when the page loads
+fillAllSelectors();
     </script>
 </body>
 </html>
