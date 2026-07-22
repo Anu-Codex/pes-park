@@ -804,6 +804,26 @@ async function saveAdvancedHof() {
     });
     if(res.ok) alert(data.stage + " Created!");
         }
+        async function loadAKParticipants() {
+    const tourId = document.getElementById('akTourSelect').value;
+    const playerASel = document.getElementById('akPlayerA');
+    const playerBSel = document.getElementById('akPlayerB');
+
+    if (!tourId) return;
+
+    try {
+        const res = await fetch(`${API}/api/smart/participants/${tourId}`);
+        const participants = await res.json();
+
+        if (participants && participants.length > 0) {
+            const options = participants.map(name => `<option value="${name}">${name}</option>`).join('');
+            playerASel.innerHTML = '<option value="">Select Player A</option>' + options;
+            playerBSel.innerHTML = '<option value="">Select Player B</option>' + options;
+        }
+    } catch (err) {
+        console.error("Error loading knockout participants:", err);
+    }
+        }
     </script>
 
 </body>
