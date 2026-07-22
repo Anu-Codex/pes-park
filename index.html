@@ -399,8 +399,9 @@
                 <select><option>Season 7 • Current</option></select>
             </div>
             <h1 class="league-title">PES PARK<br>PLayers Data</h1>
-            <div class="league-leader">League leader <b>BLUE LOCK • 0 pts</b></div>
-
+            <div class="league-leader">
+    League leader <b id="leaderDisplay">Loading...</b>
+            </div>
             <div class="stats-grid">
                 <div class="stat-box">
                     <i class="fa-solid fa-trophy" style="color: #f59e0b;"></i>
@@ -911,6 +912,24 @@ async function switchQuickTab() {
         }
     } catch (e) { console.error(e); }
 }
+        async function updateLeagueLeader() {
+    try {
+        const res = await fetch(`${API}/api/teams/leader`);
+        const leader = await res.json();
+        
+        const display = document.getElementById('leaderDisplay');
+        if (leader) {
+            display.innerText = `${leader.name.toUpperCase()} • ${leader.points} pts`;
+        } else {
+            display.innerText = "NO DATA • 0 pts";
+        }
+    } catch (err) {
+        console.error("Leader fetch error:", err);
+    }
+}
+
+// Call this function
+updateLeagueLeader();
     </script>
 
                     
