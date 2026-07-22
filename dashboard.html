@@ -377,19 +377,24 @@ window.onerror = function (msg, url, line) {
 
     // --- 4. BRINGING BACK ALL YOUR ORIGINAL SUBMIT FUNCTIONS ---
 
-    document.getElementById('statsForm').onsubmit = async (e) => {
+    const statsForm = document.getElementById('statsForm');
+if (statsForm) {
+    statsForm.onsubmit = async (e) => {
         e.preventDefault();
         const data = { bdrLeader: document.getElementById('bdrLeader').value, bdrValue: document.getElementById('bdrValue').value, highestMV: document.getElementById('highestMV').value, mvValue: document.getElementById('mvValue').value, teamsCount: document.getElementById('teamsCount').value };
         await fetch(`${API}/api/stats`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
         alert("League Stats Updated!");
     };
-
-    document.getElementById('playerForm').onsubmit = async (e) => {
+}
+    const playerForm = document.getElementById('playerForm');
+if (playerForm) {
+    playerForm.onsubmit = async (e) => {
         e.preventDefault();
         const data = { name: document.getElementById('pName').value, nickname: document.getElementById('pNick').value, image: document.getElementById('pImage').value, teamName: document.getElementById('pTeam').value, teamLogo: document.getElementById('pTeamLogo').value };
         await fetch(`${API}/api/players`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
         location.reload();
     };
+}
 
     document.getElementById('updateStatsForm').onsubmit = async (e) => {
         e.preventDefault();
