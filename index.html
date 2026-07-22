@@ -855,21 +855,18 @@ async function renderAuctionTour(container) {
         </div>
         <div id="tourContent"></div>
     `;
-    // Fetch tournament names from database for this type
-    try {
-        const res = await fetch(`${API}/api/tournaments/list/auction`);
-        const tours = await res.json();
-        const nameSelector = document.getElementById('tourNameSelector');
-        
-        if(tours.length > 0) {
-            nameSelector.innerHTML = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
-            switchTourTab('auction'); // Load data for the first tour found
-        } else {
-            nameSelector.innerHTML = '<option value="">No Tours Found</option>';
-            document.getElementById('tourContent').innerHTML = '<p style="text-align:center; padding:40px; color:var(--text-dim);">Create a tournament in Dashboard first.</p>';
-        }
-    } catch (e) { console.error(e); }
-}
+    // --- Ensure this is how you load the middle dropdown ---
+try {
+    const res = await fetch(`${API}/api/tournaments/list/${tourType}`);
+    const tours = await res.json();
+    const nameSelector = document.getElementById('tourNameSelector');
+    
+    // CRITICAL: value MUST be t._id
+    nameSelector.innerHTML = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+    
+    // Trigger the first load
+    switchTourTab(tourType); 
+} catch (e) { console.error(e); }
 
 async function switchTourTab(type) {
     const tourId = document.getElementById('tourNameSelector').value;
