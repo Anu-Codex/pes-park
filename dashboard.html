@@ -233,29 +233,42 @@
 </div>
 
         <!-- 5. PRESTIGE -->
-        <div id="sec-prestige" class="admin-section">
-            <div class="sub-box">
-                <h4>Hall of Fame Manager</h4>
-                <form id="hofForm">
-                    <div class="grid-2">
-                        <input type="text" id="hSeason" placeholder="Season"><input type="text" id="hName" placeholder="Winner">
-                        <input type="text" id="hTeam" placeholder="Team"><select id="hTitle"><option value="Champion">Champion</option><option value="MVP">MVP</option></select>
-                    </div>
-                    <input type="text" id="hImg" placeholder="Image URL">
-                    <button type="submit" class="btn-gold">Add Legend</button>
-                </form>
-                <div id="hofAdminList" class="list-container"></div>
+<div id="sec-prestige" class="admin-section">
+    
+    <!-- Hall of Fame Box -->
+    <div class="sub-box" style="border-left: 4px solid var(--gold);">
+        <h4>Hall of Fame Manager</h4>
+        <form id="hofForm">
+            <div class="grid-2">
+                <input type="text" id="hSeason" placeholder="Season" required>
+                <input type="text" id="hName" placeholder="Winner" required>
+                <input type="text" id="hTeam" placeholder="Team">
+                <select id="hTitle">
+                    <option value="Champion">Champion</option>
+                    <option value="Runner Up">Runner Up</option>
+                    <option value="MVP">MVP</option>
+                </select>
             </div>
+            <input type="text" id="hImg" placeholder="Image URL">
+            <button type="submit" class="btn-gold">Add Legend</button>
+        </form>
+        <div id="hofAdminList" class="list-container"></div>
+    </div>
 
-            <div class="sub-box">
-                <h4>Captaincy Manager</h4>
-                <select id="capPlayerSelector"><option value="">Select Player...</option></select>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="updateCaptain(true)" class="btn-gold">Make Captain</button>
-                    <button onclick="updateCaptain(false)" class="delete-btn" style="width:100%">Remove</button>
-                </div>
-            </div>
+    <!-- Captaincy Box -->
+    <div class="sub-box">
+        <h4>Captaincy Manager</h4>
+        <select id="capPlayerSelector">
+            <option value="">Select Player...</option>
+        </select>
+        <!-- Fixed button layout -->
+        <div style="display: flex; gap: 10px; margin-top: 5px;">
+            <button onclick="updateCaptain(true)" class="btn-gold" style="flex: 1;">Make Captain</button>
+            <button onclick="updateCaptain(false)" class="delete-btn" style="flex: 1;">Remove</button>
         </div>
+    </div>
+
+</div> <!-- ONLY ONE CLOSING DIV HERE FOR SEC-PRESTIGE -->
 
     <script>
     const API = "https://pes-park-backend.onrender.com";
