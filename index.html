@@ -454,6 +454,58 @@
     text-transform: uppercase;
     font-weight: bold;
 }
+        .pts-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    color: #94a3b8; /* Dim text */
+    background: transparent;
+}
+
+.pts-table thead tr {
+    border-bottom: 1px solid #1e293b;
+}
+
+.pts-table th {
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    color: #475569;
+}
+
+.pts-table td {
+    padding: 12px 5px;
+    text-align: center;
+    border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+}
+
+/* Rank and Team Column */
+.col-rank { color: #10b981; font-weight: 800; width: 30px; }
+.col-team { text-align: left !important; color: #fff; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.col-team img { width: 25px; height: 25px; border-radius: 4px; }
+
+/* Highlight Row 1 */
+.pts-table tbody tr:first-child {
+    background: rgba(245, 158, 11, 0.05);
+    border-left: 3px solid #f59e0b;
+}
+.pts-table tbody tr:first-child .col-team { color: #f59e0b; }
+
+/* Points Column */
+.col-pts { color: #f59e0b; font-weight: 800; font-size: 1rem; }
+
+/* Goal Difference Colors */
+.gd-pos { color: #10b981; }
+.gd-neg { color: #ef4444; }
+        .gd-positive { color: #10b981; font-weight: bold; }
+.gd-negative { color: #ef4444; font-weight: bold; }
+.gd-neutral { color: #94a3b8; }
+
+/* Ensure the table columns are spaced like your image */
+.pts-table th, .pts-table td {
+    padding: 10px 5px;
+    text-align: center;
+}
     </style>
 </head>
 <body>
@@ -893,25 +945,51 @@ async function switchTourTab(type) {
     try {
         // --- 1. POINTS TABLE ---
         if (category === 'table') {
-            const res = await fetch(`${API}/api/smart/standings/${tourId}`);
-            const data = await res.json();
-            data.sort((a, b) => b.points - a.points || b.wins - a.wins);
+    const res = await fetch(`${API}/api/smart/standings/${tourId}`);
+    let data = await res.json();
 
-            content.innerHTML = `
-                <table class="ranking-table">
-                    <thead><tr><th>#</th><th>Participant</th><th>P</th><th>Pts</th></tr></thead>
-                    <tbody>
-                        ${data.map((s, i) => `
-                            <tr>
-                                <td class="rank-col">${i + 1}</td>
-                                <td style="font-weight:600">${s.participant}</td>
-                                <td>${s.played}</td>
-                                <td style="color:var(--accent); font-weight:bold;">${s.points}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>`;
-        } 
+    // 1. SORTING: Points first, then Goal Difference, then Wins
+    data.sort((a, b) => {
+        const gdA = (a.gf || 0) - (a.ga || 0);
+        const gdB = (b.gf || 0) - (b.ga || 0);
+        return b.points - a.points || gdB - gdA || b.wins - a.wins;
+    });
+
+    content.innerHTML = `
+        <table class="ranking-table" style="width:100%; border-collapse:collapse; font-size:0.8rem;">
+            <thead>
+                <tr style="color:var(--text-dim); border-bottom:1px solid var(--border);">
+                    <th style="text-align:left; padding:10px;">#</th>
+                    <th style="text-align:left;">Team</th>
+                    <th>P</th><th>W</th><th>D</th><th>L</th>
+                    <th>GF</th><th>GA</th><th>GD</th>
+                    <th style="color:var(--gold);">Pts</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map((s, i) => {
+                    // Calculate GD
+                    const gd = (s.gf || 0) - (s.ga || 0);
+                    const gdClass = gd > 0 ? 'gd-positive' : (gd < 0 ? 'gd-negative' : 'gd-neutral');
+                    const gdPrefix = gd > 0 ? '+' : '';
+
+                    return `
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <td style="padding:12px 10px; color:var(--accent); font-weight:bold;">${i + 1}</td>
+                        <td style="text-align:left; font-weight:600; color:white;">${s.participant}</td>
+                        <td>${s.played}</td>
+                        <td>${s.wins}</td>
+                        <td>${s.draws}</td>
+                        <td>${s.losses}</td>
+                        <td>${s.gf || 0}</td>
+                        <td>${s.ga || 0}</td>
+                        <td class="${gdClass}">${gdPrefix}${gd}</td>
+                        <td style="font-weight:bold; color:var(--gold); font-size:0.9rem;">${s.points}</td>
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>`;
+        }
         // --- 2. FIXTURES ---
         else if (category === 'fixtures') {
             const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
