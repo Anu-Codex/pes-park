@@ -1149,42 +1149,44 @@ async function switchTourTab(type) {
             </tbody>
         </table>`;
         }
-        // --- 4. KNOCKOUTS ---
+        // --- 4. KNOCKOUTS (FIXED) ---
         else if (category === 'knockouts') {
-    const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
-    const matches = await res.json();
-    
-    // Filter only matches marked as 'Knockout'
-    const koMatches = matches.filter(m => m.type === "Knockout");
+            const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
+            const matches = await res.json();
+            
+            // Filter only matches marked as 'Knockout'
+            const koMatches = matches.filter(m => m.type === "Knockout");
 
-    if (koMatches.length === 0) {
-        content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);">Knockout stages haven't started yet.</p>';
-    } else {
-        // Sort matches by the provided order (Q1, Elim, KR, Q2, Final)
-        const order = ["Qualifier 1", "Eliminator", "Knockout Round", "Qualifier 2", "Grand Final"];
-        koMatches.sort((a, b) => order.indexOf(a.stage) - order.indexOf(b.stage));
+            if (koMatches.length === 0) {
+                content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);">Knockout stages haven\'t started yet.</p>';
+            } else {
+                // Sort matches: Q1, Elim, KR, Q2, Final
+                const order = ["Qualifier 1", "Eliminator", "Knockout Round", "Qualifier 2", "Grand Final"];
+                koMatches.sort((a, b) => order.indexOf(a.stage) - order.indexOf(b.stage));
 
-        content.innerHTML = koMatches.map(m => `
-            <div class="match-card" style="display:block; padding:15px; margin-bottom:15px; border-top: 2px solid var(--gold);">
-                <div style="font-size:0.65rem; color:var(--gold); text-transform:uppercase; font-weight:800; margin-bottom:10px; letter-spacing:1px;">
-                    ${m.stage}
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="flex:1; font-weight:600;">${m.playerA}</div>
-                    <div style="text-align:center; min-width:80px;">
-                        <b style="background:var(--bg); padding:5px 12px; border-radius:8px; color:var(--accent);">
-                            ${m.status === 'Completed' ? `${m.scoreA} - ${m.scoreB}` : 'VS'}
-                        </b>
+                content.innerHTML = koMatches.map(m => `
+                    <div class="match-card" style="display:block; padding:15px; margin-bottom:15px; border-top: 2px solid var(--gold);">
+                        <div style="font-size:0.65rem; color:var(--gold); text-transform:uppercase; font-weight:800; margin-bottom:10px; letter-spacing:1px;">
+                            ${m.stage}
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="flex:1; font-weight:600; color:white;">${m.playerA}</div>
+                            <div style="text-align:center; min-width:80px;">
+                                <b style="background:var(--bg); padding:5px 12px; border-radius:8px; color:var(--accent);">
+                                    ${m.status === 'Completed' ? `${m.scoreA} - ${m.scoreB}` : 'VS'}
+                                </b>
+                            </div>
+                            <div style="flex:1; text-align:right; font-weight:600; color:white;">${m.playerB}</div>
+                        </div>
                     </div>
-                    <div style="flex:1; text-align:right; font-weight:600;">${m.playerB}</div>
-                </div>
-                ${m.status === 'Upcoming' ? 
-                    `<div style="font-size:0.6rem; color:var(--text-dim); text-align:center; margin-top:8px;">Winner advances / Loser is eliminated</div>` 
-                    : ''}
-            </div>
-        `).join('');
+                `).join('');
+            }
+        }
+    } catch (e) {
+        console.error("Fetch Error:", e);
+        content.innerHTML = '<p style="text-align:center; color:red; padding:20px;">Database Error.</p>';
     }
-                                                            }
+        }
         function renderSoloTour(container) {
     container.innerHTML = `
         <div class="solo-tour-card">
