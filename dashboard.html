@@ -47,6 +47,7 @@
             <button class="nav-tab" onclick="showSection('sec-tours', this)">Tours</button>
             <button class="nav-tab" onclick="showSection('sec-teams', this)">Teams</button>
             <button class="nav-tab" onclick="showSection('sec-prestige', this)">Prestige</button>
+            <button class="nav-tab" onclick="showSection('sec-smart', this)">Smart Center</button>
             <button class="nav-tab" style="color: var(--danger);" onclick="showSection('sec-danger', this)">Danger Zone</button>
         </div>
 
@@ -215,6 +216,40 @@
         </div>
     </div>
 </div>
+        <div id="sec-smart" class="admin-section">
+    <!-- Part 1: Tournament Setup -->
+    <div class="sub-box">
+        <h4><i class="fa-solid fa-plus"></i> 1. Create Tournament</h4>
+        <select id="stType">
+            <option value="solo">Solo Tour</option>
+            <option value="auction">Auction Tour</option>
+            <option value="quick">Quick Tour</option>
+            <option value="weekend">Weekend Series</option>
+        </select>
+        <input type="text" id="stName" placeholder="Enter Tour Name (e.g. S1 Pro League)">
+        <p style="font-size:0.7rem; color:var(--text-dim)">Select participants from DB:</p>
+        <div id="stParticipantList" class="list-container" style="max-height:150px"></div>
+        <button onclick="createSmartTour()" class="btn-green">Create & Initialize Table</button>
+    </div>
+
+    <!-- Part 2: Fixture Generator -->
+    <div class="sub-box">
+        <h4><i class="fa-solid fa-calendar-plus"></i> 2. Generate Fixture</h4>
+        <select id="sfTourSelect" onchange="loadTourParticipants()"><option>Select Tournament...</option></select>
+        <div class="grid-2">
+            <select id="sfPlayerA"></select>
+            <select id="sfPlayerB"></select>
+        </div>
+        <button onclick="createSmartFixture()" class="btn-gold">Add Fixture</button>
+    </div>
+
+    <!-- Part 3: Result Entry -->
+    <div class="sub-box">
+        <h4><i class="fa-solid fa-square-poll-vertical"></i> 3. Update Scores</h4>
+        <select id="srTourSelect" onchange="loadTourFixtures()"><option>Select Tournament...</option></select>
+        <div id="srFixtureList" class="list-container"></div>
+    </div>
+        </div>
 
     </div>
 
@@ -320,6 +355,50 @@
     } catch (e) {
         alert("Reset failed. Check server connection.");
     }
+        }
+        // 1. Create the Tournament
+async function createSmartTour() {
+    const selected = Array.from(document.querySelectorAll('.st-cb:checked')).map(cb => cb.value);
+    const data = {
+        type: document.getElementById('stType').value,
+        name: document.getElementById('stName').value,
+        participants: selected
+    };
+    await fetch(`${API}/api/smart/create-tour`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    alert("Tournament & Points Table Created!");
+    location.reload();
+}
+
+// 2. Create a Fixture
+async function createSmartFixture() {
+    const data = {
+        tourId: document.getElementById('sfTourSelect').value,
+        playerA: document.getElementById('sfPlayerA').value,
+        playerB: document.getElementById('sfPlayerB').value
+    };
+    await fetch(`${API}/api/smart/create-fixture`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    alert("Fixture Added!");
+}
+
+// 3. Update Result (Triggers the point calculation in Backend)
+async function submitSmartScore(fixtureId) {
+    const sA = document.getElementById(`scA-${fixtureId}`).value;
+    const sB = document.getElementById(`scB-${fixtureId}`).value;
+    
+    await fetch(`${API}/api/smart/update-score/${fixtureId}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ scoreA: sA, scoreB: sB })
+    });
+    alert("Score Updated & Points Added to Table!");
         }
     </script>
 </body>
