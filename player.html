@@ -88,28 +88,21 @@
         .h2h-select { width: 100%; padding: 14px; background: #020617; color: white; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 15px; }
 
         #loading { text-align: center; color: var(--text-dim); padding-top: 100px; }
-        /* Recent Form Styling */
+        /* --- FIXED RECENT FORM DESIGN --- */
 .recent-form-container {
     margin-top: 15px;
-}
-
-.form-label {
-    font-size: 0.65rem;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-    display: block;
+    padding-bottom: 10px;
 }
 
 .form-dots-wrapper {
-    display: flex;
-    gap: 10px;
+    display: flex; /* Aligns dots horizontally */
+    gap: 12px;     /* Space between each result */
+    margin-top: 8px;
 }
 
 .form-item {
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Puts dot on top of letter */
     align-items: center;
     gap: 4px;
 }
@@ -117,15 +110,16 @@
 .dot {
     width: 12px;
     height: 12px;
-    border-radius: 50%;
+    border-radius: 50%; /* Makes it a circle */
 }
 
 .dot-letter {
     font-size: 10px;
     font-weight: 900;
+    text-transform: uppercase;
 }
 
-/* Form Colors */
+/* Colors based on Image 2 */
 .f-win { background-color: #10b981; color: #10b981; }
 .f-loss { background-color: #ef4444; color: #ef4444; }
 .f-draw { background-color: #f59e0b; color: #f59e0b; }
@@ -288,14 +282,28 @@
             document.getElementById('sGPM').innerText = playerMatches.length > 0 ? (g / playerMatches.length).toFixed(1) : "0.0";
 
             // 3. Recent Form (Last 5)
-            const recent = playerMatches.slice(0, 5).reverse();
-            document.getElementById('recentFormDots').innerHTML = playerMatches.length > 0 ? recent.map(m => {
-                const isA = m.playerA === myName;
-                const win = (isA ? m.scoreA : m.scoreB) > (isA ? m.scoreB : m.scoreA);
-                const draw = m.scoreA === m.scoreB;
-                const resClass = win ? 'f-win' : (draw ? 'f-draw' : 'f-loss');
-                return `<div class="form-item"><div class="dot ${resClass}"></div><span class="dot-letter ${resClass}">${win?'W':(draw?'D':'L')}</span></div>`;
-            }).join('') : 'No matches played';
+            // --- LOGIC TO RENDER RECENT FORM (IMAGE 2 STYLE) ---
+const recent = playerMatches.slice(0, 5).reverse(); // Last 5 matches, newest on right
+
+document.getElementById('recentFormDots').innerHTML = playerMatches.length > 0 ? recent.map(m => {
+    const isA = m.playerA === myName;
+    const myS = isA ? m.scoreA : m.scoreB;
+    const oppS = isA ? m.scoreB : m.scoreA;
+    
+    let resClass = '';
+    let char = '';
+
+    if (myS > oppS) { resClass = 'f-win'; char = 'W'; }
+    else if (myS === oppS) { resClass = 'f-draw'; char = 'D'; }
+    else { resClass = 'f-loss'; char = 'L'; }
+
+    return `
+        <div class="form-item">
+            <div class="dot ${resClass}"></div>
+            <span class="dot-letter ${resClass}">${char}</span>
+        </div>
+    `;
+}).join('') : '<span style="font-size:0.7rem; color:var(--text-dim);">No matches yet</span>';
 
             // 4. Match History & H2H Dropdown
             document.getElementById('historyList').innerHTML = playerMatches.slice(0, 10).map(m => {
