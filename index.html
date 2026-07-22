@@ -936,23 +936,41 @@ async function switchTourTab(type) {
         }
         // --- 3. GOLDEN BOOT ---
         else if (category === 'boot') {
-            const res = await fetch(`${API}/api/tour-ranks/${type}/boot`);
-            const data = await res.json();
-            
-            content.innerHTML = `
-                <table class="ranking-table">
-                    <thead><tr><th>#</th><th>Player</th><th>Team</th><th style="text-align:right">Goals</th></tr></thead>
-                    <tbody>
-                        ${data.map((d, i) => `
-                            <tr>
-                                <td class="rank-col">${i + 1}</td>
-                                <td class="player-col-name">${d.playerName}</td>
-                                <td class="team-col-name">${d.teamName || '—'}</td>
-                                <td class="val-col-data">${d.totalValue}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>`;
+    // Fetches goals for specific tour type (passed as 'type' to the function)
+    const res = await fetch(`${API}/api/tour-ranks/${type}/boot`);
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+        content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);">No goals recorded yet.</p>';
+        return;
+    }
+
+    // CRITICAL: Sort by goals highest to lowest
+    data.sort((a, b) => b.totalValue - a.totalValue);
+
+    content.innerHTML = `
+        <table class="ranking-table">
+            <thead>
+                <tr>
+                    <th style="text-align:left">#</th>
+                    <th style="text-align:left">Player</th>
+                    <th style="text-align:left">Team</th>
+                    <th style="text-align:right">Goals</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${data.map((d, i) => `
+                    <tr>
+                        <td class="rank-col">${i + 1}</td>
+                        <td class="player-col-name">${d.playerName}</td>
+                        <td class="team-col-name">${d.teamName || '—'}</td>
+                        <td class="val-col-data" style="text-align:right; font-weight:bold; color:var(--accent);">
+                            ${d.totalValue}
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>`;
         }
         // --- 4. KNOCKOUTS ---
         else if (category === 'knockouts') {
