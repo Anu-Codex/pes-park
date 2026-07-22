@@ -270,75 +270,53 @@
 
 </div> <!-- ONLY ONE CLOSING DIV HERE FOR SEC-PRESTIGE -->
 
-    <script>
-    // MOBILE DEBUGGER START
-    alert("Step 1: Script Loaded");
-
-    window.onerror = function (msg, url, line) {
-        alert("CRITICAL ERROR FOUND:\n" + msg + "\nLine: " + line);
-        return false;
-    };
-
+                    <script>
+    // --- 1. INITIALIZATION & SECURITY ---
     const API = "https://pes-park-backend.onrender.com";
 
-    // 2. Tab Navigation Logic (FORCE FIX)
-    function showSection(sectionId, btnElement) {
-        alert("Attempting to show: " + sectionId);
-        
-        document.querySelectorAll('.admin-section').forEach(s => {
-            s.classList.remove('active-section');
-            s.style.display = 'none'; 
-        });
-
-        const target = document.getElementById(sectionId);
-        if(target) {
-            target.style.display = 'block';
-            target.classList.add('active-section');
-            alert("Success: Section is now visible");
-        } else {
-            alert("ERROR: ID '" + sectionId + "' does not exist in HTML!");
-        }
-    }
-    // 1. Security Check
     if (localStorage.getItem('isAdmin') !== 'true') { 
         window.location.href = 'login.html'; 
     }
 
-    // 2. Tab Navigation Logic (The fix for the "blank div" issue)
+    // --- 2. TAB NAVIGATION (CRITICAL FIX) ---
     function showSection(sectionId, btnElement) {
+        // Hide all sections using class and display none
         document.querySelectorAll('.admin-section').forEach(s => {
             s.classList.remove('active-section');
-            s.style.display = 'none'; // Force hidden
+            s.style.display = 'none';
         });
+        // Deactivate all tab buttons
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
         
+        // Show the target section
         const target = document.getElementById(sectionId);
         if(target) {
             target.classList.add('active-section');
-            target.style.display = 'block'; // Force visible
+            target.style.display = 'block';
+            if(btnElement) btnElement.classList.add('active');
+            localStorage.setItem('activeDashboardTab', sectionId);
         }
-        if(btnElement) btnElement.classList.add('active');
     }
 
-    // 3. Load All Data (Players, HOF, Teams, Stats)
+    // --- 3. DATA LOADING (ALL COLLECTIONS) ---
     async function loadAllData() {
         try {
-            // Load League Overview Stats
+            // Load League Overview
             const sRes = await fetch(`${API}/api/stats`);
             const s = await sRes.json();
             if(s) {
-                document.getElementById('bdrLeader').value = s.bdrLeader || '';
-                document.getElementById('bdrValue').value = s.bdrValue || 0;
-                document.getElementById('highestMV').value = s.highestMV || '';
-                document.getElementById('mvValue').value = s.mvValue || 0;
-                document.getElementById('teamsCount').value = s.teamsCount || 0;
+                if(document.getElementById('bdrLeader')) document.getElementById('bdrLeader').value = s.bdrLeader || '';
+                if(document.getElementById('bdrValue')) document.getElementById('bdrValue').value = s.bdrValue || 0;
+                if(document.getElementById('highestMV')) document.getElementById('highestMV').value = s.highestMV || '';
+                if(document.getElementById('mvValue')) document.getElementById('mvValue').value = s.mvValue || 0;
+                if(document.getElementById('teamsCount')) document.getElementById('teamsCount').value = s.teamsCount || 0;
             }
 
-            // Load Players & Populate all Dropdowns
+            // Load Players & Selectors
             const pRes = await fetch(`${API}/api/players`);
             const players = await pRes.json();
             
-            // Populate Deletion List
+            // Delete List
             const adminList = document.getElementById('adminPlayerList');
             if(adminList) {
                 adminList.innerHTML = players.map(p => `
@@ -346,7 +324,7 @@
                 `).join('');
             }
 
-            // Populate all Dropdowns (Individual Stats, Match Record, Captaincy)
+            // Populate all Dropdowns
             const opts = players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
             const nameOpts = players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
 
@@ -358,7 +336,7 @@
             const oppEl = document.getElementById('matchOpponent');
             if(oppEl) oppEl.innerHTML = '<option value="">Select Opponent...</option>' + nameOpts;
 
-            // Load Players into the Transfer Checkbox list
+            // Transfer Checkboxes
             const transferList = document.getElementById('transferPlayerList');
             if(transferList) {
                 transferList.innerHTML = players.map(p => `
@@ -366,7 +344,7 @@
                 `).join('');
             }
 
-            // Load Hall of Fame (Prestige Tab)
+            // Hall of Fame List
             const hRes = await fetch(`${API}/api/achievements`);
             const hof = await hRes.json();
             const hofAdminList = document.getElementById('hofAdminList');
@@ -376,98 +354,113 @@
                 `).join('');
             }
 
-            // Load Team Names for the Points Manager
+            // Teams List for Points Manager
             const tRes = await fetch(`${API}/api/teams/all`);
             const teams = await tRes.json();
             const tpName = document.getElementById('tpName');
             if(tpName) tpName.innerHTML = '<option value="">Select Team...</option>' + teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
 
-        } catch(e) { console.error("Data Load Error:", e); }
+        } catch(e) { console.error("Load Error:", e); }
     }
 
-    // --- 4. BRINGING BACK ALL YOUR ORIGINAL SUBMIT FUNCTIONS ---
+    // --- 4. ALL FORM HANDLERS (RE-ADDED EVERY FEATURE) ---
 
-    const statsForm = document.getElementById('statsForm');
-if (statsForm) {
-    statsForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const data = { bdrLeader: document.getElementById('bdrLeader').value, bdrValue: document.getElementById('bdrValue').value, highestMV: document.getElementById('highestMV').value, mvValue: document.getElementById('mvValue').value, teamsCount: document.getElementById('teamsCount').value };
-        await fetch(`${API}/api/stats`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        alert("League Stats Updated!");
-    };
-}
-    const playerForm = document.getElementById('playerForm');
-if (playerForm) {
-    playerForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const data = { name: document.getElementById('pName').value, nickname: document.getElementById('pNick').value, image: document.getElementById('pImage').value, teamName: document.getElementById('pTeam').value, teamLogo: document.getElementById('pTeamLogo').value };
-        await fetch(`${API}/api/players`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        location.reload();
-    };
-}
+    function initFormHandlers() {
+        const safeSubmit = (id, callback) => {
+            const f = document.getElementById(id);
+            if(f) f.onsubmit = callback;
+        };
 
-    document.getElementById('updateStatsForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('playerSelector').value;
-        const data = { auctionPrice: document.getElementById('upAuction').value, marketValue: document.getElementById('upMarket').value, bdrPoints: document.getElementById('upBDR').value, squadImage: document.getElementById('upSquad').value };
-        await fetch(`${API}/api/players/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        alert("Player Stats Updated!");
-    };
+        // General Stats
+        safeSubmit('statsForm', async (e) => {
+            e.preventDefault();
+            const data = { bdrLeader: document.getElementById('bdrLeader').value, bdrValue: document.getElementById('bdrValue').value, highestMV: document.getElementById('highestMV').value, mvValue: document.getElementById('mvValue').value, teamsCount: document.getElementById('teamsCount').value };
+            await fetch(`${API}/api/stats`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            alert("League Stats Updated!");
+        });
 
-    document.getElementById('matchForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const id = document.getElementById('matchPlayerA').value;
-        const data = { opponentName: document.getElementById('matchOpponent').value, myScore: document.getElementById('myScore').value, oppScore: document.getElementById('oppScore').value };
-        await fetch(`${API}/api/players/${id}/matches`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        alert("Match Recorded!");
-    };
+        // Add Player
+        safeSubmit('playerForm', async (e) => {
+            e.preventDefault();
+            const data = { name: document.getElementById('pName').value, nickname: document.getElementById('pNick').value, image: document.getElementById('pImage').value, teamName: document.getElementById('pTeam').value, teamLogo: document.getElementById('pTeamLogo').value };
+            await fetch(`${API}/api/players`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            location.reload();
+        });
 
-    // TOUR HANDLERS (Auction, Solo, Weekend, Quick)
-    document.getElementById('tourMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('tmA').value, playerB: document.getElementById('tmB').value, scoreA: document.getElementById('tsA').value, scoreB: document.getElementById('tsB').value, type: document.getElementById('tmType').value, status: document.getElementById('tmStatus').value }; await fetch(`${API}/api/auction/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Auction Fixture Saved!"); };
-    document.getElementById('tourRankForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerName: document.getElementById('trName').value, value: document.getElementById('trVal').value, category: document.getElementById('trCat').value }; await fetch(`${API}/api/auction/ranks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Ranking Saved!"); };
-    document.getElementById('soloMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('smA').value, playerB: document.getElementById('smB').value, scoreA: document.getElementById('ssA').value, scoreB: document.getElementById('ssB').value, type: document.getElementById('smType').value, status: document.getElementById('smStatus').value }; await fetch(`${API}/api/solo/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Solo Match Saved!"); };
-    document.getElementById('weekendMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('wmA').value, playerB: document.getElementById('wmB').value, scoreA: document.getElementById('wsA').value, scoreB: document.getElementById('wsB').value, type: document.getElementById('wmType').value, status: document.getElementById('wmStatus').value }; await fetch(`${API}/api/weekend/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Weekend Match Saved!"); };
-    document.getElementById('quickMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('qmA').value, playerB: document.getElementById('qmB').value, scoreA: document.getElementById('qsA').value, scoreB: document.getElementById('qsB').value, type: document.getElementById('qmType').value, status: document.getElementById('qmStatus').value }; await fetch(`${API}/api/quick/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Quick Match Saved!"); };
+        // Edit Individual Stats
+        safeSubmit('updateStatsForm', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('playerSelector').value;
+            const data = { auctionPrice: document.getElementById('upAuction').value, marketValue: document.getElementById('upMarket').value, bdrPoints: document.getElementById('upBDR').value, squadImage: document.getElementById('upSquad').value };
+            await fetch(`${API}/api/players/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            alert("Individual Stats Updated!");
+        });
 
-    document.getElementById('teamAssignForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const ids = Array.from(document.querySelectorAll('.player-checkbox:checked')).map(cb => cb.value);
-        const data = { teamName: document.getElementById('tManageName').value, teamLogo: document.getElementById('tManageLogo').value, playerIds: ids };
-        await fetch(`${API}/api/teams/assign`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-        alert("Team Assigned!");
-        location.reload();
-    };
+        // Individual Match History
+        safeSubmit('matchForm', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('matchPlayerA').value;
+            const data = { opponentName: document.getElementById('matchOpponent').value, myScore: document.getElementById('myScore').value, oppScore: document.getElementById('oppScore').value };
+            await fetch(`${API}/api/players/${id}/matches`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            alert("Match Record Saved!");
+        });
 
-    document.getElementById('teamPointsForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const data = { name: document.getElementById('tpName').value, wins: document.getElementById('tpWins').value, draws: document.getElementById('tpDraws').value, losses: document.getElementById('tpLoss').value };
-        await fetch(`${API}/api/teams/update-stats`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-        alert("Leaderboard Updated!");
-    };
+        // TOURNAMENTS
+        safeSubmit('tourMatchForm', async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('tmA').value, playerB: document.getElementById('tmB').value, scoreA: document.getElementById('tsA').value, scoreB: document.getElementById('tsB').value, type: document.getElementById('tmType').value, status: document.getElementById('tmStatus').value }; await fetch(`${API}/api/auction/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Auction Match Saved!"); });
+        safeSubmit('tourRankForm', async (e) => { e.preventDefault(); const data = { playerName: document.getElementById('trName').value, value: document.getElementById('trVal').value, category: document.getElementById('trCat').value }; await fetch(`${API}/api/auction/ranks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Tournament Ranking Saved!"); });
+        safeSubmit('soloMatchForm', async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('smA').value, playerB: document.getElementById('smB').value, scoreA: document.getElementById('ssA').value, scoreB: document.getElementById('ssB').value, type: document.getElementById('smType').value, status: document.getElementById('smStatus').value }; await fetch(`${API}/api/solo/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Solo Match Saved!"); });
+        safeSubmit('weekendMatchForm', async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('wmA').value, playerB: document.getElementById('wmB').value, scoreA: document.getElementById('wsA').value, scoreB: document.getElementById('wsB').value, type: document.getElementById('wmType').value, status: document.getElementById('wmStatus').value }; await fetch(`${API}/api/weekend/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Weekend Match Saved!"); });
+        safeSubmit('quickMatchForm', async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('qmA').value, playerB: document.getElementById('qmB').value, scoreA: document.getElementById('qsA').value, scoreB: document.getElementById('qsB').value, type: document.getElementById('qmType').value, status: document.getElementById('qmStatus').value }; await fetch(`${API}/api/quick/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Quick Match Saved!"); });
 
-    const hofForm = document.getElementById('hofForm');
-if (hofForm) {
-    hofForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const data = { season: document.getElementById('hSeason').value, winnerName: document.getElementById('hName').value, winnerImage: document.getElementById('hImg').value, teamName: document.getElementById('hTeam').value, title: document.getElementById('hTitle').value };
-        await fetch(`${API}/api/achievements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        alert("Legend Added!");
-        location.reload();
-    };
-        }
+        // Team Management
+        safeSubmit('teamAssignForm', async (e) => {
+            e.preventDefault();
+            const ids = Array.from(document.querySelectorAll('.player-checkbox:checked')).map(cb => cb.value);
+            const data = { teamName: document.getElementById('tManageName').value, teamLogo: document.getElementById('tManageLogo').value, playerIds: ids };
+            await fetch(`${API}/api/teams/assign`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            alert("Players Assigned to Team!");
+            location.reload();
+        });
 
-    // Global Action Functions
+        safeSubmit('teamPointsForm', async (e) => {
+            e.preventDefault();
+            const data = { name: document.getElementById('tpName').value, wins: document.getElementById('tpWins').value, draws: document.getElementById('tpDraws').value, losses: document.getElementById('tpLoss').value };
+            await fetch(`${API}/api/teams/update-stats`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            alert("Team Standings Updated!");
+        });
+
+        // Hall of Fame
+        safeSubmit('hofForm', async (e) => {
+            e.preventDefault();
+            const data = { season: document.getElementById('hSeason').value, winnerName: document.getElementById('hName').value, winnerImage: document.getElementById('hImg').value, teamName: document.getElementById('hTeam').value, title: document.getElementById('hTitle').value };
+            await fetch(`${API}/api/achievements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+            alert("Legend Added!");
+            location.reload();
+        });
+    }
+
+    // --- 5. ACTION FUNCTIONS (DELETE & CAPTAIN) ---
     async function updateCaptain(status) {
         const id = document.getElementById('capPlayerSelector').value;
+        if(!id) return alert("Select a player first!");
         await fetch(`${API}/api/players/${id}/captain`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isCaptain: status }) });
-        alert("Captaincy Status Changed!");
+        alert("Captaincy Updated!");
+        location.reload();
     }
 
     async function deletePlayer(id) { if(confirm("Delete Player?")) { await fetch(`${API}/api/players/${id}`, { method: 'DELETE' }); location.reload(); } }
     async function deleteAchieve(id) { if(confirm("Remove from HOF?")) { await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' }); location.reload(); } }
 
-    // INITIALIZE EVERYTHING ON LOAD
-    window.onload = loadAllData;
-            </script>
+    // --- 6. STARTUP LOGIC ---
+    window.onload = async () => {
+        await loadAllData();
+        initFormHandlers();
+
+        // Restore last active tab
+        const lastTab = localStorage.getItem('activeDashboardTab') || 'sec-league';
+        const lastBtn = Array.from(document.querySelectorAll('.nav-tab')).find(b => b.getAttribute('onclick').includes(lastTab));
+        showSection(lastTab, lastBtn);
+    };
+                                                              </script>
 </body>
 </html>
