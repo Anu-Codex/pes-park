@@ -3,113 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hall of Fame | Tamil Efootballers</title>
+    <title>Hall of Fame | PES PARK</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        :root {
-            --bg: #030712;
-            --gold: #f59e0b;
-            --gold-glow: rgba(245, 158, 11, 0.3);
-            --card-bg: #111827;
-            --text-dim: #9ca3af;
-        }
+        :root { --bg: #060b13; --card: #101926; --accent: #10b981; --gold: #f59e0b; --border: #1e293b; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 480px; }
+        .back-btn { color: #94a3b8; text-decoration: none; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+        
+        /* Header */
+        .hof-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 30px 20px; text-align: center; margin-bottom: 20px; }
+        .hof-card i { color: var(--gold); font-size: 2.5rem; margin-bottom: 10px; }
+        .hof-card h1 { margin: 0; font-size: 2rem; }
 
-        body {
-            background-color: var(--bg);
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        /* Highlights (Yellow Area Top) */
+        .highlight-box { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 10px 20px; margin-bottom: 20px; }
+        .h-item { padding: 15px 0; border-bottom: 1px solid var(--border); }
+        .h-item:last-child { border-bottom: none; }
+        .h-label { color: var(--accent); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 4px; }
+        .h-val { font-size: 0.95rem; font-weight: 500; }
 
-        /* Top Nav Re-used */
-        .header { width: 100%; max-width: 500px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-        .top-nav { display: flex; gap: 15px; }
-        .nav-item { color: var(--text-dim); font-size: 20px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px; text-decoration: none; transition: 0.3s; }
-        .nav-item.active { background: rgba(245, 158, 11, 0.1); color: var(--gold); border: 1px solid var(--gold-glow); }
+        /* Season Selector (Purple Area) */
+        .season-nav { background: #0c121d; border: 1.5px solid var(--border); border-radius: 15px; padding: 5px 15px; margin-bottom: 20px; }
+        .season-nav select { width: 100%; background: transparent; border: none; color: white; padding: 10px 0; outline: none; font-size: 1rem; }
 
-        /* Hero Section */
-        .hero { text-align: center; margin-bottom: 50px; }
-        .hero h1 { font-size: 2.5rem; margin: 0; background: linear-gradient(to bottom, #fff, #9ca3af); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hero p { color: var(--gold); letter-spacing: 2px; font-weight: bold; text-transform: uppercase; font-size: 0.8rem; }
-
-        /* Grid */
-        .hof-grid { width: 100%; max-width: 600px; display: grid; gap: 20px; }
-
-        .hof-card {
-            background: var(--card-bg);
-            border-radius: 24px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            border: 1px solid #1f2937;
-            position: relative;
-            overflow: hidden;
-            transition: 0.3s;
-        }
-
-        .hof-card:hover { transform: translateY(-5px); border-color: var(--gold); box-shadow: 0 10px 30px var(--gold-glow); }
-
-        .winner-img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; }
-
-        .info h3 { margin: 0; font-size: 1.2rem; }
-        .info p { margin: 5px 0; color: var(--text-dim); font-size: 0.9rem; }
-        .season-tag { background: var(--gold); color: black; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 900; }
-
-        .trophy-icon { position: absolute; right: -10px; bottom: -10px; font-size: 5rem; color: rgba(245, 158, 11, 0.05); transform: rotate(-15deg); }
-
-        #loading { color: var(--gold); }
+        /* Trophies (Yellow Area Bottom) */
+        .trophy-section { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; }
+        .t-row { display: flex; align-items: center; gap: 20px; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .t-icon { width: 40px; height: 40px; object-fit: contain; }
+        .t-info .t-title { color: #64748b; font-size: 0.7rem; display: block; }
+        .t-info .t-name { font-size: 1.1rem; font-weight: bold; color: white; }
+        .t-info .t-squad { font-size: 0.7rem; color: #475569; display: block; margin-top: 2px; }
     </style>
 </head>
 <body>
+    <div class="container">
+        <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back</a>
 
-    <div class="header">
-        <div class="logo"><h2>Tamil</h2></div>
-        <nav class="top-nav">
-            <a href="index.html" class="nav-item"><i class="fa-solid fa-chart-simple"></i></a>
-            <a href="halloffame.html" class="nav-item active"><i class="fa-solid fa-trophy"></i></a>
-            <a href="login.html" class="nav-item"><i class="fa-solid fa-right-to-bracket"></i></a>
-        </nav>
+        <div class="hof-card">
+            <i class="fa-solid fa-crown"></i>
+            <h1>Hall of Fame</h1>
+            <p style="color:#94a3b8; font-size:0.8rem">PES PARK League • Season History</p>
+        </div>
+
+        <div id="highlights-container" class="highlight-box"></div>
+
+        <div class="season-nav">
+            <select id="seasonSelect" onchange="loadSeasonData(this.value)">
+                <!-- Seasons will load here -->
+            </select>
+        </div>
+
+        <div class="trophy-section">
+            <h3 style="margin:0 0 15px 0; font-size:0.9rem; color:#94a3b8">Trophy Winners</h3>
+            <div id="trophies-container"></div>
+        </div>
     </div>
-
-    <div class="hero">
-        <p>Prestige & History</p>
-        <h1>Hall of Fame</h1>
-    </div>
-
-    <div id="loading">Gathering Legends...</div>
-    <div class="hof-grid" id="hofGrid"></div>
 
     <script>
-        const API = "https://pes-park-backend.onrender.com"; // Replace with your Render URL
+        const API = "https://pes-park-backend.onrender.com/api/hof";
+        const icons = {
+            ballon: "https://cdn-icons-png.flaticon.com/512/3112/3112946.png",
+            league: "https://cdn-icons-png.flaticon.com/512/2618/2618068.png",
+            ucl: "https://cdn-icons-png.flaticon.com/512/1163/1163474.png",
+            weekly: "https://cdn-icons-png.flaticon.com/512/1435/1435345.png"
+        };
 
-        async function loadHOF() {
-            try {
-                const res = await fetch(`${API}/api/achievements`);
-                const data = await res.json();
-                document.getElementById('loading').style.display = 'none';
-
-                const grid = document.getElementById('hofGrid');
-                grid.innerHTML = data.map(ach => `
-                    <div class="hof-card">
-                        <img src="${ach.winnerImage || 'https://via.placeholder.com/80'}" class="winner-img">
-                        <div class="info">
-                            <span class="season-tag">${ach.season}</span>
-                            <h3>${ach.winnerName}</h3>
-                            <p>${ach.title} • ${ach.teamName}</p>
-                        </div>
-                        <i class="fa-solid fa-trophy trophy-icon"></i>
-                    </div>
-                `).join('');
-            } catch (e) {
-                document.getElementById('loading').innerText = "Error loading legends.";
-            }
+        async function init() {
+            const res = await fetch(`${API}/seasons`);
+            const seasons = await res.json();
+            const sel = document.getElementById('seasonSelect');
+            sel.innerHTML = seasons.map(s => `<option value="${s.seasonName}">${s.seasonName}</option>`).join('');
+            if(seasons.length > 0) loadSeasonData(seasons[0].seasonName);
         }
-        loadHOF();
+
+        async function loadSeasonData(name) {
+            const res = await fetch(`${API}/data/${encodeURIComponent(name)}`);
+            const data = await res.json();
+
+            // Render Highlights
+            document.getElementById('highlights-container').innerHTML = data.specialHighlights.map(h => `
+                <div class="h-item">
+                    <span class="h-label">${h.label}</span>
+                    <span class="h-val">${h.value}</span>
+                </div>
+            `).join('');
+
+            // Render Trophies
+            document.getElementById('trophies-container').innerHTML = data.trophyWinners.map(t => `
+                <div class="t-row">
+                    <img src="${icons[t.iconType] || icons.league}" class="t-icon">
+                    <div class="t-info">
+                        <span class="t-title">${t.title}</span>
+                        <span class="t-name">${t.winner}</span>
+                        ${t.squad ? `<span class="t-squad">${t.squad}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        init();
     </script>
 </body>
 </html>
