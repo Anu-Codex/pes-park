@@ -400,24 +400,7 @@
 
     async function deletePlayer(id) { if(confirm("Delete Player?")) { await fetch(`${API}/api/players/${id}`, { method: 'DELETE' }); location.reload(); } }
     async function deleteAchieve(id) { if(confirm("Remove Legend?")) { await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' }); location.reload(); } }
-        async function createSmartFixture() {
-    const tourId = document.getElementById('sfTourSelect').value; // Must be the ID from dropdown
-    if(!tourId) return alert("Select a Tournament first!");
-
-    const data = {
-        tourId: tourId, // Send the ID
-        playerA: document.getElementById('sfPlayerA').value,
-        playerB: document.getElementById('sfPlayerB').value,
-        status: "Upcoming"
-    };
-
-    await fetch(`${API}/api/smart/create-fixture`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-    });
-    alert("Fixture Created!");
-        }
+        
 
     window.onload = () => {
         loadAllDashboardData();
@@ -425,6 +408,35 @@
         const lastBtn = Array.from(document.querySelectorAll('.nav-tab')).find(b => b.outerHTML.includes(lastTab));
         showSection(lastTab, lastBtn);
     };
+        async function createSmartFixture() {
+    const tourId = document.getElementById('sfTourSelect').value;
+    const pA = document.getElementById('sfPlayerA').value;
+    const pB = document.getElementById('sfPlayerB').value;
+
+    if (!tourId || !pA || !pB) {
+        alert("Error: Select Tournament and BOTH players!");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/api/smart/create-fixture`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tourId, playerA: pA, playerB: pB })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            alert("✅ Fixture Added Successfully!");
+            // Optional: Refresh the score update list
+            if(typeof loadTourFixtures === "function") loadTourFixtures(); 
+        } else {
+            alert("❌ Server Error: " + result.error);
+        }
+    } catch (err) {
+        alert("❌ Connection Failed. Is the backend running?");
+    }
+        }
     </script>
 
 </body>
