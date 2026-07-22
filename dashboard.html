@@ -243,12 +243,21 @@
         <button onclick="createSmartFixture()" class="btn-gold">Add Fixture</button>
     </div>
 
-    <!-- Part 3: Result Entry -->
-    <div class="sub-box">
-        <h4><i class="fa-solid fa-square-poll-vertical"></i> 3. Update Scores</h4>
-        <select id="srTourSelect" onchange="loadTourFixtures()"><option>Select Tournament...</option></select>
-        <div id="srFixtureList" class="list-container"></div>
+    <!-- 3. UPDATE SCORES -->
+<div class="sub-box">
+    <h4><i class="fa-solid fa-square-poll-vertical"></i> 3. Update Scores</h4>
+    <!-- When you change this, matches will load below -->
+    <select id="srTourSelect" onchange="loadTourFixtures()">
+        <option value="">Select Tournament...</option>
+    </select>
+    
+    <!-- This is the empty box where matches will appear -->
+    <div id="srFixtureList" class="list-container" style="margin-top: 15px;">
+        <p style="text-align: center; color: var(--text-dim); font-size: 0.8rem;">
+            Select a tournament to view matches.
+        </p>
     </div>
+</div>
             <!-- Inside <div id="sec-smart" ...> -->
 
 <div class="sub-box" style="border-left: 4px solid var(--accent);">
@@ -437,6 +446,80 @@
         alert("❌ Connection Failed. Is the backend running?");
     }
         }
+        // Function to load fixtures for the selected tour into the Update box
+async function loadTourFixtures() {
+    const tourId = document.getElementById('srTourSelect').value;
+    const container = document.getElementById('srFixtureList');
+
+    if (!tourId) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-dim);">Select a tournament...</p>';
+        return;
+    }
+
+    container.innerHTML = '<p style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching matches...</p>';
+
+    try {
+        const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
+        const matches = await res.json();
+
+        if (!matches || matches.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:var(--text-dim);">No fixtures found for this tour.</p>';
+            return;
+        }
+
+        // Create the list of score boxes
+        container.innerHTML = matches.map(m => `
+            <div class="sub-box" style="background: rgba(0,0,0,0.3); border: 1px solid #1e293b; margin-bottom: 10px; padding: 12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                    <span style="font-weight:600; font-size:0.85rem;">${m.playerA}</span>
+                    <span style="font-size:0.7rem; color:var(--accent);">VS</span>
+                    <span style="font-weight:600; font-size:0.85rem; text-align:right;">${m.playerB}</span>
+                </div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items:center;">
+                    <input type="number" id="scA-${m._id}" value="${m.scoreA}" placeholder="Score A">
+                    <input type="number" id="scB-${m._id}" value="${m.scoreB}" placeholder="Score B">
+                    <button onclick="submitSmartScore('${m._id}')" class="btn-green" style="padding: 10px; font-size: 0.8rem; margin:0;">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                </div>
+                <div style="font-size: 0.6rem; color: var(--text-dim); margin-top: 5px;">Status: ${m.status}</div>
+            </div>
+        `).join('');
+
+    } catch (e) {
+        container.innerHTML = '<p style="color:red; text-align:center;">Failed to load matches.</p>';
+    }
+}
+
+// Function to send the score to the backend
+async function submitSmartScore(fixtureId) {
+    const scoreA = document.getElementById(`scA-${fixtureId}`).value;
+    const scoreB = document.getElementById(`scB-${fixtureId}`).value;
+
+    if (scoreA === "" || scoreB === "") return alert("Please enter both scores!");
+
+    try {
+        const res = await fetch(`${API}/api/smart/update-score/${fixtureId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                scoreA: parseInt(scoreA), 
+                scoreB: parseInt(scoreB) 
+            })
+        });
+
+        if (res.ok) {
+            alert("Score Updated & Points Added to Table! ✅");
+            loadTourFixtures(); // Refresh the list
+        } else {
+            const err = await res.json();
+            alert("Error: " + err.error);
+        }
+    } catch (e) {
+        alert("Failed to connect to server.");
+    }
+}
     </script>
 
 </body>
