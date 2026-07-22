@@ -801,25 +801,49 @@ function renderAuctionTour(container) {
     switchTourTab(); // Trigger initial load
 }
 
-async function switchTourTab() {
-    const tab = document.getElementById('tourTabSelector').value;
-    const content = document.getElementById('tourContent');
-    document.getElementById('tourTabTitle').innerText = tab.toUpperCase();
+async function switchTourTab(tourType) {
+    if (!tourType) tourType = 'auction'; // Default safety
 
-    content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading Records...</p>';
+    const tabSelectorId = tourType === 'auction' ? 'tourTabSelector' : tourType + 'TabSelector';
+    const contentId = tourType === 'auction' ? 'tourContent' : tourType + 'Content';
+    const titleId = tourType === 'auction' ? 'tourTabTitle' : tourType + 'TabTitle';
+
+    const selector = document.getElementById(tabSelectorId);
+    if (!selector) return; // Safety check
+
+    const tab = selector.value;
+    const content = document.getElementById(contentId);
+    document.getElementById(titleId).innerText = tab.toUpperCase();
+
+    content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading...</p>';
 
     try {
+        let url = "";
         if (tab === 'fixtures' || tab === 'knockouts') {
-            const res = await fetch(`${API}/api/auction/fixtures`);
-            const data = await res.json();
+            url = `${API}/api/${tourType}/fixtures`;
+        } else if (tab === 'boot' || tab === 'best') {
+            url = `${API}/api/tour-ranks/${tourType}/${tab}`;
+        } else {
+            content.innerHTML = `<p style="text-align:center; padding:30px; color:var(--text-dim);">${tab.toUpperCase()} coming soon.</p>`;
+            return;
+        }
+
+        console.log("Fetching from:", url); // This tells you exactly what is failing
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("HTTP error " + res.status);
+        
+        const data = await res.json();
+
+        if (!data || data.length === 0) {
+            content.innerHTML = `<p style="text-align:center; padding:30px; color:var(--text-dim);">No records found in database.</p>`;
+            return;
+        }
+
+        if (tab === 'fixtures' || tab === 'knockouts') {
             const type = tab === 'knockouts' ? 'Knockout' : 'League';
             const filtered = data.filter(f => f.type === type);
-
-            if (filtered.length === 0) {
-                content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);">No ' + tab + ' found.</p>';
-                return;
-            }
-
+            
             content.innerHTML = filtered.map(f => `
                 <div class="player-row" style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="flex:1;">${f.playerA}</span>
@@ -828,43 +852,29 @@ async function switchTourTab() {
                     </b>
                     <span style="flex:1; text-align:right;">${f.playerB}</span>
                 </div>
-            `).join('');
+            `).join('') || `<p style="text-align:center; padding:30px; color:var(--text-dim);">No ${tab} scheduled.</p>`;
 
-        } else if (tab === 'boot' || tab === 'best') {
-        const res = await fetch(`${API}/api/tour-ranks/${tourType}/${tab}`);
-        const data = await res.json();
-        
-        let label = tab === 'boot' ? 'Goals' : 'Rating';
-
-        let html = `
-            <table class="ranking-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Player</th>
-                        <th>Team</th>
-                        <th style="text-align:right">${label}</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-                html += data.map((d, i) => `
-            <tr>
-                <td class="rank-col">${i + 1}</td>
-                <td style="font-weight:600">${d.playerName}</td>
-                <td class="team-col">${d.teamName || '—'}</td>
-                <td class="val-col">${d.totalValue.toFixed(1)}</td>
-            </tr>
-        `).join('');
-
-        html += `</tbody></table>`;
-        content.innerHTML = html;
-    } else {
-            // Placeholder for rankings/table
-            content.innerHTML = `<p style="text-align:center; padding:30px; color:var(--text-dim);">${tab.toUpperCase()} data coming from dashboard...</p>`;
+        } else {
+            // Render Table for Rankings
+            let label = tab === 'boot' ? 'Goals' : 'Rating';
+            content.innerHTML = `
+                <table class="ranking-table">
+                    <thead><tr><th>#</th><th>Player</th><th>Team</th><th style="text-align:right">${label}</th></tr></thead>
+                    <tbody>
+                        ${data.map((d, i) => `
+                            <tr>
+                                <td class="rank-col">${i + 1}</td>
+                                <td class="player-col-name">${d.playerName}</td>
+                                <td class="team-col-name">${d.teamName || '—'}</td>
+                                <td class="val-col-data">${d.totalValue.toFixed(1)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>`;
         }
     } catch (e) {
-        content.innerHTML = '<p style="text-align:center; padding:30px; color:red;">Database Error.</p>';
+        console.error("Fetch failed:", e);
+        content.innerHTML = `<p style="text-align:center; padding:30px; color:red;">Connection Error. Please check if Render backend is awake.</p>`;
     }
 }
         function renderSoloTour(container) {
