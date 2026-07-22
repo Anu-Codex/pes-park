@@ -260,19 +260,33 @@
         </div>
 
     <script>
-        const API = "https://pes-park-backend.onrender.com";
+    const API = "https://pes-park-backend.onrender.com";
 
-        if (localStorage.getItem('isAdmin') !== 'true') { window.location.href = 'login.html'; }
+    // 1. Security Check
+    if (localStorage.getItem('isAdmin') !== 'true') { 
+        window.location.href = 'login.html'; 
+    }
 
-        function showSection(sectionId, btnElement) {
-            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active-section'));
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active-section');
-            btnElement.classList.add('active');
+    // 2. Tab Navigation Logic (The fix for the "blank div" issue)
+    function showSection(sectionId, btnElement) {
+        document.querySelectorAll('.admin-section').forEach(s => {
+            s.classList.remove('active-section');
+            s.style.display = 'none'; // Force hidden
+        });
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        
+        const target = document.getElementById(sectionId);
+        if(target) {
+            target.classList.add('active-section');
+            target.style.display = 'block'; // Force visible
         }
+        if(btnElement) btnElement.classList.add('active');
+    }
 
-        async function loadAllData() {
-            // Stats
+    // 3. Load All Data (Players, HOF, Teams, Stats)
+    async function loadAllData() {
+        try {
+            // Load League Overview Stats
             const sRes = await fetch(`${API}/api/stats`);
             const s = await sRes.json();
             if(s) {
@@ -283,137 +297,132 @@
                 document.getElementById('teamsCount').value = s.teamsCount || 0;
             }
 
-            // Players
+            // Load Players & Populate all Dropdowns
             const pRes = await fetch(`${API}/api/players`);
             const players = await pRes.json();
             
-            document.getElementById('adminPlayerList').innerHTML = players.map(p => `
-                <div class="row-item"><span><b>${p.name}</b></span><button class="delete-btn" onclick="deletePlayer('${p._id}')">Delete</button></div>
-            `).join('');
+            // Populate Deletion List
+            const adminList = document.getElementById('adminPlayerList');
+            if(adminList) {
+                adminList.innerHTML = players.map(p => `
+                    <div class="row-item"><span><b>${p.name}</b></span><button class="delete-btn" onclick="deletePlayer('${p._id}')">Delete</button></div>
+                `).join('');
+            }
 
+            // Populate all Dropdowns (Individual Stats, Match Record, Captaincy)
             const opts = players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
-            document.getElementById('playerSelector').innerHTML += opts;
-            document.getElementById('matchPlayerA').innerHTML += opts;
-            document.getElementById('capPlayerSelector').innerHTML += opts;
+            const nameOpts = players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
 
-            document.getElementById('transferPlayerList').innerHTML = players.map(p => `
-                <div style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="player-checkbox" value="${p._id}"> <label>${p.name}</label></div>
-            `).join('');
+            const selectors = ['playerSelector', 'matchPlayerA', 'capPlayerSelector'];
+            selectors.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.innerHTML = '<option value="">Select Player...</option>' + opts;
+            });
+            const oppEl = document.getElementById('matchOpponent');
+            if(oppEl) oppEl.innerHTML = '<option value="">Select Opponent...</option>' + nameOpts;
 
-            // HOF
+            // Load Players into the Transfer Checkbox list
+            const transferList = document.getElementById('transferPlayerList');
+            if(transferList) {
+                transferList.innerHTML = players.map(p => `
+                    <div style="display:flex;gap:10px;padding:5px 0;"><input type="checkbox" class="player-checkbox" value="${p._id}"> <label>${p.name}</label></div>
+                `).join('');
+            }
+
+            // Load Hall of Fame (Prestige Tab)
             const hRes = await fetch(`${API}/api/achievements`);
             const hof = await hRes.json();
-            document.getElementById('hofAdminList').innerHTML = hof.map(h => `
-                <div class="row-item"><span>${h.season}: ${h.winnerName}</span><button class="delete-btn" onclick="deleteAchieve('${h._id}')">Remove</button></div>
-            `).join('');
-        }
+            const hofAdminList = document.getElementById('hofAdminList');
+            if(hofAdminList) {
+                hofAdminList.innerHTML = hof.map(h => `
+                    <div class="row-item"><span>${h.season}: ${h.winnerName}</span><button class="delete-btn" onclick="deleteAchieve('${h._id}')">Remove</button></div>
+                `).join('');
+            }
 
-        // --- All Form Handlers (UNCHANGED) ---
-        document.getElementById('statsForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const data = { bdrLeader: document.getElementById('bdrLeader').value, bdrValue: document.getElementById('bdrValue').value, highestMV: document.getElementById('highestMV').value, mvValue: document.getElementById('mvValue').value, teamsCount: document.getElementById('teamsCount').value };
-            await fetch(`${API}/api/stats`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-            alert("Stats Updated!");
-        };
+            // Load Team Names for the Points Manager
+            const tRes = await fetch(`${API}/api/teams/all`);
+            const teams = await tRes.json();
+            const tpName = document.getElementById('tpName');
+            if(tpName) tpName.innerHTML = '<option value="">Select Team...</option>' + teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
 
-        document.getElementById('playerForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const data = { name: document.getElementById('pName').value, nickname: document.getElementById('pNick').value, image: document.getElementById('pImage').value, teamName: document.getElementById('pTeam').value, teamLogo: document.getElementById('pTeamLogo').value };
-            await fetch(`${API}/api/players`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-            location.reload();
-        };
-
-        document.getElementById('updateStatsForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('playerSelector').value;
-            const data = { auctionPrice: document.getElementById('upAuction').value, marketValue: document.getElementById('upMarket').value, bdrPoints: document.getElementById('upBDR').value, squadImage: document.getElementById('upSquad').value };
-            await fetch(`${API}/api/players/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-            alert("Updated!");
-        };
-
-        document.getElementById('matchForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('matchPlayerA').value;
-            const data = { opponentName: document.getElementById('matchOpponent').value, myScore: document.getElementById('myScore').value, oppScore: document.getElementById('oppScore').value };
-            await fetch(`${API}/api/players/${id}/matches`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-            alert("Recorded!");
-        };
-
-        // ... Fixture Handlers (Auction, Solo, Weekend, Quick) ...
-        document.getElementById('tourMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('tmA').value, playerB: document.getElementById('tmB').value, scoreA: document.getElementById('tsA').value, scoreB: document.getElementById('tsB').value, type: document.getElementById('tmType').value, status: document.getElementById('tmStatus').value }; await fetch(`${API}/api/auction/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Saved!"); };
-        document.getElementById('soloMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('smA').value, playerB: document.getElementById('smB').value, scoreA: document.getElementById('ssA').value, scoreB: document.getElementById('ssB').value, type: document.getElementById('smType').value, status: document.getElementById('smStatus').value }; await fetch(`${API}/api/solo/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Saved!"); };
-        document.getElementById('weekendMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('wmA').value, playerB: document.getElementById('wmB').value, scoreA: document.getElementById('wsA').value, scoreB: document.getElementById('wsB').value, type: document.getElementById('wmType').value, status: document.getElementById('wmStatus').value }; await fetch(`${API}/api/weekend/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Saved!"); };
-        document.getElementById('quickMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('qmA').value, playerB: document.getElementById('qmB').value, scoreA: document.getElementById('qsA').value, scoreB: document.getElementById('qsB').value, type: document.getElementById('qmType').value, status: document.getElementById('qmStatus').value }; await fetch(`${API}/api/quick/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Saved!"); };
-
-        document.getElementById('teamAssignForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const ids = Array.from(document.querySelectorAll('.player-checkbox:checked')).map(cb => cb.value);
-            const data = { teamName: document.getElementById('tManageName').value, teamLogo: document.getElementById('tManageLogo').value, playerIds: ids };
-            await fetch(`${API}/api/teams/assign`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            alert("Assigned!");
-        };
-
-        document.getElementById('teamPointsForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const data = { name: document.getElementById('tpName').value, wins: document.getElementById('tpWins').value, draws: document.getElementById('tpDraws').value, losses: document.getElementById('tpLoss').value };
-            await fetch(`${API}/api/teams/update-stats`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            alert("Standing Updated!");
-        };
-
-        document.getElementById('hofForm').onsubmit = async (e) => { e.preventDefault(); const data = { season: document.getElementById('hSeason').value, winnerName: document.getElementById('hName').value, winnerImage: document.getElementById('hImg').value, teamName: document.getElementById('hTeam').value, title: document.getElementById('hTitle').value }; await fetch(`${API}/api/achievements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) }); location.reload(); };
-        const hRes = await fetch(`${API}/api/achievements`);
-const hofList = await hRes.json();
-const hofAdminList = document.getElementById('hofAdminList');
-
-if (hofAdminList) {
-    hofAdminList.innerHTML = hofList.map(h => `
-        <div class="row-item">
-            <span>${h.season}: <b>${h.winnerName}</b></span>
-            <button class="delete-btn" onclick="deleteAchieve('${h._id}')">Remove</button>
-        </div>
-    `).join('');
-}
-        async function updateCaptain(status) {
-            const id = document.getElementById('capPlayerSelector').value;
-            await fetch(`${API}/api/players/${id}/captain`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isCaptain: status }) });
-            alert("Captaincy Updated!");
-        }
-
-        async function deletePlayer(id) { if(confirm("Delete?")) { await fetch(`${API}/api/players/${id}`, { method: 'DELETE' }); location.reload(); } }
-        async function deleteAchieve(id) { if(confirm("Remove?")) { await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' }); location.reload(); } }
-
-        loadAllData();
-        
-        async function fillAllSelectors() {
-    try {
-        // 1. Fetch Players for both Match Result dropdowns
-        const pRes = await fetch(`${API}/api/players`);
-        const players = await pRes.json();
-        
-        const playerOpts = players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
-        // To show name instead of ID in opponent field for easy reading:
-        const opponentOpts = players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-
-        document.getElementById('playerSelector').innerHTML = '<option value="">Select player...</option>' + playerOpts;
-        document.getElementById('matchPlayerA').innerHTML = '<option value="">Select My Player...</option>' + playerOpts;
-        document.getElementById('matchOpponent').innerHTML = '<option value="">Select Opponent...</option>' + opponentOpts;
-        document.getElementById('capPlayerSelector').innerHTML = '<option value="">Select Player...</option>' + playerOpts;
-
-        // 2. Fetch Teams for the Team Points dropdown
-        const tRes = await fetch(`${API}/api/teams/all`);
-        const teams = await tRes.json();
-        
-        const teamOpts = teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
-        document.getElementById('tpName').innerHTML = '<option value="">Select Team Name...</option>' + teamOpts;
-
-    } catch (err) {
-        console.error("Error filling selectors:", err);
+        } catch(e) { console.error("Data Load Error:", e); }
     }
-}
 
-// Call this function when the page loads
-fillAllSelectors();
+    // --- 4. BRINGING BACK ALL YOUR ORIGINAL SUBMIT FUNCTIONS ---
 
-    </script>
+    document.getElementById('statsForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const data = { bdrLeader: document.getElementById('bdrLeader').value, bdrValue: document.getElementById('bdrValue').value, highestMV: document.getElementById('highestMV').value, mvValue: document.getElementById('mvValue').value, teamsCount: document.getElementById('teamsCount').value };
+        await fetch(`${API}/api/stats`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        alert("League Stats Updated!");
+    };
+
+    document.getElementById('playerForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const data = { name: document.getElementById('pName').value, nickname: document.getElementById('pNick').value, image: document.getElementById('pImage').value, teamName: document.getElementById('pTeam').value, teamLogo: document.getElementById('pTeamLogo').value };
+        await fetch(`${API}/api/players`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        location.reload();
+    };
+
+    document.getElementById('updateStatsForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('playerSelector').value;
+        const data = { auctionPrice: document.getElementById('upAuction').value, marketValue: document.getElementById('upMarket').value, bdrPoints: document.getElementById('upBDR').value, squadImage: document.getElementById('upSquad').value };
+        await fetch(`${API}/api/players/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        alert("Player Stats Updated!");
+    };
+
+    document.getElementById('matchForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('matchPlayerA').value;
+        const data = { opponentName: document.getElementById('matchOpponent').value, myScore: document.getElementById('myScore').value, oppScore: document.getElementById('oppScore').value };
+        await fetch(`${API}/api/players/${id}/matches`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        alert("Match Recorded!");
+    };
+
+    // TOUR HANDLERS (Auction, Solo, Weekend, Quick)
+    document.getElementById('tourMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('tmA').value, playerB: document.getElementById('tmB').value, scoreA: document.getElementById('tsA').value, scoreB: document.getElementById('tsB').value, type: document.getElementById('tmType').value, status: document.getElementById('tmStatus').value }; await fetch(`${API}/api/auction/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Auction Fixture Saved!"); };
+    document.getElementById('tourRankForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerName: document.getElementById('trName').value, value: document.getElementById('trVal').value, category: document.getElementById('trCat').value }; await fetch(`${API}/api/auction/ranks`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Ranking Saved!"); };
+    document.getElementById('soloMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('smA').value, playerB: document.getElementById('smB').value, scoreA: document.getElementById('ssA').value, scoreB: document.getElementById('ssB').value, type: document.getElementById('smType').value, status: document.getElementById('smStatus').value }; await fetch(`${API}/api/solo/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Solo Match Saved!"); };
+    document.getElementById('weekendMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('wmA').value, playerB: document.getElementById('wmB').value, scoreA: document.getElementById('wsA').value, scoreB: document.getElementById('wsB').value, type: document.getElementById('wmType').value, status: document.getElementById('wmStatus').value }; await fetch(`${API}/api/weekend/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Weekend Match Saved!"); };
+    document.getElementById('quickMatchForm').onsubmit = async (e) => { e.preventDefault(); const data = { playerA: document.getElementById('qmA').value, playerB: document.getElementById('qmB').value, scoreA: document.getElementById('qsA').value, scoreB: document.getElementById('qsB').value, type: document.getElementById('qmType').value, status: document.getElementById('qmStatus').value }; await fetch(`${API}/api/quick/fixtures`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}); alert("Quick Match Saved!"); };
+
+    document.getElementById('teamAssignForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const ids = Array.from(document.querySelectorAll('.player-checkbox:checked')).map(cb => cb.value);
+        const data = { teamName: document.getElementById('tManageName').value, teamLogo: document.getElementById('tManageLogo').value, playerIds: ids };
+        await fetch(`${API}/api/teams/assign`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        alert("Team Assigned!");
+        location.reload();
+    };
+
+    document.getElementById('teamPointsForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const data = { name: document.getElementById('tpName').value, wins: document.getElementById('tpWins').value, draws: document.getElementById('tpDraws').value, losses: document.getElementById('tpLoss').value };
+        await fetch(`${API}/api/teams/update-stats`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        alert("Leaderboard Updated!");
+    };
+
+    document.getElementById('hofForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const data = { season: document.getElementById('hSeason').value, winnerName: document.getElementById('hName').value, winnerImage: document.getElementById('hImg').value, teamName: document.getElementById('hTeam').value, title: document.getElementById('hTitle').value };
+        await fetch(`${API}/api/achievements`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        alert("Hall of Fame Legend Added!");
+        location.reload();
+    };
+
+    // Global Action Functions
+    async function updateCaptain(status) {
+        const id = document.getElementById('capPlayerSelector').value;
+        await fetch(`${API}/api/players/${id}/captain`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isCaptain: status }) });
+        alert("Captaincy Status Changed!");
+    }
+
+    async function deletePlayer(id) { if(confirm("Delete Player?")) { await fetch(`${API}/api/players/${id}`, { method: 'DELETE' }); location.reload(); } }
+    async function deleteAchieve(id) { if(confirm("Remove from HOF?")) { await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' }); location.reload(); } }
+
+    // INITIALIZE EVERYTHING ON LOAD
+    window.onload = loadAllData;
+            </script>
 </body>
 </html>
