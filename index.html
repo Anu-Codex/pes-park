@@ -755,17 +755,25 @@
 
     // 2. Fetch Data and Setup UI
     async function initPage() {
-        try {
-            // Fetch Stats (The top 4 boxes)
-            const statsRes = await fetch(`${API}/api/stats`);
-            const stats = await statsRes.json();
-            if (stats) {
-                document.getElementById('bdrVal').innerText = stats.bdrValue || 0;
-                document.getElementById('bdrName').innerText = stats.bdrLeader || "None";
-                document.getElementById('mvVal').innerText = stats.mvValue || 0;
-                document.getElementById('mvName').innerText = stats.highestMV || "None";
-                document.getElementById('teamCount').innerText = stats.teamsCount || 0;
-            }
+        // --- FIND AND REPLACE THIS SECTION INSIDE YOUR SCRIPT ---
+try {
+    // 1. Fetch Stats (The top 4 boxes)
+    const statsRes = await fetch(`${API}/api/stats`);
+    const stats = await statsRes.json();
+
+    if (stats) {
+        // FIX: BDR Box (Ensures value and name are correctly matched)
+        document.getElementById('bdrVal').innerText = stats.bdrValue ?? 0;
+        document.getElementById('bdrName').innerText = stats.bdrName || "None";
+
+        // FIX: MV Box (Adds the "M" suffix and matches the name correctly)
+        document.getElementById('mvVal').innerText = (stats.mvValue ?? 0) + "M";
+        document.getElementById('mvName').innerText = stats.mvName || "None";
+
+        // FIX: Counts
+        document.getElementById('teamCount').innerText = stats.teamsCount ?? 0;
+        document.getElementById('playerCount').innerText = stats.playersCount ?? 0;
+    }
 
             // Fetch Players
             const playerRes = await fetch(`${API}/api/players`);
