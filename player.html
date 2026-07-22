@@ -95,43 +95,31 @@
 }
 
 /* --- FIXED RECENT FORM DESIGN --- */
+/* --- FIXED RECENT FORM: ONLY COLORED LETTERS --- */
 .form-dots-wrapper {
     display: flex;
-    gap: 12px;
+    gap: 15px; /* Spacing between letters */
     margin-top: 10px;
     align-items: center;
 }
 
 .form-item {
     display: flex;
-    flex-direction: column; /* FORCES TEXT UNDER DOT */
+    flex-direction: column;
     align-items: center;
-    gap: 4px;
-}
-
-.dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
 }
 
 .dot-letter {
-    font-size: 10px;
+    font-size: 1.2rem; /* Size of the W, L, D */
     font-weight: 900;
     text-align: center;
+    line-height: 1;
 }
 
-/* Win: Green */
-.f-win .dot { background-color: #10b981; }
-.f-win .dot-letter { color: #10b981; }
-
-/* Loss: Red */
-.f-loss .dot { background-color: #ef4444; }
-.f-loss .dot-letter { color: #ef4444; }
-
-/* Draw: White */
-.f-draw .dot { background-color: #ffffff; }
-.f-draw .dot-letter { color: #ffffff; }
+/* Colors for the letters */
+.f-win .dot-letter { color: #10b981; }   /* Green W */
+.f-loss .dot-letter { color: #ef4444; }  /* Red L */
+.f-draw .dot-letter { color: #ffffff; }  /* White D */
         .captain-badge {
     display: inline-flex;
     align-items: center;
@@ -291,7 +279,7 @@
             document.getElementById('sGPM').innerText = playerMatches.length > 0 ? (g / playerMatches.length).toFixed(1) : "0.0";
 
             // 3. Recent Form (Last 5)
-            // --- LOGIC TO RENDER RECENT FORM ---
+            // --- EXACT JS FIX FOR RECENT FORM ---
 const recentMatches = playerMatches.slice(0, 5).reverse();
 const formContainer = document.getElementById('recentFormDots');
 
@@ -317,7 +305,6 @@ if (playerMatches.length > 0) {
 
         return `
             <div class="form-item ${resClass}">
-                <div class="dot"></div>
                 <span class="dot-letter">${char}</span>
             </div>
         `;
