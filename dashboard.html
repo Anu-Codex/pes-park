@@ -271,24 +271,34 @@
 </div> <!-- ONLY ONE CLOSING DIV HERE FOR SEC-PRESTIGE -->
 
     <script>
+    // MOBILE DEBUGGER START
+    alert("Step 1: Script Loaded");
+
+    window.onerror = function (msg, url, line) {
+        alert("CRITICAL ERROR FOUND:\n" + msg + "\nLine: " + line);
+        return false;
+    };
+
     const API = "https://pes-park-backend.onrender.com";
 
-        // 1. CATCH ERRORS AND SEND TO RENDER CONSOLE
-window.onerror = function (msg, url, line) {
-    const errorData = {
-        error: `Error: ${msg} \nLine: ${line} \nURL: ${url}`
-    };
-    // Send to Render backend
-    fetch("https://pes-park-backend.onrender.com/api/debug", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(errorData)
-    });
-    // Also show an alert on your phone screen so you can see it immediately
-    alert("LOGGED ERROR: " + msg + " at line " + line);
-    return false;
-};
+    // 2. Tab Navigation Logic (FORCE FIX)
+    function showSection(sectionId, btnElement) {
+        alert("Attempting to show: " + sectionId);
+        
+        document.querySelectorAll('.admin-section').forEach(s => {
+            s.classList.remove('active-section');
+            s.style.display = 'none'; 
+        });
 
+        const target = document.getElementById(sectionId);
+        if(target) {
+            target.style.display = 'block';
+            target.classList.add('active-section');
+            alert("Success: Section is now visible");
+        } else {
+            alert("ERROR: ID '" + sectionId + "' does not exist in HTML!");
+        }
+    }
     // 1. Security Check
     if (localStorage.getItem('isAdmin') !== 'true') { 
         window.location.href = 'login.html'; 
