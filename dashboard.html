@@ -273,6 +273,12 @@
                     <script>
     // --- 1. INITIALIZATION & SECURITY ---
     const API = "https://pes-park-backend.onrender.com";
+    alert("Step 1: Script Parser Started");
+
+    window.onerror = function (msg, url, line) {
+        alert("CRITICAL ERROR:\n" + msg + "\nLine: " + line);
+        return false;
+    };
 
     if (localStorage.getItem('isAdmin') !== 'true') { 
         window.location.href = 'login.html'; 
