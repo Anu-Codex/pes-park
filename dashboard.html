@@ -184,31 +184,37 @@
                 </div>
             </div>
             <div class="sub-box" style="border-left: 4px solid var(--gold);">
-    <h3><i class="fa-solid fa-pen-to-square"></i> Advanced Hall of Fame Manager</h3>
-    <input type="text" id="hofSeasonName" placeholder="Season Name (e.g. Season 1 • 2026)">
+    <h4><i class="fa-solid fa-crown"></i> Advanced Hall of Fame Manager</h4>
     
-    <div class="sub-box">
-        <h4>Special Highlights (Top Section)</h4>
-        <div id="highlightInputs">
-            <div class="grid-2"><input type="text" placeholder="Title (e.g. Highest BDR)"> <input type="text" placeholder="Winner (e.g. Zubair)"></div>
-        </div>
-        <button onclick="addInputRow('highlightInputs')" style="background:#1e293b; margin-top:5px; font-size:0.7rem">+ Add More</button>
-    </div>
+    <!-- 1. Season Name -->
+    <input type="text" id="hofSeasonName" placeholder="Season Name (e.g. Season 7 • 2026)" required>
 
-    <div class="sub-box">
-        <h4>Trophy Winners (Bottom Section)</h4>
-        <div id="trophyInputs">
-            <div style="border:1px solid #1e293b; padding:10px; border-radius:10px; margin-bottom:10px;">
-                <input type="text" placeholder="Trophy Title (e.g. Ballon d'Or)">
-                <input type="text" placeholder="Winner Name">
-                <select><option value="ballon">Ballon Icon</option><option value="ucl">UCL Icon</option><option value="league">League Icon</option></select>
+    <!-- 2. Top Yellow Area (Highlights) -->
+    <div style="margin-top: 15px;">
+        <p style="font-size: 0.75rem; color: var(--accent); margin-bottom: 5px;">TOP HIGHLIGHTS (Yellow Area Top)</p>
+        <div id="highlightInputs">
+            <div class="grid-2" style="margin-bottom: 8px;">
+                <input type="text" placeholder="Label (e.g. Highest BDR)">
+                <input type="text" placeholder="Value (e.g. ZUBAIR-65)">
             </div>
         </div>
-        <button onclick="addTrophyRow()" style="background:#1e293b; margin-top:5px; font-size:0.7rem">+ Add Trophy</button>
+        <button type="button" onclick="addHofRow('highlightInputs', 'highlight')" style="background:#1e293b; padding:8px; font-size:0.7rem; width: auto; margin-bottom: 15px;">+ Add Highlight</button>
     </div>
 
-    <button onclick="saveHof()" class="btn-green">Publish Season Records</button>
-</div>
+    <!-- 3. Bottom Yellow Area (Trophies) -->
+    <div style="margin-top: 10px;">
+        <p style="font-size: 0.75rem; color: var(--gold); margin-bottom: 5px;">TROPHY WINNERS (Yellow Area Bottom)</p>
+        <div id="trophyInputs">
+            <div class="grid-2" style="margin-bottom: 8px;">
+                <input type="text" placeholder="Trophy Name">
+                <input type="text" placeholder="Winner Name">
+            </div>
+        </div>
+        <button type="button" onclick="addHofRow('trophyInputs', 'trophy')" style="background:#1e293b; padding:8px; font-size:0.7rem; width: auto;">+ Add Trophy</button>
+    </div>
+
+    <button onclick="saveAdvancedHof()" class="btn-gold" style="margin-top: 20px;">Publish to Hall of Fame Site</button>
+            </div>
         </div> 
 <!-- 6. DANGER ZONE -->
 <div id="sec-danger" class="admin-section">
@@ -723,49 +729,46 @@ async function triggerGoalSync() {
         div.appendChild(row);
     }
 
-    function addHofRow(containerId, type) {
-        const container = document.getElementById(containerId);
-        const div = document.createElement('div');
-        div.className = "grid-2";
-        div.style.marginBottom = "10px";
-        if(type === 'highlight') {
-            div.innerHTML = `<input type="text" placeholder="Label (e.g. BDR Leader)"> <input type="text" placeholder="Value (e.g. ZUBAIR)">`;
-        } else {
-            div.innerHTML = `<input type="text" placeholder="Trophy Name"> <input type="text" placeholder="Winner Name">`;
-        }
-        container.appendChild(div);
+    // Add this function to your dashboard script
+function addHofRow(containerId, type) {
+    const container = document.getElementById(containerId);
+    const div = document.createElement('div');
+    div.className = "grid-2";
+    div.style.marginBottom = "8px";
+    
+    if(type === 'highlight') {
+        div.innerHTML = `<input type="text" placeholder="Label"> <input type="text" placeholder="Value">`;
+    } else {
+        div.innerHTML = `<input type="text" placeholder="Trophy Name"> <input type="text" placeholder="Winner Name">`;
     }
-        async function saveAdvancedHof() {
-    const seasonName = document.getElementById('hofSeasonName').value;
-    if(!seasonName) return alert("Enter Season Name!");
+    container.appendChild(div);
+}
 
-    // Map Special Highlights (Yellow Area Top)
+// Ensure saveAdvancedHof uses the CORRECT IDs
+async function saveAdvancedHof() {
+    const sName = document.getElementById('hofSeasonName').value;
+    if(!sName) return alert("Please enter a Season Name!");
+
     const highlights = Array.from(document.querySelectorAll('#highlightInputs .grid-2')).map(row => ({
         label: row.querySelectorAll('input')[0].value,
         value: row.querySelectorAll('input')[1].value
-    })).filter(item => item.label !== "");
+    })).filter(x => x.label !== "");
 
-    // Map Trophy Winners (Yellow Area Bottom)
     const trophies = Array.from(document.querySelectorAll('#trophyInputs .grid-2')).map(row => ({
         title: row.querySelectorAll('input')[0].value,
         winner: row.querySelectorAll('input')[1].value
-    })).filter(item => item.title !== "");
+    })).filter(x => x.title !== "");
 
-    const payload = {
-        seasonName: seasonName,
-        specialHighlights: highlights,
-        trophyWinners: trophies
-    };
+    const data = { seasonName: sName, specialHighlights: highlights, trophyWinners: trophies };
 
-    try {
-        const res = await fetch(`${API}/api/hof/save`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if(res.ok) alert("✅ Hall of Fame Published Successfully!");
-    } catch (e) { alert("Error publishing HOF"); }
-        }
+    const res = await fetch(`${API}/api/hof/save`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+
+    if(res.ok) alert("✅ Records Published to HOF Site!");
+}
     </script>
 
 </body>
