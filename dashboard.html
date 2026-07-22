@@ -283,83 +283,89 @@
             if(btn) btn.classList.add('active');
         }
 
-        // Global Data Load
-        async function loadAllData() {
-            try {
-                const pRes = await fetch(`${API}/api/players`);
-                const players = await pRes.json();
-                
-                // Delete List
-                document.getElementById('adminPlayerList').innerHTML = players.map(p => `
-                    <div class="row-item"><span>${p.name}</span><button class="delete-btn" onclick="deletePlayer('${p._id}')">X</button></div>
-                `).join('');
+        // --- 1. THE CENTRAL DATA LOADER ---
+async function initDashboardData() {
+    try {
+        console.log("Fetching global data...");
 
-                // Dropdowns
-                const opts = players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
-                const nameOpts = players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-                ['playerSelector', 'matchPlayerA', 'capPlayerSelector'].forEach(id => {
-                    document.getElementById(id).innerHTML = '<option value="">Select...</option>' + opts;
-                });
-                document.getElementById('matchOpponent').innerHTML = '<option value="">Select...</option>' + nameOpts;
+        // A. Fetch Players
+        const pRes = await fetch(`${API}/api/players`);
+        const players = await pRes.json();
 
-                // HOF List
-                const hRes = await fetch(`${API}/api/achievements`);
-                const hof = await hRes.json();
-                document.getElementById('hofAdminList').innerHTML = hof.map(h => `
-                    <div class="row-item"><span>${h.winnerName}</span><button class="delete-btn" onclick="deleteAchieve('${h._id}')">X</button></div>
-                `).join('');
-                
-                // Teams List
-                const tRes = await fetch(`${API}/api/teams/all`);
-                const teams = await tRes.json();
-                document.getElementById('tpName').innerHTML = '<option value="">Select Team...</option>' + teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+        // B. Fetch Tournaments
+        const tRes = await fetch(`${API}/api/smart/tournaments`);
+        const tours = await tRes.json();
 
-            } catch(e) { console.log("Init Error"); }
-            const tourRes = await fetch(`${API}/api/smart/tournaments`);
-    const allTours = await tourRes.json();
+        // C. Fetch Teams
+        const teamRes = await fetch(`${API}/api/teams/all`);
+        const teams = await teamRes.json();
 
-    // Fill "Generate Fixture" tournament selector
-    const sfTour = document.getElementById('sfTourSelect');
-    // Fill "Update Scores" tournament selector
-    const srTour = document.getElementById('srTourSelect');
+        // --- 2. SAFE INJECTION LOGIC ---
+        
+        // Populate ALL Player Dropdowns
+        const playerOpts = players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+        const playerNameOpts = players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
 
-    const tourOptions = allTours.map(t => `<option value="${t._id}">${t.name} (${t.type})</option>`).join('');
-    
-    if(sfTour) sfTour.innerHTML = '<option value="">Select Tournament...</option>' + tourOptions;
-    if(srTour) srTour.innerHTML = '<option value="">Select Tournament...</option>' + tourOptions;
-            // --- Add these lines inside your existing data loading logic ---
-
-// 1. Fill the Tournament Selecto
-const regTourSel = document.getElementById('regTourSelect');
-if(regTourSel) regTourSel.innerHTML = '<option value="">Select Tournament...</option>' + 
-    tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
-
-// 2. Fill the Global Player Selector (assuming 'players' is your global list)
-const regPlayerSel = document.getElementById('regPlayerSelect');
-if(regPlayerSel) regPlayerSel.innerHTML = '<option value="">Select Player from DB...</option>' + 
-    players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-            
-        }
-
-
-
-        // FORM HANDLERS
-        const attach = (id, url, method, getData) => {
-            const f = document.getElementById(id);
-            if(f) f.onsubmit = async (e) => {
-                e.preventDefault();
-                await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(getData()) });
-                alert("Success!"); location.reload();
-            };
+        const playerSelectors = {
+            'playerSelector': playerOpts,      // Edit Stats
+            'matchPlayerA': playerOpts,        // Match Me
+            'capPlayerSelector': playerOpts,   // Captaincy
+            'regPlayerSelect': playerNameOpts, // Smart Register (Name based)
+            'sfPlayerA': playerNameOpts,       // Fixture A
+            'sfPlayerB': playerNameOpts        // Fixture B
         };
 
-        attach('statsForm', `${API}/api/stats`, 'PUT', () => ({ bdrLeader: document.getElementById('bdrLeader').value, bdrValue: document.getElementById('bdrValue').value, highestMV: document.getElementById('highestMV').value, mvValue: document.getElementById('mvValue').value, teamsCount: document.getElementById('teamsCount').value }));
-        attach('playerForm', `${API}/api/players`, 'POST', () => ({ name: document.getElementById('pName').value, nickname: document.getElementById('pNick').value, image: document.getElementById('pImage').value, teamName: document.getElementById('pTeam').value, teamLogo: document.getElementById('pTeamLogo').value }));
-        attach('updateStatsForm', `${API}/api/players/${document.getElementById('playerSelector').value}`, 'PUT', () => ({ auctionPrice: document.getElementById('upAuction').value, marketValue: document.getElementById('upMarket').value, bdrPoints: document.getElementById('upBDR').value, squadImage: document.getElementById('upSquad').value }));
-        attach('matchForm', `${API}/api/players/${document.getElementById('matchPlayerA').value}/matches`, 'POST', () => ({ opponentName: document.getElementById('matchOpponent').value, myScore: document.getElementById('myScore').value, oppScore: document.getElementById('oppScore').value }));
-        attach('hofForm', `${API}/api/achievements`, 'POST', () => ({ season: document.getElementById('hSeason').value, winnerName: document.getElementById('hName').value, title: document.getElementById('hTitle').value }));
-        attach('teamPointsForm', `${API}/api/teams/update-stats`, 'PUT', () => ({ name: document.getElementById('tpName').value, wins: document.getElementById('tpWins').value, draws: document.getElementById('tpDraws').value, losses: document.getElementById('tpLoss').value }));
+        // Populate ALL Tournament Dropdowns
+        const tourOpts = tours.map(t => `<option value="${t._id}">${t.name} (${t.type})</option>`).join('');
+        const tourSelectors = {
+            'regTourSelect': tourOpts, // Registration tab
+            'sfTourSelect': tourOpts,  // Fixture tab
+            'srTourSelect': tourOpts   // Score update tab
+        };
 
+        // Populate Team Dropdown
+        const teamOpts = teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+
+        // Execution: Only fill if the ID exists in HTML
+        Object.keys(playerSelectors).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '<option value="">Select Player...</option>' + playerSelectors[id];
+        });
+
+        Object.keys(tourSelectors).forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = '<option value="">Select Tournament...</option>' + tourSelectors[id];
+        });
+
+        const tpNameEl = document.getElementById('tpName');
+        if (tpNameEl) tpNameEl.innerHTML = '<option value="">Select Team...</option>' + teamOpts;
+
+        // Populate Hall of Fame List
+        const hRes = await fetch(`${API}/api/achievements`);
+        const hof = await hRes.json();
+        const hofBox = document.getElementById('hofAdminList');
+        if(hofBox) hofBox.innerHTML = hof.map(h => `<div class="row-item"><span>${h.winnerName}</span><button class="delete-btn" onclick="deleteAchieve('${h._id}')">X</button></div>`).join('');
+
+    } catch (error) {
+        console.error("Dashboard Load Error:", error);
+    }
+}
+
+// --- 3. START EVERYTHING ---
+window.onload = () => {
+    // Check login first
+    if (localStorage.getItem('isAdmin') !== 'true') {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Load all data into dropdowns
+    initDashboardData();
+
+    // Default Tab
+    showSection('sec-league', document.querySelector('.nav-tab'));
+};
+        
         async function updateCaptain(status) {
             const id = document.getElementById('capPlayerSelector').value;
             await fetch(`${API}/api/players/${id}/captain`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isCaptain: status }) });
