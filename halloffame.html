@@ -61,49 +61,84 @@
     </div>
 
     <script>
-        const API = "https://pes-park-backend.onrender.com/api/hof";
-        const icons = {
-            ballon: "https://cdn-icons-png.flaticon.com/512/3112/3112946.png",
-            league: "https://cdn-icons-png.flaticon.com/512/2618/2618068.png",
-            ucl: "https://cdn-icons-png.flaticon.com/512/1163/1163474.png",
-            weekly: "https://cdn-icons-png.flaticon.com/512/1435/1435345.png"
-        };
+    // 1. ENSURE THIS URL MATCHES YOUR BACKEND EXACTLY
+    const API = "https://pes-park-backend.onrender.com/api/hof"; 
 
-        async function init() {
+    const icons = {
+        ballon: "https://cdn-icons-png.flaticon.com/512/3112/3112946.png",
+        league: "https://cdn-icons-png.flaticon.com/512/2618/2618068.png",
+        ucl: "https://cdn-icons-png.flaticon.com/512/1163/1163474.png",
+        weekly: "https://cdn-icons-png.flaticon.com/512/1435/1435345.png"
+    };
+
+    // 2. Load the list of Seasons for the Dropdown
+    async function initHOF() {
+        try {
             const res = await fetch(`${API}/seasons`);
             const seasons = await res.json();
-            const sel = document.getElementById('seasonSelect');
-            sel.innerHTML = seasons.map(s => `<option value="${s.seasonName}">${s.seasonName}</option>`).join('');
-            if(seasons.length > 0) loadSeasonData(seasons[0].seasonName);
+            const selector = document.getElementById('seasonSelect');
+
+            if (seasons.length > 0) {
+                // Populate dropdown
+                selector.innerHTML = seasons.map(s => `<option value="${s.seasonName}">${s.seasonName}</option>`).join('');
+                
+                // AUTO-LOAD: Load the very first season found (the newest one)
+                loadSeasonData(seasons[0].seasonName);
+            } else {
+                selector.innerHTML = '<option value="">No Seasons Published</option>';
+            }
+        } catch (err) {
+            console.error("Failed to load seasons:", err);
         }
+    }
 
-        // Inside halloffame.html script
-async function loadSeasonData(name) {
-    // Note: use /api/hof/data/
-    const res = await fetch(`${API}/api/hof/data/${encodeURIComponent(name)}`);
-    const data = await res.json();
-    
-    if(!data) return;
+    // 3. Load specific data when a season is selected
+    async function loadSeasonData(name) {
+        if (!name) return;
+        
+        try {
+            // Encode name to handle dots and spaces in the URL
+            const res = await fetch(`${API}/data/${encodeURIComponent(name)}`);
+            const data = await res.json();
 
-    // Render Highlights
-    document.getElementById('highlights-container').innerHTML = data.specialHighlights.map(h => `
-        <div class="h-item">
-            <span class="h-label">${h.label}</span>
-            <span class="h-val">${h.value}</span>
-        </div>
-    `).join('');
+            if (!data) return;
 
-    // Render Trophies
-    document.getElementById('trophies-container').innerHTML = data.trophyWinners.map(t => `
-        <div class="t-row">
-            <img src="https://cdn-icons-png.flaticon.com/512/3112/3112946.png" class="t-icon">
-            <div class="t-info">
-                <span class="t-title">${t.title}</span>
-                <span class="t-name">${t.winner}</span>
-            </div>
-        </div>
-    `).join('');
-}
+            // Render Highlights (Top Yellow Section)
+            const highlightContainer = document.getElementById('highlights-container');
+            if (data.specialHighlights && data.specialHighlights.length > 0) {
+                highlightContainer.innerHTML = data.specialHighlights.map(h => `
+                    <div class="h-item">
+                        <span class="h-label">${h.label}</span>
+                        <span class="h-val">${h.value}</span>
+                    </div>
+                `).join('');
+            } else {
+                highlightContainer.innerHTML = '<p style="text-align:center; padding:10px; font-size:0.8rem; color:#475569;">No Highlights</p>';
+            }
+
+            // Render Trophies (Bottom Yellow Section)
+            const trophyContainer = document.getElementById('trophies-container');
+            if (data.trophyWinners && data.trophyWinners.length > 0) {
+                trophyContainer.innerHTML = data.trophyWinners.map(t => `
+                    <div class="t-row" style="display: flex; align-items: center; gap: 20px; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <img src="${icons.ballon}" class="t-icon" style="width:40px; height:40px;">
+                        <div class="t-info">
+                            <span class="t-title" style="color:#64748b; font-size:0.7rem; display:block;">${t.title}</span>
+                            <span class="t-name" style="font-size:1.1rem; font-weight:bold; color:white;">${t.winner}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                trophyContainer.innerHTML = '<p style="text-align:center; padding:10px; font-size:0.8rem; color:#475569;">No Trophies Recorded</p>';
+            }
+
+        } catch (err) {
+            console.error("Error fetching season data:", err);
+        }
+    }
+
+    // Run when page opens
+    window.onload = initHOF;
     </script>
 </body>
 </html>
