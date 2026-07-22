@@ -409,6 +409,51 @@
     max-width: 150px;
     outline: none;
         }
+        /* Fixture Row Styling */
+.match-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+}
+
+.m-team {
+    flex: 1;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+}
+
+.m-team.right { text-align: right; }
+
+.m-badge-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 80px;
+}
+
+.m-score-badge {
+    background: var(--bg);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 800;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    letter-spacing: 2px;
+}
+
+.m-status-label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: bold;
+}
     </style>
 </head>
 <body>
@@ -857,16 +902,36 @@ async function switchTourTab(type) {
                     </tbody>
                 </table>`;
         } else if (category === 'fixtures') {
-            // Fetch Fixtures for specific tournament ID
             const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
-            const data = await res.json();
-            content.innerHTML = data.map(f => `
-                <div class="player-row">
-                    <span>${f.playerA}</span>
-                    <b>${f.status === 'Completed' ? f.scoreA+'-'+f.scoreB : 'VS'}</b>
-                    <span>${f.playerB}</span>
-                </div>
-            `).join('') || '<p style="text-align:center; padding:20px;">No fixtures.</p>';
+            const matches = await res.json();
+
+            if (matches.length === 0) {
+                content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);">No fixtures scheduled for this tour.</p>';
+            } else {
+                content.innerHTML = matches.map(m => `
+                    <div class="match-card" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:15px; border-radius:15px; margin-bottom:10px; border:1px solid var(--border);">
+                    <!-- Left Player -->
+                        <div class="m-team" style="flex:1; font-weight:600; font-size:0.9rem; color:white;">
+                            ${m.playerA}
+                        </div>
+                        
+                        <!-- Center Badge (Score or VS) -->
+                        <div class="m-badge-area" style="display:flex; flex-direction:column; align-items:center; min-width:90px;">
+                            <div class="m-score-badge" style="background:var(--bg); padding:6px 12px; border-radius:8px; font-weight:800; color:var(--accent); border:1px solid var(--border); letter-spacing:1px;">
+                                ${m.status === 'Completed' ? `${m.scoreA} - ${m.scoreB}` : 'VS'}
+                                </div>
+                            <span style="font-size:0.6rem; color:var(--text-dim); text-transform:uppercase; font-weight:bold; margin-top:5px;">
+                                ${m.status}
+                            </span>
+                        </div>
+
+                        <!-- Right Player -->
+                        <div class="m-team" style="flex:1; font-weight:600; font-size:0.9rem; color:white; text-align:right;">
+                            ${m.playerB}
+                        </div>
+                    </div>
+                `).join('');
+            }
         }
         // ... (Repeat logic for boot/knockouts)
     } catch (e) {
