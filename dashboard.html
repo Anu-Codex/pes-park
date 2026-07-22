@@ -371,7 +371,7 @@
         async function deletePlayer(id) { if(confirm("Delete?")) { await fetch(`${API}/api/players/${id}`, { method: 'DELETE' }); location.reload(); } }
         async function deleteAchieve(id) { if(confirm("Remove?")) { await fetch(`${API}/api/achievements/${id}`, { method: 'DELETE' }); location.reload(); } }
 
-        loadAllData();
+        
         async function fillAllSelectors() {
     try {
         // 1. Fetch Players for both Match Result dropdowns
@@ -401,6 +401,7 @@
 
 // Call this function when the page loads
 fillAllSelectors();
+loadAllData();
     </script>
 </body>
 </html>
