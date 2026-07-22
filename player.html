@@ -94,15 +94,17 @@
     padding-bottom: 10px;
 }
 
+/* --- FIXED RECENT FORM DESIGN --- */
 .form-dots-wrapper {
-    display: flex; /* Aligns dots horizontally */
-    gap: 12px;     /* Space between each result */
-    margin-top: 8px;
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+    align-items: center;
 }
 
 .form-item {
     display: flex;
-    flex-direction: column; /* Puts dot on top of letter */
+    flex-direction: column; /* FORCES TEXT UNDER DOT */
     align-items: center;
     gap: 4px;
 }
@@ -110,19 +112,26 @@
 .dot {
     width: 12px;
     height: 12px;
-    border-radius: 50%; /* Makes it a circle */
+    border-radius: 50%;
 }
 
 .dot-letter {
     font-size: 10px;
     font-weight: 900;
-    text-transform: uppercase;
+    text-align: center;
 }
 
-/* Colors based on Image 2 */
-.f-win { background-color: #10b981; color: #10b981; }
-.f-loss { background-color: #ef4444; color: #ef4444; }
-.f-draw { background-color: #f59e0b; color: #f59e0b; }
+/* Win: Green */
+.f-win .dot { background-color: #10b981; }
+.f-win .dot-letter { color: #10b981; }
+
+/* Loss: Red */
+.f-loss .dot { background-color: #ef4444; }
+.f-loss .dot-letter { color: #ef4444; }
+
+/* Draw: White */
+.f-draw .dot { background-color: #ffffff; }
+.f-draw .dot-letter { color: #ffffff; }
         .captain-badge {
     display: inline-flex;
     align-items: center;
@@ -282,28 +291,40 @@
             document.getElementById('sGPM').innerText = playerMatches.length > 0 ? (g / playerMatches.length).toFixed(1) : "0.0";
 
             // 3. Recent Form (Last 5)
-            // --- LOGIC TO RENDER RECENT FORM (IMAGE 2 STYLE) ---
-const recent = playerMatches.slice(0, 5).reverse(); // Last 5 matches, newest on right
+            // --- LOGIC TO RENDER RECENT FORM ---
+const recentMatches = playerMatches.slice(0, 5).reverse();
+const formContainer = document.getElementById('recentFormDots');
 
-document.getElementById('recentFormDots').innerHTML = playerMatches.length > 0 ? recent.map(m => {
-    const isA = m.playerA === myName;
-    const myS = isA ? m.scoreA : m.scoreB;
-    const oppS = isA ? m.scoreB : m.scoreA;
-    
-    let resClass = '';
-    let char = '';
+if (playerMatches.length > 0) {
+    formContainer.innerHTML = recentMatches.map(m => {
+        const isA = m.playerA === myName;
+        const myS = isA ? m.scoreA : m.scoreB;
+        const oppS = isA ? m.scoreB : m.scoreA;
 
-    if (myS > oppS) { resClass = 'f-win'; char = 'W'; }
-    else if (myS === oppS) { resClass = 'f-draw'; char = 'D'; }
-    else { resClass = 'f-loss'; char = 'L'; }
+        let resClass = '';
+        let char = '';
 
-    return `
-        <div class="form-item">
-            <div class="dot ${resClass}"></div>
-            <span class="dot-letter ${resClass}">${char}</span>
-        </div>
-    `;
-}).join('') : '<span style="font-size:0.7rem; color:var(--text-dim);">No matches yet</span>';
+        if (myS > oppS) { 
+            resClass = 'f-win'; 
+            char = 'W'; 
+        } else if (myS < oppS) { 
+            resClass = 'f-loss'; 
+            char = 'L'; 
+        } else { 
+            resClass = 'f-draw'; 
+            char = 'D'; 
+        }
+
+        return `
+            <div class="form-item ${resClass}">
+                <div class="dot"></div>
+                <span class="dot-letter">${char}</span>
+            </div>
+        `;
+    }).join('');
+} else {
+    formContainer.innerHTML = '<span style="color:var(--text-dim); font-size:0.7rem;">No matches played</span>';
+}
 
             // 4. Match History & H2H Dropdown
             document.getElementById('historyList').innerHTML = playerMatches.slice(0, 10).map(m => {
