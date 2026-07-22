@@ -1142,6 +1142,53 @@ async function switchQuickTab() {
 
 // Call this function
 updateLeagueLeader();
+        // --- RENDERERS FOR INDIVIDUAL TOURS ---
+
+function renderSoloTour(container) {
+    createTourUI(container, 'solo', '#a855f7'); // Purple Theme
+}
+
+function renderQuickTour(container) {
+    createTourUI(container, 'quick', '#ef4444'); // Red Theme
+}
+
+function renderWeekendSeries(container) {
+    createTourUI(container, 'weekend', '#3b82f6'); // Blue Theme
+}
+
+// THE MASTER UI GENERATOR (Used by all tours)
+async function createTourUI(container, type, themeColor) {
+    container.innerHTML = `
+        <div class="tour-nav-row" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+            <h4 style="margin:0; font-size:0.8rem; color:${themeColor}; text-transform:uppercase;">${type} TOUR</h4>
+            
+            <select id="tourNameSelector" class="tour-name-select" onchange="switchTourTab('${type}')">
+                <option value="">Loading Tours...</option>
+            </select>
+
+            <select id="tourTabSelector" style="background:var(--bg); color:white; border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem;" onchange="switchTourTab('${type}')">
+                <option value="table">Points table</option>
+                <option value="fixtures">Fixtures</option>
+                <option value="boot">Golden Boot</option>
+            </select>
+        </div>
+        <div id="tourContent"></div>
+    `;
+
+    try {
+        const res = await fetch(`${API}/api/tournaments/list/${type}`);
+        const tours = await res.json();
+        const nameSelector = document.getElementById('tourNameSelector');
+        
+        if(tours.length > 0) {
+            nameSelector.innerHTML = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+            switchTourTab(type); 
+        } else {
+            nameSelector.innerHTML = '<option value="">No Tours Found</option>';
+            document.getElementById('tourContent').innerHTML = `<p style="text-align:center; padding:40px; color:var(--text-dim);">No ${type} tournaments active.</p>`;
+        }
+    } catch (e) { console.error(e); }
+}
     </script>
 
                     
