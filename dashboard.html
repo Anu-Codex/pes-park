@@ -47,6 +47,7 @@
             <button class="nav-tab" onclick="showSection('sec-tours', this)">Tours</button>
             <button class="nav-tab" onclick="showSection('sec-teams', this)">Teams</button>
             <button class="nav-tab" onclick="showSection('sec-prestige', this)">Prestige</button>
+            <button class="nav-tab" style="color: var(--danger);" onclick="showSection('sec-danger', this)">Danger Zone</button>
         </div>
 
         <!-- 1. GENERAL -->
@@ -181,7 +182,40 @@
                     <button onclick="updateCaptain(false)" class="delete-btn">Remove</button>
                 </div>
             </div>
+        </div> 
+<!-- 6. DANGER ZONE -->
+<div id="sec-danger" class="admin-section">
+    <div class="sub-box" style="border: 2px solid var(--danger); background: rgba(239, 68, 68, 0.05);">
+        <h3 style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h3>
+        <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;">
+            Warning: These actions are permanent and cannot be undone.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- Reset Tours -->
+            <div style="padding: 15px; border: 1px solid var(--border); border-radius: 12px;">
+                <h4 style="margin: 0; color: white;">Reset All Tournaments</h4>
+                <p style="font-size: 0.75rem; color: var(--text-dim);">Deletes every fixture and score from Auction, Solo, Weekend, and Quick tours.</p>
+                <button onclick="nuclearReset('tours')" class="delete-btn" style="width: 100%; margin-top: 10px;">Reset Fixtures & Scores</button>
+            </div>
+
+            <!-- Reset Rankings -->
+            <div style="padding: 15px; border: 1px solid var(--border); border-radius: 12px;">
+                <h4 style="margin: 0; color: white;">Reset Rankings</h4>
+                <p style="font-size: 0.75rem; color: var(--text-dim);">Wipes all Golden Boot (Goals) and Best Player (Ratings) data.</p>
+                <button onclick="nuclearReset('ranks')" class="delete-btn" style="width: 100%; margin-top: 10px;">Reset All Rankings</button>
+            </div>
+
+            <!-- Reset Player Stats -->
+            <div style="padding: 15px; border: 1px solid var(--border); border-radius: 12px;">
+                <h4 style="margin: 0; color: white;">Reset Player Values</h4>
+                <p style="font-size: 0.75rem; color: var(--text-dim);">Sets Market Value, Auction Price, and BDR Points to 0 for all players.</p>
+                <button onclick="nuclearReset('stats')" class="delete-btn" style="width: 100%; margin-top: 10px;">Reset Market Value & BDR</button>
+            </div>
         </div>
+    </div>
+</div>
+
     </div>
 
     <script>
@@ -259,6 +293,34 @@
             if (localStorage.getItem('isAdmin') !== 'true') window.location.href = 'login.html';
             loadAllData();
         };
+        async function nuclearReset(type) {
+    const firstCheck = confirm("ATTENTION: You are about to wipe data. Are you sure?");
+    if (!firstCheck) return;
+
+    const secondCheck = confirm("FINAL WARNING: This data will be deleted forever from MongoDB. Proceed?");
+    if (!secondCheck) return;
+
+    let url = "";
+    let method = "DELETE";
+
+    if (type === 'tours') url = `${API}/api/danger/reset-tours`;
+    if (type === 'ranks') url = `${API}/api/danger/reset-ranks`;
+    if (type === 'stats') {
+        url = `${API}/api/danger/reset-player-stats`;
+        method = "PUT";
+    }
+
+    try {
+        const res = await fetch(url, { method: method });
+        const result = await res.json();
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        }
+    } catch (e) {
+        alert("Reset failed. Check server connection.");
+    }
+        }
     </script>
 </body>
 </html>
