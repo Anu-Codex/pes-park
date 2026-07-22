@@ -217,20 +217,26 @@
     </div>
 </div>
         <div id="sec-smart" class="admin-section">
-    <!-- Part 1: Tournament Setup -->
-    <div class="sub-box">
-        <h4><i class="fa-solid fa-plus"></i> 1. Create Tournament</h4>
-        <select id="stType">
-            <option value="solo">Solo Tour</option>
-            <option value="auction">Auction Tour</option>
-            <option value="quick">Quick Tour</option>
-            <option value="weekend">Weekend Series</option>
-        </select>
-        <input type="text" id="stName" placeholder="Enter Tour Name (e.g. S1 Pro League)">
-        <p style="font-size:0.7rem; color:var(--text-dim)">Select participants from DB:</p>
-        <div id="stParticipantList" class="list-container" style="max-height:150px"></div>
-        <button onclick="createSmartTour()" class="btn-green">Create & Initialize Table</button>
+    <!-- Inside Part 1: Tournament Setup -->
+<div class="sub-box">
+    <h4><i class="fa-solid fa-plus"></i> 1. Create Tournament</h4>
+    <select id="stType">
+        <option value="solo">Solo Tour</option>
+        <option value="auction">Auction Tour</option>
+        <option value="quick">Quick Tour</option>
+        <option value="weekend">Weekend Series</option>
+    </select>
+    <input type="text" id="stName" placeholder="Enter Tour Name (e.g. S1 Pro League)">
+    
+    <p style="font-size:0.75rem; color:var(--text-dim); margin-bottom: 5px;">Select participants from database:</p>
+    
+    <!-- THIS IS THE BOX THAT IS CURRENTLY MISSING CONTENT -->
+    <div id="stParticipantList" class="list-container" style="max-height:180px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 10px; border-radius: 10px; overflow-y: auto; margin-bottom: 15px;">
+        <p style="text-align:center; font-size:0.8rem; color:var(--text-dim);">Loading players...</p>
     </div>
+    
+    <button onclick="createSmartTour()" class="btn-green">Create & Initialize Table</button>
+</div>
 
     <!-- Part 2: Fixture Generator -->
     <div class="sub-box">
