@@ -223,10 +223,14 @@
     <div style="margin-top: 10px;">
         <p style="font-size: 0.75rem; color: var(--gold); margin-bottom: 5px;">TROPHY WINNERS (Yellow Area Bottom)</p>
         <div id="trophyInputs">
-            <div class="grid-2" style="margin-bottom: 8px;">
-                <input type="text" placeholder="Trophy Name">
-                <input type="text" placeholder="Winner Name">
-            </div>
+    <!-- Updated grid to 3 columns or stacked for better mobile view -->
+    <div class="sub-box" style="background: rgba(255,255,255,0.05); margin-bottom: 10px;">
+        <input type="text" placeholder="Trophy Name (e.g. UCL)" style="margin-bottom:5px;">
+        <div class="grid-2">
+            <input type="text" placeholder="Winner Name">
+            <input type="text" placeholder="Runner Name"> <!-- NEW FIELD -->
+        </div>
+    </div>
         </div>
         <button type="button" onclick="addHofRow('trophyInputs', 'trophy')" style="background:#1e293b; padding:8px; font-size:0.7rem; width: auto;">+ Add Trophy</button>
     </div>
@@ -793,16 +797,18 @@ function addHofRow(containerId, type) {
 // Ensure saveAdvancedHof uses the CORRECT IDs
 async function saveAdvancedHof() {
     const sName = document.getElementById('hofSeasonName').value;
-    if(!sName) return alert("Please enter a Season Name!");
-
+    
+    // Map Highlights (Remains same)
     const highlights = Array.from(document.querySelectorAll('#highlightInputs .grid-2')).map(row => ({
         label: row.querySelectorAll('input')[0].value,
         value: row.querySelectorAll('input')[1].value
     })).filter(x => x.label !== "");
 
-    const trophies = Array.from(document.querySelectorAll('#trophyInputs .grid-2')).map(row => ({
-        title: row.querySelectorAll('input')[0].value,
-        winner: row.querySelectorAll('input')[1].value
+    // UPDATED: Map Trophy Winners with Runner field
+    const trophies = Array.from(document.querySelectorAll('#trophyInputs .sub-box')).map(box => ({
+        title: box.querySelectorAll('input')[0].value,
+        winner: box.querySelectorAll('input')[1].value,
+        runner: box.querySelectorAll('input')[2].value // Capture Runner
     })).filter(x => x.title !== "");
 
     const data = { seasonName: sName, specialHighlights: highlights, trophyWinners: trophies };
@@ -813,7 +819,7 @@ async function saveAdvancedHof() {
         body: JSON.stringify(data)
     });
 
-    if(res.ok) alert("✅ Records Published to HOF Site!");
+    if(res.ok) alert("✅ HOF Records Published with Runners!");
 }
         async function createAKFixture() {
     const data = {
