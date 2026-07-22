@@ -344,6 +344,25 @@
         Confirm Registration
     </button>
 </div>
+            <div class="sub-box" style="border-left: 4px solid var(--gold);">
+    <h4><i class="fa-solid fa-sitemap"></i> Auction Knockout Generator</h4>
+    <select id="akTourSelect" onchange="loadAKParticipants()"><option value="">Select Auction Tour...</option></select>
+    
+    <div class="grid-2">
+        <select id="akStage">
+            <option value="Qualifier 1">Qualifier 1 (1st vs 2nd)</option>
+            <option value="Eliminator">Eliminator (4th vs 5th)</option>
+            <option value="Knockout Round">Knockout Round (3rd vs Winner of Elim)</option>
+            <option value="Qualifier 2">Qualifier 2 (Loser Q1 vs Winner KR)</option>
+            <option value="Grand Final">Grand Final</option>
+        </select>
+        <div style="display:flex; gap:5px">
+            <select id="akPlayerA"></select>
+            <select id="akPlayerB"></select>
+        </div>
+    </div>
+    <button onclick="createAKFixture()" class="btn-gold">Create Knockout Match</button>
+            </div>
         </div>
     <script>
     const API = "https://pes-park-backend.onrender.com";
@@ -769,6 +788,22 @@ async function saveAdvancedHof() {
 
     if(res.ok) alert("✅ Records Published to HOF Site!");
 }
+        async function createAKFixture() {
+    const data = {
+        tourId: document.getElementById('akTourSelect').value,
+        stage: document.getElementById('akStage').value,
+        playerA: document.getElementById('akPlayerA').value,
+        playerB: document.getElementById('akPlayerB').value,
+        type: "Knockout" // Mark as knockout for filtering
+    };
+
+    const res = await fetch(`${API}/api/smart/create-fixture`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    if(res.ok) alert(data.stage + " Created!");
+        }
     </script>
 
 </body>
