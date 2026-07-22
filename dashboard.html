@@ -330,15 +330,13 @@
             // --- Add these lines inside your existing data loading logic ---
 
 // 1. Fill the Tournament Selector
-const tourRes = await fetch(`${API}/api/smart/tournaments`);
+
 const tours = await tourRes.json();
 const regTourSel = document.getElementById('regTourSelect');
 if(regTourSel) regTourSel.innerHTML = '<option value="">Select Tournament...</option>' + 
     tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
 
 // 2. Fill the Global Player Selector (assuming 'players' is your global list)
-const pRes = await fetch(`${API}/api/players`);
-const players = await pRes.json();
 const regPlayerSel = document.getElementById('regPlayerSelect');
 if(regPlayerSel) regPlayerSel.innerHTML = '<option value="">Select Player from DB...</option>' + 
     players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
