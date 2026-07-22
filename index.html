@@ -1376,6 +1376,32 @@ async function createTourUI(container, type, themeColor) {
         }
     } catch (e) { console.error(e); }
 }
+        async function updateTopStats() {
+    try {
+        const res = await fetch(`${API}/api/stats`);
+        const stats = await res.json();
+
+        // 1. Update BDR Box
+        document.getElementById('bdrVal').innerText = stats.bdrValue || 0;
+        document.getElementById('bdrName').innerText = stats.bdrName || "None";
+
+        // 2. Update Highest MV Box
+        document.getElementById('mvVal').innerText = (stats.mvValue || 0) + "M";
+        document.getElementById('mvName').innerText = stats.mvName || "None";
+
+        // 3. Update Team Count
+        document.getElementById('teamCount').innerText = stats.teamsCount || 0;
+
+        // 4. Update Player Count
+        document.getElementById('playerCount').innerText = stats.playersCount || 0;
+
+    } catch (error) {
+        console.error("Stats Update Error:", error);
+    }
+}
+
+// Call this inside your window.onload or initPage
+updateTopStats();
     </script>
 
                     
