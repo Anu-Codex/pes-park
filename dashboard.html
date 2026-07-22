@@ -289,6 +289,21 @@
                 document.getElementById('hofAdminList').innerHTML = hof.map(h => `
                     <div class="row-item"><span>${h.winnerName}</span><button class="delete-btn" onclick="deleteAchieve('${h._id}')">X</button></div>
                 `).join('');
+                // --- Inside loadAllData() ---
+    const tourRes = await fetch(`${API}/api/smart/tournaments`);
+    const allTours = await tourRes.json();
+
+    // Fill "Generate Fixture" tournament selector
+    const sfTour = document.getElementById('sfTourSelect');
+    // Fill "Update Scores" tournament selector
+    const srTour = document.getElementById('srTourSelect');
+
+    const tourOptions = allTours.map(t => `<option value="${t._id}">${t.name} (${t.type})</option>`).join('');
+    
+    if(sfTour) sfTour.innerHTML = '<option value="">Select Tournament...</option>' + tourOptions;
+    if(srTour) srTour.innerHTML = '<option value="">Select Tournament...</option>' + tourOptions;
+
+} catch (e) { console.error("Smart Tours Load Error:", e); }
 
                 // Teams List
                 const tRes = await fetch(`${API}/api/teams/all`);
@@ -399,6 +414,17 @@ async function submitSmartScore(fixtureId) {
         body: JSON.stringify({ scoreA: sA, scoreB: sB })
     });
     alert("Score Updated & Points Added to Table!");
+        }
+        async function loadTourParticipants() {
+    const tourId = document.getElementById('sfTourSelect').value;
+    if(!tourId) return;
+
+    const res = await fetch(`${API}/api/smart/participants/${tourId}`);
+    const parts = await res.json();
+    
+    const options = parts.map(p => `<option value="${p}">${p}</option>`).join('');
+    document.getElementById('sfPlayerA').innerHTML = options;
+    document.getElementById('sfPlayerB').innerHTML = options;
         }
     </script>
 </body>
