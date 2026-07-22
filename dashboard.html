@@ -249,9 +249,28 @@
         <select id="srTourSelect" onchange="loadTourFixtures()"><option>Select Tournament...</option></select>
         <div id="srFixtureList" class="list-container"></div>
     </div>
+            <!-- Inside <div id="sec-smart" ...> -->
+
+<div class="sub-box" style="border-left: 4px solid var(--accent);">
+    <h4><i class="fa-solid fa-user-check"></i> Register Participant to Tour</h4>
+    <div class="grid-2">
+        <!-- Select Tournament -->
+        <select id="regTourSelect">
+            <option value="">Select Tournament...</option>
+        </select>
+        
+        <!-- Select Player from Global Database -->
+        <select id="regPlayerSelect">
+            <option value="">Select Player from DB...</option>
+        </select>
+    </div>
+    <button onclick="registerPlayerToTour()" class="btn-green" style="margin-top: 10px;">
+        Confirm Registration
+    </button>
+</div>
         </div>
 
-    </div>
+    
 
     <script>
         const API = "https://pes-park-backend.onrender.com";
@@ -308,8 +327,25 @@
     
     if(sfTour) sfTour.innerHTML = '<option value="">Select Tournament...</option>' + tourOptions;
     if(srTour) srTour.innerHTML = '<option value="">Select Tournament...</option>' + tourOptions;
+            // --- Add these lines inside your existing data loading logic ---
+
+// 1. Fill the Tournament Selector
+const tourRes = await fetch(`${API}/api/smart/tournaments`);
+const tours = await tourRes.json();
+const regTourSel = document.getElementById('regTourSelect');
+if(regTourSel) regTourSel.innerHTML = '<option value="">Select Tournament...</option>' + 
+    tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+
+// 2. Fill the Global Player Selector (assuming 'players' is your global list)
+const pRes = await fetch(`${API}/api/players`);
+const players = await pRes.json();
+const regPlayerSel = document.getElementById('regPlayerSelect');
+if(regPlayerSel) regPlayerSel.innerHTML = '<option value="">Select Player from DB...</option>' + 
+    players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
             
         }
+
+
 
         // FORM HANDLERS
         const attach = (id, url, method, getData) => {
@@ -442,6 +478,28 @@ async function submitSmartScore(fixtureId) {
     } catch (err) {
         console.error("Error loading participants:", err);
         alert("Failed to load participants from database.");
+    }
+        }
+        async function registerPlayerToTour() {
+    const tourId = document.getElementById('regTourSelect').value;
+    const playerName = document.getElementById('regPlayerSelect').value;
+
+    if (!tourId || !playerName) return alert("Please select both Tournament and Player!");
+
+    try {
+        const res = await fetch(`${API}/api/smart/register-player`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tourId, playerName })
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            alert(result.message);
+            // Optional: refresh other dropdowns if needed
+        }
+    } catch (err) {
+        alert("Registration failed. check connection.");
     }
         }
     </script>
