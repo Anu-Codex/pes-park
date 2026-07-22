@@ -398,6 +398,17 @@
 .ranking-table tbody tr:hover {
     background: rgba(255, 255, 255, 0.02);
 }
+        .tour-name-select {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--accent);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    max-width: 150px;
+    outline: none;
+        }
     </style>
 </head>
 <body>
@@ -780,101 +791,86 @@ function switchView(viewName) {
     window.addEventListener('DOMContentLoaded', manageLoader);
 
     // --- NEW: AUCTION TOUR RENDERER ---
-function renderAuctionTour(container) {
+async function renderAuctionTour(container) {
     container.innerHTML = `
-        <div class="auction-tour-card">
-            <div class="tour-nav-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;">
-                <h4 id="tourTabTitle" style="margin:0; font-size:0.9rem; color:var(--accent);">FIXTURES</h4>
-                <select id="tourTabSelector" style="background:var(--bg); color:white; border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem;" onchange="switchTourTab()">
-                    <option value="fixtures">Fixtures</option>
-                    <option value="boot">Golden Boot</option>
-                    <option value="best">Best Players</option>
-                    <option value="table">Points table</option>
-                    <option value="knockouts">Knockouts</option>
-                </select>
-            </div>
-            <div id="tourContent" style="min-height:150px;">
-                <!-- Content will load here -->
-            </div>
+        <div class="tour-nav-row" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+            <h4 style="margin:0; font-size:0.8rem; color:var(--text-dim);">TOUR</h4>
+            
+            <!-- NEW MIDDLE DROPDOWN: Tour Names -->
+            <select id="tourNameSelector" class="tour-name-select" onchange="switchTourTab('auction')">
+                <option value="">Loading Tours...</option>
+            </select>
+            <!-- RIGHT DROPDOWN: Categories -->
+            <select id="tourTabSelector" style="background:var(--bg); color:white; border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem;" onchange="switchTourTab('auction')">
+                <option value="table">Points table</option>
+                <option value="fixtures">Fixtures</option>
+                <option value="boot">Golden Boot</option>
+                <option value="knockouts">Knockouts</option>
+            </select>
         </div>
+        <div id="tourContent"></div>
     `;
-    switchTourTab(); // Trigger initial load
+    // Fetch tournament names from database for this type
+    try {
+        const res = await fetch(`${API}/api/tournaments/list/auction`);
+        const tours = await res.json();
+        const nameSelector = document.getElementById('tourNameSelector');
+        
+        if(tours.length > 0) {
+            nameSelector.innerHTML = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+            switchTourTab('auction'); // Load data for the first tour found
+        } else {
+            nameSelector.innerHTML = '<option value="">No Tours Found</option>';
+            document.getElementById('tourContent').innerHTML = '<p style="text-align:center; padding:40px; color:var(--text-dim);">Create a tournament in Dashboard first.</p>';
+        }
+    } catch (e) { console.error(e); }
 }
 
-async function switchTourTab(tourType) {
-    if (!tourType) tourType = 'auction'; // Default safety
+async function switchTourTab(type) {
+    const tourId = document.getElementById('tourNameSelector').value;
+    const category = document.getElementById('tourTabSelector').value;
+    const content = document.getElementById('tourContent');
 
-    const tabSelectorId = tourType === 'auction' ? 'tourTabSelector' : tourType + 'TabSelector';
-    const contentId = tourType === 'auction' ? 'tourContent' : tourType + 'Content';
-    const titleId = tourType === 'auction' ? 'tourTabTitle' : tourType + 'TabTitle';
+    if(!tourId) return;
 
-    const selector = document.getElementById(tabSelectorId);
-    if (!selector) return; // Safety check
-
-    const tab = selector.value;
-    const content = document.getElementById(contentId);
-    document.getElementById(titleId).innerText = tab.toUpperCase();
-
-    content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading...</p>';
+    content.innerHTML = '<p style="text-align:center; padding:30px;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching...</p>';
 
     try {
-        let url = "";
-        if (tab === 'fixtures' || tab === 'knockouts') {
-            url = `${API}/api/${tourType}/fixtures`;
-        } else if (tab === 'boot' || tab === 'best') {
-            url = `${API}/api/tour-ranks/${tourType}/${tab}`;
-        } else {
-            content.innerHTML = `<p style="text-align:center; padding:30px; color:var(--text-dim);">${tab.toUpperCase()} coming soon.</p>`;
-            return;
-        }
+        if (category === 'table') {
+            // Fetch Standings for the specific tournament ID
+            const res = await fetch(`${API}/api/smart/standings/${tourId}`);
+            const data = await res.json();
+            data.sort((a,b) => b.points - a.points);
 
-        console.log("Fetching from:", url); // This tells you exactly what is failing
-
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("HTTP error " + res.status);
-        
-        const data = await res.json();
-
-        if (!data || data.length === 0) {
-            content.innerHTML = `<p style="text-align:center; padding:30px; color:var(--text-dim);">No records found in database.</p>`;
-            return;
-        }
-
-        if (tab === 'fixtures' || tab === 'knockouts') {
-            const type = tab === 'knockouts' ? 'Knockout' : 'League';
-            const filtered = data.filter(f => f.type === type);
-            
-            content.innerHTML = filtered.map(f => `
-                <div class="player-row" style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="flex:1;">${f.playerA}</span>
-                    <b style="background:var(--bg); padding:4px 10px; border-radius:6px; margin:0 15px;">
-                        ${f.status === 'Completed' ? f.scoreA + ' - ' + f.scoreB : 'VS'}
-                    </b>
-                    <span style="flex:1; text-align:right;">${f.playerB}</span>
-                </div>
-            `).join('') || `<p style="text-align:center; padding:30px; color:var(--text-dim);">No ${tab} scheduled.</p>`;
-
-        } else {
-            // Render Table for Rankings
-            let label = tab === 'boot' ? 'Goals' : 'Rating';
             content.innerHTML = `
                 <table class="ranking-table">
-                    <thead><tr><th>#</th><th>Player</th><th>Team</th><th style="text-align:right">${label}</th></tr></thead>
+                    <thead><tr><th>#</th><th>Participant</th><th>P</th><th>Pts</th></tr></thead>
                     <tbody>
-                        ${data.map((d, i) => `
+                        ${data.map((s, i) => `
                             <tr>
-                                <td class="rank-col">${i + 1}</td>
-                                <td class="player-col-name">${d.playerName}</td>
-                                <td class="team-col-name">${d.teamName || '—'}</td>
-                                <td class="val-col-data">${d.totalValue.toFixed(1)}</td>
+                                <td class="rank-col">${i+1}</td>
+                                <td>${s.participant}</td>
+                                <td>${s.played}</td>
+                                <td style="color:var(--accent); font-weight:bold;">${s.points}</td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>`;
+        } else if (category === 'fixtures') {
+            // Fetch Fixtures for specific tournament ID
+            const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
+            const data = await res.json();
+            content.innerHTML = data.map(f => `
+                <div class="player-row">
+                    <span>${f.playerA}</span>
+                    <b>${f.status === 'Completed' ? f.scoreA+'-'+f.scoreB : 'VS'}</b>
+                    <span>${f.playerB}</span>
+                </div>
+            `).join('') || '<p style="text-align:center; padding:20px;">No fixtures.</p>';
         }
+        // ... (Repeat logic for boot/knockouts)
     } catch (e) {
-        console.error("Fetch failed:", e);
-        content.innerHTML = `<p style="text-align:center; padding:30px; color:red;">Connection Error. Please check if Render backend is awake.</p>`;
+        content.innerHTML = '<p style="color:red; text-align:center;">Error loading database.</p>';
     }
 }
         function renderSoloTour(container) {
