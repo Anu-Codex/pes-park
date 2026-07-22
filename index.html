@@ -835,16 +835,17 @@ function switchView(viewName) {
 
     window.addEventListener('DOMContentLoaded', manageLoader);
 
-    // --- NEW: AUCTION TOUR RENDERER ---
+    // --- NEW: AUCTION TOUR RENDERER (FIXED) ---
 async function renderAuctionTour(container) {
     container.innerHTML = `
         <div class="tour-nav-row" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;">
-            <h4 style="margin:0; font-size:0.8rem; color:var(--text-dim);">TOUR</h4>
+            <h4 style="margin:0; font-size:0.8rem; color:var(--text-dim);" id="tourTabTitle">TOUR</h4>
             
             <!-- NEW MIDDLE DROPDOWN: Tour Names -->
             <select id="tourNameSelector" class="tour-name-select" onchange="switchTourTab('auction')">
                 <option value="">Loading Tours...</option>
             </select>
+
             <!-- RIGHT DROPDOWN: Categories -->
             <select id="tourTabSelector" style="background:var(--bg); color:white; border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem;" onchange="switchTourTab('auction')">
                 <option value="table">Points table</option>
@@ -855,18 +856,26 @@ async function renderAuctionTour(container) {
         </div>
         <div id="tourContent"></div>
     `;
-    // --- Ensure this is how you load the middle dropdown ---
-try {
-    const res = await fetch(`${API}/api/tournaments/list/${tourType}`);
-    const tours = await res.json();
-    const nameSelector = document.getElementById('tourNameSelector');
-    
-    // CRITICAL: value MUST be t._id
-    nameSelector.innerHTML = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
-    
-    // Trigger the first load
-    switchTourTab(tourType); 
-} catch (e) { console.error(e); }
+
+    // Fetch tournament names specifically for 'auction'
+    try {
+        const res = await fetch(`${API}/api/tournaments/list/auction`);
+        const tours = await res.json();
+        const nameSelector = document.getElementById('tourNameSelector');
+        
+        if(tours && tours.length > 0) {
+            nameSelector.innerHTML = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+            
+            // Trigger the initial load for the first auction tour found
+            switchTourTab('auction'); 
+        } else {
+            nameSelector.innerHTML = '<option value="">No Tours Found</option>';
+            document.getElementById('tourContent').innerHTML = '<p style="text-align:center; padding:40px; color:var(--text-dim);">No Auction Tournaments created yet.</p>';
+        }
+    } catch (e) { 
+        console.error("Fetch Error:", e);
+        document.getElementById('tourContent').innerHTML = '<p style="color:red; text-align:center;">Database Error.</p>';
+    }
 }
 
 async function switchTourTab(type) {
