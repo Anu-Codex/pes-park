@@ -556,6 +556,36 @@
     border-left: 3px solid var(--gold);
 }
 .row-highlight { background: rgba(16, 185, 129, 0.05); border-left: 3px solid var(--accent); }
+        /* Market Value Table Styling */
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.ranking-table thead th {
+    color: var(--text-dim);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    padding: 12px 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.ranking-table tbody td {
+    padding: 14px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.9rem;
+}
+
+.rank-col {
+    font-weight: 800;
+    color: var(--accent); /* Neon Green for the rank number */
+}
+
+/* Hover effect */
+.ranking-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
     </style>
 </head>
 <body>
@@ -851,43 +881,53 @@
         container.innerHTML = html;
     }
         function renderMarketValues(container) {
-    // Sort players by Market Value (Highest first)
+    // 1. Sort players by Market Value (High to Low)
     const sorted = [...allPlayers].sort((a, b) => (b.marketValue || 0) - (a.marketValue || 0));
 
     let html = `
         <div class="market-header">
             <div>
-                <h5>MARKET VALUES</h5>
-                <h3>Player valuations</h3>
+                <h5 style="color:var(--text-dim); margin:0; font-size:0.7rem; letter-spacing:1px;">VALUATIONS</h5>
+                <h3 style="margin:5px 0 0; font-size:1.3rem;">Market Value List</h3>
             </div>
-            <i class="fa-solid fa-chart-line market-icon"></i>
+            <i class="fa-solid fa-chart-line" style="color:var(--accent); font-size:1.3rem;"></i>
         </div>
-        <div class="market-table-header">
-            <span style="width: 35px;">#</span>
-            <span style="flex: 1; margin-left: 15px;">Player</span>
-            <span style="width: 130px;">Team</span>
-        </div>
+        
+        <table class="ranking-table">
+            <thead>
+                <tr>
+                    <th style="text-align:left; width:50px;">#</th>
+                    <th style="text-align:left;">Player</th>
+                    <th style="text-align:right;">Value</th>
+                </tr>
+            </thead>
+            <tbody>
     `;
 
     html += sorted.map((p, index) => {
         const rank = index + 1;
+        // Format value: if 100, shows 100M
+        const valueDisplay = (p.marketValue || 0) + "M";
+
         return `
-            <div class="market-row" onclick="window.location.href='player.html?id=${p._id}'">
-                <div class="m-rank ${rank === 1 ? 'top-1' : ''}">${rank}</div>
-                <div class="m-player-cell">
-                    <img src="${p.image || 'https://via.placeholder.com/45'}" class="m-avatar" onerror="this.src='https://via.placeholder.com/45'">
-                    <span class="m-name">${p.name}</span>
-                </div>
-                <div class="m-team-cell">
-                    ${p.teamName ? `
-                        <img src="${p.teamLogo || 'https://via.placeholder.com/28'}" class="m-t-logo">
-                        <span class="m-t-name">${p.teamName}</span>
-                    ` : '<span style="color:#1e293b; font-weight:bold;">—</span>'}
-                </div>
-            </div>
+            <tr onclick="window.location.href='player.html?id=${p._id}'" style="cursor:pointer">
+                <td class="rank-col">${rank}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <img src="${p.image || 'https://via.placeholder.com/40'}" 
+                             style="width:35px; height:35px; border-radius:8px; object-fit:cover;"
+                             onerror="this.src='https://via.placeholder.com/40'">
+                        <span style="font-weight:600; color:white;">${p.name}</span>
+                    </div>
+                </td>
+                <td style="text-align:right;">
+                    <b style="color:var(--accent); font-size:1rem;">${valueDisplay}</b>
+                </td>
+            </tr>
         `;
     }).join('');
 
+    html += `</tbody></table>`;
     container.innerHTML = html;
         }
         // 1. Toggle Sidebar Menu
