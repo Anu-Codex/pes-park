@@ -78,28 +78,125 @@
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+        /* Navigation Menu Styling */
+.admin-nav {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto; /* Allows scrolling on mobile */
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    white-space: nowrap;
+}
+
+.nav-tab {
+    background: var(--card-bg);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.nav-tab.active {
+    background: var(--accent);
+    color: #060b13;
+    border-color: var(--accent);
+}
+
+/* Logic for Hiding/Showing Sections */
+.admin-section {
+    display: none; /* All hidden by default */
+}
+
+.admin-section.active-section {
+    display: block; /* Only active group shows */
+    animation: fadeIn 0.4s ease;
+}
+
+.sub-box {
+    background: rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 12px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
     </style>
 </head>
 <body>
 
     <div class="dashboard-wrapper">
-        <h1>Admin Dashboard</h1>
+    <h1>Admin Dashboard</h1>
 
-        <!-- 1. LEAGUE OVERVIEW -->
-        <div class="admin-section">
-            <h3 style="color: var(--accent);"><i class="fa-solid fa-chart-line"></i> League Overview (Blue Area)</h3>
-            <form id="statsForm">
-                <div class="grid-2">
-                    <input type="text" id="bdrLeader" placeholder="BDR Leader Name">
-                    <input type="number" id="bdrValue" placeholder="BDR Points">
-                    <input type="text" id="highestMV" placeholder="Highest MV Name">
-                    <input type="number" id="mvValue" placeholder="MV Value">
-                </div>
-                <input type="number" id="teamsCount" placeholder="Total Teams Count" style="margin-top: 12px;">
-                <button type="submit" class="btn-green">Update Main Stats</button>
-            </form>
+    <!-- NEW: Dashboard Navigation Menu -->
+    <div class="admin-nav">
+        <button class="nav-tab active" onclick="showSection('sec-league', this)">General</button>
+        <button class="nav-tab" onclick="showSection('sec-players', this)">Players</button>
+        <button class="nav-tab" onclick="showSection('sec-tours', this)">Tournaments</button>
+        <button class="nav-tab" onclick="showSection('sec-teams', this)">Teams</button>
+        <button class="nav-tab" onclick="showSection('sec-prestige', this)">Prestige</button>
+    </div>
+
+    <!-- GROUP 1: GENERAL STATS -->
+    <div id="sec-league" class="admin-section active-section">
+        <h3 style="color: var(--accent);"><i class="fa-solid fa-chart-line"></i> League Overview</h3>
+        <form id="statsForm">
+            <!-- ... your existing statsForm code ... -->
+        </form>
+    </div>
+
+    <!-- GROUP 2: PLAYER MANAGEMENT -->
+    <div id="sec-players" class="admin-section">
+        <h3><i class="fa-solid fa-user-plus"></i> Add & Manage Players</h3>
+        <form id="playerForm"> <!-- ... existing add player code ... --> </form>
+        <hr>
+        <div id="adminPlayerList" class="list-container"> <!-- ... existing list code ... --> </div>
+    </div>
+
+    <!-- GROUP 3: TOURNAMENTS -->
+    <div id="sec-tours" class="admin-section">
+        <!-- Auction Tour Box -->
+        <div class="sub-box" style="border-left: 4px solid var(--accent);">
+            <h4>Auction Tour</h4>
+            <form id="tourMatchForm"> <!-- existing auction form --> </form>
         </div>
+        <!-- Solo Tour Box -->
+        <div class="sub-box" style="border-left: 4px solid #a855f7; margin-top:20px;">
+            <h4>Solo Tour</h4>
+            <form id="soloMatchForm"> <!-- existing solo form --> </form>
+        </div>
+        <!-- Repeat for Weekend and Quick Tours inside this section -->
+    </div>
 
+    <!-- GROUP 4: TEAMS & MATCHES -->
+    <div id="sec-teams" class="admin-section">
+        <div class="sub-box">
+             <h4>Assign Players to Team</h4>
+             <form id="teamAssignForm"> <!-- existing team assign form --> </form>
+        </div>
+        <div class="sub-box" style="margin-top:20px;">
+             <h4>Team Points (Leaderboard)</h4>
+             <form id="teamPointsForm"> <!-- existing points form --> </form>
+        </div>
+    </div>
+
+    <!-- GROUP 5: PRESTIGE (HOF & CAPTAIN) -->
+    <div id="sec-prestige" class="admin-section">
+        <div class="sub-box">
+            <h4>Hall of Fame</h4>
+            <form id="hofForm"> <!-- existing HOF form --> </form>
+        </div>
+        <div class="sub-box" style="margin-top:20px;">
+            <h4>Captaincy</h4>
+            <form id="capForm"> <!-- existing captain form --> </form>
+        </div>
+    </div>
+    </div>
         <!-- 2. ADD PLAYER -->
         <div class="admin-section">
             <h3><i class="fa-solid fa-user-plus"></i> Add New Player</h3>
@@ -594,6 +691,37 @@ fillAllSelectors();
             location.reload();
         }
     };
+function showSection(sectionId, btnElement) {
+    // 1. Hide all sections
+    document.querySelectorAll('.admin-section').forEach(section => {
+        section.classList.remove('active-section');
+    });
+
+    // 2. Deactivate all tabs
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+
+    // 3. Show the chosen section
+    document.getElementById(sectionId).classList.add('active-section');
+
+    // 4. Highlight the clicked tab
+    btnElement.classList.add('active');
+    
+    // Save preference so it stays on refresh
+    localStorage.setItem('activeDashboardTab', sectionId);
+}
+
+// Optional: Load the last tab used on refresh
+window.addEventListener('DOMContentLoaded', () => {
+    const lastTab = localStorage.getItem('activeDashboardTab');
+    if(lastTab) {
+        const btn = Array.from(document.querySelectorAll('.nav-tab'))
+                         .find(b => b.getAttribute('onclick').includes(lastTab));
+        if(btn) showSection(lastTab, btn);
+    }
+});
+
     </script>
 </body>
 </html>
