@@ -537,6 +537,49 @@ async function submitSmartScore(fixtureId) {
 
     if(res.ok) alert("Stats Saved for " + data.tour + "!");
         }
+        // --- FIXED CREATE TOUR FUNCTION ---
+async function createSmartTour() {
+    const tourName = document.getElementById('stName').value;
+    const tourType = document.getElementById('stType').value;
+    
+    // Get all checked players from the participant list
+    const checkedBoxes = document.querySelectorAll('.st-cb:checked');
+    const selectedParticipants = Array.from(checkedBoxes).map(cb => cb.value);
+
+    if (!tourName || !tourType) {
+        alert("Please enter a Tour Name and select a Type!");
+        return;
+    }
+
+    if (selectedParticipants.length === 0) {
+        alert("Please select at least one participant from the list!");
+        return;
+    }
+
+    const data = {
+        name: tourName,
+        type: tourType, // This ensures it shows up in the correct Solo/Auction/Quick page
+        participants: selectedParticipants
+    };
+
+    try {
+        const res = await fetch(`${API}/api/smart/create-tour`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            alert(`✅ Tournament "${tourName}" created and Point Table initialized!`);
+            location.reload(); // Refresh to update all dropdowns
+        } else {
+            alert("❌ Error: " + result.error);
+        }
+    } catch (err) {
+        alert("❌ Failed to connect to server.");
+    }
+}
     </script>
 
 </body>
