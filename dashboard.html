@@ -289,8 +289,14 @@
                 document.getElementById('hofAdminList').innerHTML = hof.map(h => `
                     <div class="row-item"><span>${h.winnerName}</span><button class="delete-btn" onclick="deleteAchieve('${h._id}')">X</button></div>
                 `).join('');
-                // --- Inside loadAllData() ---
-    const tourRes = await fetch(`${API}/api/smart/tournaments`);
+                
+                // Teams List
+                const tRes = await fetch(`${API}/api/teams/all`);
+                const teams = await tRes.json();
+                document.getElementById('tpName').innerHTML = '<option value="">Select Team...</option>' + teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+
+            } catch(e) { console.log("Init Error"); }
+            const tourRes = await fetch(`${API}/api/smart/tournaments`);
     const allTours = await tourRes.json();
 
     // Fill "Generate Fixture" tournament selector
@@ -302,13 +308,7 @@
     
     if(sfTour) sfTour.innerHTML = '<option value="">Select Tournament...</option>' + tourOptions;
     if(srTour) srTour.innerHTML = '<option value="">Select Tournament...</option>' + tourOptions;
-
-                // Teams List
-                const tRes = await fetch(`${API}/api/teams/all`);
-                const teams = await tRes.json();
-                document.getElementById('tpName').innerHTML = '<option value="">Select Team...</option>' + teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
-
-            } catch(e) { console.log("Init Error"); }
+            
         }
 
         // FORM HANDLERS
