@@ -219,6 +219,9 @@
     <h4 style="color:var(--gold)">Database Tools</h4>
     <p style="font-size:0.7rem; color:var(--text-dim);">Click this to calculate goals from all past matches into the Golden Boot list.</p>
     <button onclick="triggerGoalSync()" class="btn-gold">Sync All Previous Goals</button>
+    <button onclick="syncTourTable()" class="btn-gold" style="margin-top: 10px;">
+    <i class="fa-solid fa-sync"></i> Sync Points Table from History
+    </button>
     </div>
 </div>
         <div id="sec-smart" class="admin-section">
@@ -624,6 +627,22 @@ async function createSmartTour() {
     if(data.success) {
         alert("✅ All historical goals have been added to the rankings!");
         location.reload();
+    }
+        }
+        async function syncTourTable() {
+    const tourId = document.getElementById('srTourSelect').value;
+    if (!tourId) return alert("Select a tournament first!");
+
+    if (!confirm("This will rebuild the points table using all completed fixtures. Continue?")) return;
+
+    try {
+        const res = await fetch(`${API}/api/smart/recalculate-table/${tourId}`);
+        const result = await res.json();
+        if (result.success) {
+            alert("✅ " + result.message);
+        }
+    } catch (e) {
+        alert("❌ Sync failed.");
     }
         }
     </script>
