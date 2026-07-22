@@ -520,6 +520,23 @@ async function submitSmartScore(fixtureId) {
         alert("Failed to connect to server.");
     }
 }
+        async function saveTourStats() {
+    const data = {
+        tour: document.getElementById('tsTour').value, // solo, quick, weekend, auction
+        category: document.getElementById('tsCat').value, // boot, best
+        playerName: document.getElementById('tsPlayer').options[document.getElementById('tsPlayer').selectedIndex].text,
+        totalValue: parseFloat(document.getElementById('tsTotal').value),
+        matches: parseInt(document.getElementById('tsMatches').value)
+    };
+
+    const res = await fetch(`${API}/api/tour-ranks`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+
+    if(res.ok) alert("Stats Saved for " + data.tour + "!");
+        }
     </script>
 
 </body>
