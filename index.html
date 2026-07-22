@@ -337,6 +337,67 @@
         .tour-nav-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
 .tour-dropdown { background: var(--bg); color: var(--accent); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; font-weight: bold; }
 #tourContent { animation: fadeIn 0.3s ease; }
+        /* Image 1 Dark Style Table */
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent; /* No white background */
+    margin-top: 10px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.ranking-table thead {
+    background: rgba(255, 255, 255, 0.03); /* Subtle header highlight */
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.ranking-table th {
+    padding: 15px 10px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+}
+
+.ranking-table td {
+    padding: 14px 10px;
+    border-bottom: 1px solid rgba(30, 41, 59, 0.5); /* Very subtle divider */
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+/* Specific Column Styling */
+.rank-col { 
+    width: 40px; 
+    font-weight: 800; 
+    color: var(--accent); /* Neon Green for rank */
+}
+
+.player-col-name {
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.team-col-name {
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.val-col-data {
+    text-align: right;
+    font-weight: bold;
+    color: var(--text-main);
+    font-size: 1rem;
+}
+
+/* Hover effect to match image 1 rows */
+.ranking-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
     </style>
 </head>
 <body>
@@ -770,6 +831,36 @@ async function switchTourTab() {
             `).join('');
 
         } else {
+            if (tab === 'boot' || tab === 'best') {
+        const res = await fetch(`${API}/api/tour-ranks/${tourType}/${tab}`);
+        const data = await res.json();
+        
+        let label = tab === 'boot' ? 'Goals' : 'Rating';
+
+        let html = `
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Player</th>
+                        <th>Team</th>
+                        <th style="text-align:right">${label}</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+                html += data.map((d, i) => `
+            <tr>
+                <td class="rank-col">${i + 1}</td>
+                <td style="font-weight:600">${d.playerName}</td>
+                <td class="team-col">${d.teamName || '—'}</td>
+                <td class="val-col">${d.totalValue.toFixed(1)}</td>
+            </tr>
+        `).join('');
+
+        html += `</tbody></table>`;
+        content.innerHTML = html;
+    } else {
             // Placeholder for rankings/table
             content.innerHTML = `<p style="text-align:center; padding:30px; color:var(--text-dim);">${tab.toUpperCase()} data coming from dashboard...</p>`;
         }
