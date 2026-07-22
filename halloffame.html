@@ -77,40 +77,33 @@
             if(seasons.length > 0) loadSeasonData(seasons[0].seasonName);
         }
 
-        async function loadSeasonData(name) {
-    const contentHighlight = document.getElementById('highlights-container');
-    const contentTrophies = document.getElementById('trophies-container');
+        // Inside halloffame.html script
+async function loadSeasonData(name) {
+    // Note: use /api/hof/data/
+    const res = await fetch(`${API}/api/hof/data/${encodeURIComponent(name)}`);
+    const data = await res.json();
+    
+    if(!data) return;
 
-    try {
-        const res = await fetch(`${API}/hof/data/${encodeURIComponent(name)}`);
-        const data = await res.json();
+    // Render Highlights
+    document.getElementById('highlights-container').innerHTML = data.specialHighlights.map(h => `
+        <div class="h-item">
+            <span class="h-label">${h.label}</span>
+            <span class="h-val">${h.value}</span>
+        </div>
+    `).join('');
 
-        if (!data) return;
-
-        // 1. Render Special Highlights (Top Yellow Area)
-        contentHighlight.innerHTML = data.specialHighlights.map(h => `
-            <div class="h-item">
-                <span class="h-label">${h.label}</span>
-                <span class="h-val">${h.value}</span>
+    // Render Trophies
+    document.getElementById('trophies-container').innerHTML = data.trophyWinners.map(t => `
+        <div class="t-row">
+            <img src="https://cdn-icons-png.flaticon.com/512/3112/3112946.png" class="t-icon">
+            <div class="t-info">
+                <span class="t-title">${t.title}</span>
+                <span class="t-name">${t.winner}</span>
             </div>
-        `).join('');
-
-        // 2. Render Trophy Winners (Bottom Yellow Area)
-        // Note: Using a generic trophy icon if none provided
-        contentTrophies.innerHTML = data.trophyWinners.map(t => `
-            <div class="t-row">
-                <img src="https://cdn-icons-png.flaticon.com/512/3112/3112946.png" class="t-icon">
-                <div class="t-info">
-                    <span class="t-title">${t.title}</span>
-                    <span class="t-name">${t.winner}</span>
-                </div>
-            </div>
-        `).join('');
-
-    } catch (err) {
-        console.error("HOF Display Error:", err);
-    }
-        }
+        </div>
+    `).join('');
+}
     </script>
 </body>
 </html>
