@@ -273,6 +273,9 @@
     <h4 style="color:#10b981"><i class="fa-solid fa-file-import"></i> Auction Data Sync</h4>
     <p style="font-size:0.7rem; color:var(--text-dim);">Import final sale prices from the Auction site as Market Values.</p>
     <button onclick="syncMarketValues()" class="btn-green">Sync MV from Auction Site</button>
+    <button onclick="importTeamData()" class="btn-green" style="background:#3b82f6">
+    <i class="fa-solid fa-file-import"></i> Import Teams & Logos from Auction
+    </button>
     </div>
     <div class="sub-box" style="border: 1px solid var(--gold); margin-top:15px;">
     <h4 style="color:var(--gold)">Database Tools</h4>
@@ -536,6 +539,12 @@ if (stContainer && players.length > 0) {
         const res = await fetch(`${API}/api/smart/register-player`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ tourId, playerName }) });
         if(res.ok) alert("Registered!");
     }
+        async function importTeamData() {
+    if(!confirm("Import Team Names & Logos?")) return;
+    const res = await fetch(`${API}/api/danger/import-team-data`);
+    const data = await res.json();
+    if(data.success) { alert(data.message); location.reload(); }
+        }
 
     async function updateCaptain(status) {
         const id = document.getElementById('capPlayerSelector').value;
