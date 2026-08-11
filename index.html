@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PES PARK EFOOTBALL COMMUNITY</title>
+    <title>NEXUS LEGENDS EFOOTBALL COMMUNITY</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <style>
@@ -744,7 +744,7 @@
     <div class="loader-content">
         <div class="loader-logo">
             <i class="fa-solid fa-shield-halved"></i>
-            <h2>PES <span>PARK</span></h2>
+           <h2>NEXUS <span>LEGENDS</span></h2>
         </div>
         
         <p id="status-text">Initializing...</p>
@@ -781,7 +781,7 @@
             <i class="fa-solid fa-bars"></i>
         </button>
             <div class="logo">
-                <h2>PES <b>PARK</b></h2>
+                <h2>NEXUS <b>LEGENDS</b></h2>
                 <span>EFOOTBALL COMMUNITY</span>
             </div>
             <nav class="top-nav">
@@ -797,7 +797,7 @@
                 <select><option>2026</option></select>
                 <select><option>Season 1 • Current</option></select>
             </div>
-            <h1 class="league-title">PES PARK<br>Players Data</h1>
+            <h1 class="league-title">NEXUS LEGENDS<br>Players Data</h1>
             <div class="league-leader">
     League leader <b id="leaderDisplay">Loading...</b>
             </div>
@@ -965,22 +965,22 @@ try {
     }
     function renderTotalPlayers(container) {
     container.innerHTML = allPlayers.map(p => `
-    <div class="player-row" onclick="window.location.href='player.html?id=${p._id}'">
-        <div class="p-details">
-            <img src="${p.image || 'https://via.placeholder.com/40'}" class="p-img" onerror="this.src='https://via.placeholder.com/40'">
-            <div>
-                <span class="p-name">${p.name}</span>
-                ${p.nickname ? `<span class="p-nick">"${p.nickname}"</span>` : ''}
+        <div class="player-row" onclick="window.location.href='player.html?id=${p._id}'">
+            <div class="p-details">
+                <img src="${p.image || 'https://via.placeholder.com/40'}" class="p-img" onerror="this.src='https://via.placeholder.com/40'">
+                <div>
+                    <span class="p-name">${p.name}</span>
+                    ${p.nickname ? '<span class="p-nick">"' + p.nickname + '"</span>' : ''}
+                </div>
+            </div>
+            <div class="t-details">
+                ${p.teamName ? 
+                    '<img src="' + p.teamLogo + '" class="t-logo" onerror="this.style.display=\'none\'"><span class="t-name">' + p.teamName + '</span>' 
+                    : '<span style="color:rgba(255,255,255,0.1); font-weight:bold;">—</span>'}
             </div>
         </div>
-        <div class="t-details">
-            ${p.teamName ? `
-                <img src="${p.teamLogo}" class="t-logo" onerror="this.style.display='none'">
-                <span class="t-name">${p.teamName}</span>
-            ` : '<span style="color:rgba(255,255,255,0.1); font-weight:bold;">—</span>'}
-        </div>
-    </div>
-`).join('');
+    `).join('');
+    }
 
     function renderBDRRankings(container) {
         const sorted = [...allPlayers].sort((a, b) => (b.bdrPoints || 0) - (a.bdrPoints || 0));
