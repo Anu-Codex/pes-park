@@ -973,11 +973,11 @@ try {
                     ${p.nickname ? '<span class="p-nick">"' + p.nickname + '"</span>' : ''}
                 </div>
             </div>
-            <div class="t-details" style="display: flex; align-items: center; gap: 8px; justify-content: flex-end; min-width: 100px;">
+            <div class="t-details" onclick="window.location.href='team.html?id=${p.teamName}'" style="cursor:pointer">
     ${p.teamName ? `
-        <img src="${p.teamLogo}" style="width: 20px; height: 20px; object-fit: contain;" onerror="this.style.display='none'">
-        <span style="font-size: 0.65rem; color: var(--text-dim); font-weight: 800; text-transform: uppercase; white-space: nowrap;">${p.teamName}</span>
-    ` : '<span style="color:rgba(255,255,255,0.1);">—</span>'}
+        <img src="${p.teamLogo}" class="t-logo">
+        <span class="t-name" style="text-decoration: underline;">${p.teamName}</span>
+    ` : '—'}
 </div>
         </div>
     `).join('');
