@@ -633,6 +633,109 @@
     text-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
     transition: 0.3s;
 }
+        /* --- COMPACT & RESPONSIVE LIST STYLES --- */
+#playerTableList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Slight gap between rows for a clean look */
+    margin-top: 15px;
+}
+
+.player-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+/* Hover effect for Desktop */
+@media (hover: hover) {
+    .player-row:hover {
+        background: rgba(255, 255, 255, 0.07);
+        transform: translateX(4px);
+        border-color: var(--accent);
+    }
+}
+
+/* Left Side: Player Info */
+.p-details {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.p-img {
+    width: 40px; /* Scaled down from 45px */
+    height: 40px;
+    border-radius: 10px;
+    background: #1e293b;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.p-name {
+    display: block;
+    font-size: 0.95rem; /* Clean, professional size */
+    font-weight: 700;
+    color: #f8fafc;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.p-nick {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-style: italic;
+    opacity: 0.8;
+}
+
+/* Right Side: Team Info */
+.t-details {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-end;
+    min-width: 130px;
+}
+
+.t-logo {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.t-name {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+}
+
+/* --- MOBILE OPTIMIZATION --- */
+@media (max-width: 480px) {
+    .p-name { font-size: 0.85rem; }
+    .t-name { display: none; } /* Hide team text on tiny phones to keep it clean */
+    .t-details { min-width: auto; }
+    .p-img { width: 36px; height: 36px; }
+    .player-row { padding: 8px 12px; }
+}
+
+/* --- DESKTOP OPTIMIZATION --- */
+@media (min-width: 1024px) {
+    .dashboard-wrapper, .main-container {
+        max-width: 800px; /* Wider for desktop */
+    }
+}
     </style>
 </head>
 <body>
@@ -861,43 +964,23 @@ try {
     }
     }
     function renderTotalPlayers(container) {
-        container.innerHTML = `
-            <div class="total-info">
-                <div class="icon-sq"><i class="fa-solid fa-users-viewfinder"></i></div>
-                <div>
-                    <span style="font-size: 0.7rem; color: var(--text-dim); display:block;">TOTAL PLAYERS</span>
-                    <h4 style="margin: 0;">${allPlayers.length} registered</h4>
-                </div>
+    container.innerHTML = allPlayers.map(p => `
+    <div class="player-row" onclick="window.location.href='player.html?id=${p._id}'">
+        <div class="p-details">
+            <img src="${p.image || 'https://via.placeholder.com/40'}" class="p-img" onerror="this.src='https://via.placeholder.com/40'">
+            <div>
+                <span class="p-name">${p.name}</span>
+                ${p.nickname ? `<span class="p-nick">"${p.nickname}"</span>` : ''}
             </div>
-
-            <div class="search-box">
-                <i class="fa-solid fa-magnifying-glass" style="color: var(--text-dim);"></i>
-                <input type="text" id="searchInput" placeholder="Search players or teams..." onkeyup="filterList()">
-            </div>
-
-            <div class="table-header">
-                <span>Player</span>
-                <span>Team</span>
-            </div>
-
-            <div id="playerTableList">
-                ${allPlayers.map(p => `
-                    <div class="player-row" onclick="window.location.href='player.html?id=${p._id}'" style="cursor:pointer">
-                        <div class="p-details">
-                            <img src="${p.image || 'https://via.placeholder.com/45'}" class="p-img" onerror="this.src='https://via.placeholder.com/45'">
-                            <div>
-                                <span style="display:block; font-weight:bold;">${p.name}</span>
-                                <span style="font-size:0.8rem; color:var(--text-dim);">"${p.nickname || ''}"</span>
-                            </div>
-                        </div>
-                        <div class="t-details">
-                            ${p.teamName ? `
-                                <img src="${p.teamLogo || 'https://via.placeholder.com/25'}" class="t-logo">
-                                <span style="font-size:0.8rem; color:var(--text-dim); text-transform:uppercase;">${p.teamName}</span>
-                            ` : '<span style="color:#334155;">—</span>'}
-                        </div>
-                    </div>
-                `).join('')}
+        </div>
+        <div class="t-details">
+            ${p.teamName ? `
+                <img src="${p.teamLogo}" class="t-logo" onerror="this.style.display='none'">
+                <span class="t-name">${p.teamName}</span>
+            ` : '<span style="color:rgba(255,255,255,0.1); font-weight:bold;">—</span>'}
+        </div>
+    </div>
+`).join('');
             </div>
         `;
     }
