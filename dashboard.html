@@ -269,6 +269,11 @@
             </div>
         </div>
     </div>
+    <div class="sub-box" style="border: 1px solid #10b981; margin-top:15px;">
+    <h4 style="color:#10b981"><i class="fa-solid fa-file-import"></i> Auction Data Sync</h4>
+    <p style="font-size:0.7rem; color:var(--text-dim);">Import final sale prices from the Auction site as Market Values.</p>
+    <button onclick="syncMarketValues()" class="btn-green">Sync MV from Auction Site</button>
+    </div>
     <div class="sub-box" style="border: 1px solid var(--gold); margin-top:15px;">
     <h4 style="color:var(--gold)">Database Tools</h4>
     <p style="font-size:0.7rem; color:var(--text-dim);">Click this to calculate goals from all past matches into the Golden Boot list.</p>
@@ -711,6 +716,27 @@ async function createSmartTour() {
         alert("❌ Failed to connect to server.");
     }
 }
+        async function syncMarketValues() {
+    if(!confirm("This will overwrite current Market Values with final sale prices from the Auction database. Proceed?")) return;
+
+    const btn = event.target;
+    btn.innerText = "Syncing...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/danger/import-auction-mv`);
+        const data = await res.json();
+        if(data.success) {
+            alert("✅ " + data.message);
+            location.reload();
+        }
+    } catch (e) {
+        alert("❌ Sync failed. Make sure the database collections are in the same MongoDB cluster.");
+    } finally {
+        btn.innerText = "Sync MV from Auction Site";
+        btn.disabled = false;
+    }
+        }
         async function fillParticipantList() {
     const pRes = await fetch(`${API}/api/players`);
     const players = await pRes.json();
