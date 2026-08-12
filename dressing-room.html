@@ -343,63 +343,78 @@
         setTimeout(() => { document.getElementById('loading-overlay').style.display = 'none'; }, 3000);
 
         async function init() {
-            if (!captainData || teamName !== captainData.teamName) {
-                window.location.href = 'captain-login.html';
-                return;
-            }
+    if (!captainData || teamName !== captainData.teamName) {
+        window.location.href = 'captain-login.html';
+        return;
+    }
 
-            try {
-                const res = await fetch(`${API}/api/teams/profile/${encodeURIComponent(teamName)}`);
-                const data = await res.json();
+    // 1. Instant Load from Cache
+    const cachedData = localStorage.getItem(`cache_${teamName}`);
+    if (cachedData) {
+        renderUI(JSON.parse(cachedData));
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
 
-                document.getElementById('displayName').innerText = data.team.name + " COMMAND";
-                document.getElementById('tPurse').innerHTML = data.team.budget + "<span>M</span>";
-                if(data.team.logoUrl) document.getElementById('tLogo').src = data.team.logoUrl;
+    try {
+        // 2. Single "Mega" Fetch
+        const res = await fetch(`${API}/api/v2/dressing-room/${encodeURIComponent(teamName)}`);
+        const data = await res.json();
 
-                // Squad Stats Calculations
-                let totalSpent = 0;
-                document.getElementById('squadCount').innerHTML = data.players.length + "<span>Players</span>";
+        // 3. Save to cache for next time
+        localStorage.setItem(`cache_${teamName}`, JSON.stringify(data));
 
-                // Populate Dropdown
-                document.getElementById('playerList').innerHTML = data.players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-                
-                // Populate Professional Table
-                document.getElementById('squadDisplay').innerHTML = data.players.map(p => {
-                    const price = p.soldTo.match(/\d+/) ? p.soldTo.match(/\d+/)[0] : 0;
-                    totalSpent += parseInt(price);
-                    return `
-                    <tr>
-                        <td class="p-name">${p.name}</td>
-                        <td class="p-price">${price}M</td>
-                        <td class="p-mv">${p.marketValue || 0}M</td>
-                    </tr>
-                `}).join('');
+        // 4. Update UI with fresh data
+        renderUI(data);
+        
+    } catch (e) {
+        console.error("Sync failed, using offline data");
+    } finally {
+        document.getElementById('loading-overlay').style.display = 'none';
+    }
+}
 
-                document.getElementById('totalInvestment').innerHTML = totalSpent + "<span>M</span>";
+// Move all your UI logic into this single function
+function renderUI(data) {
+    // Set Header/Hero
+    document.getElementById('displayName').innerText = data.team.name + " COMMAND";
+    document.getElementById('tPurse').innerHTML = (data.team.budget || 0) + "<span>M</span>";
+    if(data.team.logoUrl) document.getElementById('tLogo').src = data.team.logoUrl;
 
-                loadOffers();
+    // Set Stats
+    document.getElementById('squadCount').innerHTML = data.players.length + "<span>Players</span>";
+    
+    // Squad Table & Total Investment
+    let totalSpent = 0;
+    document.getElementById('squadDisplay').innerHTML = data.players.map(p => {
+        const price = p.soldTo.match(/\d+/) ? p.soldTo.match(/\d+/)[0] : 0;
+        totalSpent += parseInt(price);
+        return `<tr><td class="p-name">${p.name}</td><td class="p-price">${price}M</td><td class="p-mv">${p.marketValue || 0}M</td></tr>`;
+    }).join('');
+    document.getElementById('totalInvestment').innerHTML = totalSpent + "<span>M</span>";
 
-                // Populate Team Dropdown
-                try {
-                    const teamsRes = await fetch(`${API}/api/teams/all`);
-                    const allTeams = await teamsRes.json();
-                    const targetSelect = document.getElementById('targetTeam');
-                    if (allTeams) {
-                        targetSelect.innerHTML = '<option value="General">Public Market (Everyone)</option>';
-                        allTeams.forEach(t => {
-                            if (t.name !== teamName) {
-                                const opt = document.createElement('option');
-                                opt.value = t.name;
-                                opt.innerText = t.name;
-                                targetSelect.appendChild(opt);
-                            }
-                        });
-                    }
-                } catch (e) { console.log("Team list error"); }
+    // Player List Dropdown
+    document.getElementById('playerList').innerHTML = data.players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
 
-            } catch (e) { console.log("Load failed"); }
-            document.getElementById('loading-overlay').style.display = 'none';
-        }
+    // Target Team Dropdown
+    const targetSelect = document.getElementById('targetTeam');
+    targetSelect.innerHTML = '<option value="General">Public Market (Everyone)</option>' + 
+        data.allTeams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+
+    // Offers
+    const offersBox = document.getElementById('offersBox');
+    if(data.offers && data.offers.length > 0) {
+        offersBox.style.display = 'block';
+        document.getElementById('incomingOffersList').innerHTML = data.offers.map(o => `
+            <div class="offer-card">
+                <div style="font-size:0.8rem; margin-bottom:5px;"><b>${o.fromTeam}</b> sent offer for:</div>
+                <div style="font-weight:700; font-size:1.1rem; color:white;">${o.playerName}</div>
+                <button class="accept-btn" onclick="acceptOffer('${o._id}')">CONFIRM SIGNING (${o.releaseFee}M)</button>
+            </div>
+        `).join('');
+    } else {
+        offersBox.style.display = 'none';
+    }
+}
 
         async function loadOffers() {
             const res = await fetch(`${API}/api/market/listings`);
