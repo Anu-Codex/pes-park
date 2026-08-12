@@ -163,7 +163,10 @@
     </div>
 
     <script>
-        const API = "https://pes-park-backend.onrender.com";
+        // Ensure this URL is exactly what you see in Render Dashboard
+const API_URL = "https://nexus-acl-backend.onrender.com"; 
+
+
 
         // 1. Load Teams into Dropdown
         async function loadTeams() {
@@ -196,11 +199,11 @@
     };
 
     try {
-        const res = await fetch(`https://nexus-acl-backend.onrender.com/api/captain/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
+        const res = await fetch(`${API_URL}/api/captain/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+});
 
         const data = await res.json();
 
