@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Market | PES PARK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root { --bg: #020617; --card: #0f172a; --accent: #38bdf8; --neon: #10b981; --border: #1e293b; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        
+        /* Navbar */
+        .market-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        .login-btn { background: var(--accent); color: #000; padding: 8px 16px; border-radius: 20px; font-weight: bold; text-decoration: none; font-size: 0.8rem; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+
+        /* News Ticker */
+        .ticker-wrap { background: #ef4444; color: white; padding: 10px 0; overflow: hidden; font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
+        .ticker { display: flex; animation: ticker 20s linear infinite; white-space: nowrap; }
+        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        .container { max-width: 500px; margin: auto; padding: 20px; }
+        
+        /* News Cards */
+        .news-card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); padding: 15px; margin-bottom: 20px; position: relative; overflow: hidden; }
+        .news-tag { background: #ef4444; color: white; font-size: 0.6rem; padding: 4px 8px; border-radius: 4px; font-weight: 800; margin-bottom: 10px; display: inline-block; }
+        .news-img { width: 100%; height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 15px; }
+        
+        .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .stat-mini { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; border: 1px solid var(--border); text-align: center; }
+        .stat-mini b { color: var(--accent); font-size: 1.2rem; display: block; }
+    </style>
+</head>
+<body>
+
+    <nav class="market-nav">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fa-solid fa-house-chimney-window" onclick="window.location.href='index.html'" style="cursor:pointer"></i>
+            <h2 style="font-size:1.1rem; margin:0;">TRANSFER <span style="color:var(--accent)">MARKET</span></h2>
+        </div>
+        <a href="captain-login.html" class="login-btn"><i class="fa-solid fa-user-tie"></i> CAPTAIN LOGIN</a>
+    </nav>
+
+    <div class="ticker-wrap">
+        <div class="ticker" id="liveTicker">HERE WE GO: Loading latest transfer news... ⚽</div>
+    </div>
+
+    <div class="container">
+        <!-- Breaking News Section -->
+        <div class="news-card">
+            <span class="news-tag">BREAKING NEWS</span>
+            <img src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1000&auto=format&fit=crop" class="news-img">
+            <h3 style="margin:0; font-size:1.1rem;">Window is OPEN!</h3>
+            <p style="color:var(--text-dim); font-size:0.8rem;">Captains are now authorized to list players for transfer and negotiate trades.</p>
+        </div>
+
+        <h4 style="margin-bottom:15px; font-size:0.9rem; color:var(--accent)">MARKET ACTIVITY</h4>
+        <div id="marketNews">
+            <!-- Dynamic News will load here -->
+        </div>
+
+        <h4 style="margin:25px 0 15px; font-size:0.9rem; color:var(--neon)">VALUATION LEADERS</h4>
+        <div class="market-grid" id="trendingPlayers">
+            <!-- Top Valued players here -->
+        </div>
+    </div>
+
+    <script>
+        const API = "https://pes-park-backend.onrender.com";
+
+        async function loadMarket() {
+            const res = await fetch(`${API}/api/market/news`);
+            const data = await res.json();
+
+            // Update News Ticker
+            if(data.news.length > 0) {
+                document.getElementById('liveTicker').innerText = data.news.map(n => `DONE DEAL: ${n.playerA} vs ${n.playerB} ended ${n.scoreA}-${n.scoreB} • `).join(' ');
+            }
+
+            // Render Trending
+            document.getElementById('trendingPlayers').innerHTML = data.trending.map(p => `
+                <div class="stat-mini">
+                    <img src="${p.image}" style="width:40px; height:40px; border-radius:50%; margin-bottom:10px;">
+                    <b>${p.marketValue}M</b>
+                    <span style="font-size:0.7rem; color:#94a3b8;">${p.name}</span>
+                </div>
+            `).join('');
+        }
+        loadMarket();
+    </script>
+</body>
+</html>
