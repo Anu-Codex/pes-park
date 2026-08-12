@@ -93,7 +93,6 @@
                 `).join('');
 
                 loadOffers();
-            }
                 // --- ADD THIS BLOCK TO POPULATE THE TEAM DROPDOWN ---
 try {
     const teamsRes = await fetch(`${API}/api/teams/all`);
@@ -118,7 +117,7 @@ try {
     console.log("Error loading team list:", e);
 }
 // ---------------------------------------------------
-     catch (e) { console.log("Load failed, using cached data"); }
+            } catch (e) { console.log("Load failed, using cached data"); }
             document.getElementById('loading-overlay').style.display = 'none';
         }
 
