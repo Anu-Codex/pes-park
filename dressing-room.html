@@ -419,6 +419,8 @@ function renderUI(data) {
     document.getElementById('tPurse').innerHTML = (data.team.budget || 0) + "<span>M</span>";
     if(data.team.logoUrl) document.getElementById('tLogo').src = data.team.logoUrl;
     document.getElementById('myTradePlayer').innerHTML = data.players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    document.getElementById('targetTradePlayer').innerHTML = players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+        
 
     // Set Stats
     document.getElementById('squadCount').innerHTML = data.players.length + "<span>Players</span>";
@@ -434,18 +436,15 @@ function renderUI(data) {
 
     // Player List Dropdown
     document.getElementById('playerList').innerHTML = data.players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    document.getElementById('myTradePlayer').innerHTML = data.players.map(p => 
+    `<option value="${p.name}">${p.name}</option>`
+).join('');
 
     // Target Team Dropdown
     const targetSelect = document.getElementById('targetTeam');
     targetSelect.innerHTML = '<option value="General">Public Market (Everyone)</option>' + 
         data.allTeams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
-    allTeams.forEach(t => {
-    if (t.name !== teamName) {
-        const opt = document.createElement('option');
-        opt.value = t.name; opt.innerText = t.name;
-        document.getElementById('tradeTargetTeam').appendChild(opt);
-    }
-});
+    
 
     // Offers
     const offersBox = document.getElementById('offersBox');
@@ -464,21 +463,40 @@ function renderUI(data) {
 }
 
         async function loadOffers() {
-            const res = await fetch(`${API}/api/market/listings`);
-            const list = await res.json();
-            const myOffers = list.filter(l => l.targetTeam === teamName || (l.targetTeam === "General" && l.fromTeam !== teamName));
-            
-            if(myOffers.length > 0) {
-                document.getElementById('offersBox').style.display = 'block';
-                document.getElementById('incomingOffersList').innerHTML = myOffers.map(o => `
-                    <div class="offer-card">
-                        <div style="font-size:0.8rem; margin-bottom:5px;"><b>${o.fromTeam}</b> sent offer for:</div>
-                        <div style="font-weight:700; font-size:1.1rem; color:white;">${o.playerName}</div>
-                        <div style="font-size:0.7rem; color:var(--text-dim); margin-top:5px;">Fee: ${o.releaseFee}M</div>
-                        <button class="accept-btn" onclick="acceptOffer('${o._id}')">CONFIRM SIGNING (${o.releaseFee}M)</button>
+    const res = await fetch(`${API}/api/market/listings`);
+    const list = await res.json();
+    const myOffers = list.filter(l => l.targetTeam === teamName || (l.targetTeam === "General" && l.fromTeam !== teamName));
+
+    if (myOffers.length > 0) {
+        document.getElementById('offersBox').style.display = 'block';
+        document.getElementById('incomingOffersList').innerHTML = myOffers.map(o => {
+            // IF THE OFFER IS A TRADE SWAP
+            if (o.type === "TRADE") {
+                return `
+                <div class="offer-card" style="border-left: 4px solid var(--gold); background: rgba(245, 158, 11, 0.05);">
+                    <div style="font-size:0.8rem; margin-bottom:5px;"><b style="color:var(--gold)">TRADE PROPOSAL</b> from ${o.fromTeam}</div>
+                    <div style="font-weight:700; font-size:1rem; color:white;">
+                        Gives You: ${o.playerName} <br>
+                        Wants Your: ${o.tradePlayerWanted}
                     </div>
-                `).join('');
+                    <div style="font-size:0.7rem; color:var(--text-dim); margin-top:5px;">Extra Cash: ${o.releaseFee}M</div>
+                    <button class="accept-btn" style="background:var(--gold); color:black;" onclick="acceptTrade('${o._id}')">CONFIRM SWAP</button>
+                </div>`;
+            } 
+            // IF THE OFFER IS A REGULAR TRANSFER (DEFAULT)
+            else {
+                return `
+                <div class="offer-card">
+                    <div style="font-size:0.8rem; margin-bottom:5px;"><b>${o.fromTeam}</b> sent offer for:</div>
+                    <div style="font-weight:700; font-size:1.1rem; color:white;">${o.playerName}</div>
+                    <div style="font-size:0.7rem; color:var(--text-dim); margin-top:5px;">Fee: ${o.releaseFee}M</div>
+                    <button class="accept-btn" onclick="acceptOffer('${o._id}')">CONFIRM SIGNING (${o.releaseFee}M)</button>
+                </div>`;
             }
+        }).join('');
+    } else {
+        document.getElementById('offersBox').style.display = 'none';
+    }
         }
 
         async function acceptOffer(id) {
@@ -544,9 +562,7 @@ async function loadTargetTeamPlayers(tName) {
     if(!tName) return;
     const res = await fetch(`${API}/api/teams/players/${encodeURIComponent(tName)}`);
     const players = await res.json();
-    document.getElementById('targetTradePlayer').innerHTML = players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
 }
-
 // Also populate the tradeTargetTeam dropdown (Inside your existing team loading logic)
 // Add this:
 
@@ -591,6 +607,21 @@ async function acceptTrade(id) {
     });
     if(res.ok) { alert("Swap Success! Players updated. ✅"); location.reload(); }
 }
+        async function loadTargetTeamPlayers(tName) {
+    if(!tName) return;
+    const targetPlayerSelect = document.getElementById('targetTradePlayer');
+    targetPlayerSelect.innerHTML = '<option>Loading Players...</option>';
+    
+    try {
+        const res = await fetch(`${API}/api/teams/players/${encodeURIComponent(tName)}`);
+        const players = await res.json();
+        targetPlayerSelect.innerHTML = players.map(p => 
+            `<option value="${p.name}">${p.name}</option>`
+        ).join('');
+    } catch (e) {
+        targetPlayerSelect.innerHTML = '<option>Error loading players</option>';
+    }
+        }
     </script>
 </body>
 </html>
