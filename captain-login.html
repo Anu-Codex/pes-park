@@ -163,7 +163,7 @@
     </div>
 
     <script>
-        const COMMUNITY_API = "https://pes-park-backend.onrender.com";
+        
         // Ensure this URL is exactly what you see in Render Dashboard
 async function loadTeams() {
     const select = document.getElementById('teamSelect');
@@ -195,9 +195,13 @@ async function loadTeams() {
 }
 
         // 2. Handle Login
+const API = "https://pes-park-backend.onrender.com"; // Your Community Backend
+
 document.getElementById('captainLoginForm').onsubmit = async (e) => {
     e.preventDefault();
-    
+    const btn = document.getElementById('loginBtn');
+    btn.innerText = "IMPORTING DATA...";
+
     const payload = {
         email: document.getElementById('email').value,
         password: document.getElementById('password').value,
@@ -205,7 +209,7 @@ document.getElementById('captainLoginForm').onsubmit = async (e) => {
     };
 
     try {
-        const res = await fetch(`${COMMUNITY_API}/api/captain/login`, {
+        const res = await fetch(`${API}/api/captain/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -214,16 +218,15 @@ document.getElementById('captainLoginForm').onsubmit = async (e) => {
         const data = await res.json();
 
         if (data.success) {
-            // "IMPORT" the data to the browser storage
+            // Save the "Synced Package" (Purse, Squad, Name)
             localStorage.setItem('activeCaptainTeam', JSON.stringify(data));
-            
-            // Redirect to the Dressing Room with the Unique Team Name
             window.location.href = `dressing-room.html?id=${encodeURIComponent(data.teamName)}`;
         } else {
-            alert("❌ Import Failed: " + data.message);
+            alert("❌ Login Failed: " + data.message);
+            btn.innerText = "ENTER DRESSING ROOM";
         }
     } catch (err) {
-        alert("Connecting to community server...");
+        alert("Establishing sync connection... please try again in 5 seconds.");
     }
 };
 
