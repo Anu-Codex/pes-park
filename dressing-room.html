@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dressing Room | PES PARK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root { --bg: #030712; --card: #0f172a; --accent: #10b981; --border: #1e293b; }
+        body { background: var(--bg); color: white; font-family: sans-serif; padding: 15px; }
+        .purse-card { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 20px; border-radius: 20px; border: 1px solid var(--accent); margin-bottom: 20px; text-align: center; }
+        .purse-val { font-size: 2rem; font-weight: 900; color: var(--accent); }
+        
+        .sub-box { background: var(--card); padding: 20px; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 15px; }
+        input, select { width: 100%; padding: 12px; background: #020617; border: 1px solid var(--border); color: white; border-radius: 10px; margin-bottom: 10px; }
+        button { width: 100%; padding: 14px; border-radius: 10px; border: none; font-weight: bold; background: var(--accent); cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2 id="roomTitle">Dressing Room</h2>
+    
+    <div class="purse-card">
+        <div style="font-size: 0.7rem; opacity: 0.7;">REMAINING PURSE</div>
+        <div class="purse-val" id="myPurse">0M</div>
+    </div>
+
+    <div class="sub-box">
+        <h4><i class="fa-solid fa-paper-plane"></i> Release / Offer Player</h4>
+        <select id="myPlayers"><option>Loading Squad...</option></select>
+        <input type="number" id="releaseFee" placeholder="Release Fee (Deducted from Purse)">
+        <input type="text" id="addons" placeholder="Add-ons (Optional)">
+        
+        <label style="font-size:0.7rem; color: #94a3b8;">Offer to Specific Team?</label>
+        <select id="targetTeam"><option value="General">Public Market (General)</option></select>
+        
+        <button onclick="postRelease()">Post to Market</button>
+    </div>
+
+    <script>
+        const API = "https://pes-park-backend.onrender.com";
+        const captainData = JSON.parse(localStorage.getItem('captainInfo')); // Saved during login
+
+        async function initRoom() {
+            if(!captainData) window.location.href = 'login.html';
+            document.getElementById('roomTitle').innerText = `${captainData.team.name} Dressing Room`;
+            document.getElementById('myPurse').innerText = captainData.team.budget + "M";
+
+            // Load Squad
+            const pRes = await fetch(`${API}/api/teams/profile/${captainData.team.name}`);
+            const data = await pRes.json();
+            document.getElementById('myPlayers').innerHTML = data.players.map(p => `<option value="${p.name}">${p.name} (${p.marketValue}M)</option>`).join('');
+
+            // Load Other Teams for Dropdown
+            const tRes = await fetch(`${API}/api/teams/all`);
+            const teams = await tRes.json();
+            document.getElementById('targetTeam').innerHTML += teams.filter(t => t.name !== captainData.team.name).map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+        }
+
+        async function postRelease() {
+            const fee = document.getElementById('releaseFee').value;
+            if(!fee || fee < 0) return alert("Enter valid fee");
+
+            const payload = {
+                playerName: document.getElementById('myPlayers').value,
+                fromTeam: captainData.team.name,
+                releaseFee: fee,
+                addons: document.getElementById('addons').value,
+                targetTeam: document.getElementById('targetTeam').value
+            };
+
+            const res = await fetch(`${API}/api/market/list-player`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            
+            if(res.ok) {
+                alert("Listing Published! Purse Deducted.");
+                location.reload();
+            }
+        }
+        initRoom();
+    </script>
+</body>
+</html>
