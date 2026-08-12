@@ -187,10 +187,7 @@
         document.getElementById('captainLoginForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = document.getElementById('loginBtn');
-    
-    // UI Feedback
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking Database...';
-    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating...';
 
     const payload = {
         email: document.getElementById('email').value,
@@ -199,7 +196,7 @@
     };
 
     try {
-        const res = await fetch(`${API}/api/captain/login`, {
+        const res = await fetch(`https://nexus-acl-backend.onrender.com/api/captain/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -208,19 +205,16 @@
         const data = await res.json();
 
         if (data.success) {
-            // Save the session (Team details + User details)
             localStorage.setItem('captainInfo', JSON.stringify(data));
-            
-            // Redirect to the specific team room using the ID (Team Name)
+            // Redirect to the specific team dressing room
             window.location.href = `dressing-room.html?id=${encodeURIComponent(data.team.name)}`;
         } else {
-            // This shows the actual error (e.g. "Password incorrect" instead of "Server Error")
-            alert("❌ Login Failed: " + data.message);
-            resetBtn();
+            alert("❌ Login Failed: " + (data.message || "Unknown Error"));
+            btn.innerHTML = '<span>ENTER DRESSING ROOM</span>';
         }
     } catch (err) {
-        alert("❌ Network Error: Could not connect to Render. Ensure backend is awake.");
-        resetBtn();
+        alert("❌ Failed to connect to server. Ensure backend is live.");
+        btn.innerHTML = '<span>ENTER DRESSING ROOM</span>';
     }
 };
 
