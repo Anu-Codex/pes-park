@@ -187,7 +187,10 @@
         document.getElementById('captainLoginForm').onsubmit = async (e) => {
     e.preventDefault();
     const btn = document.getElementById('loginBtn');
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AUTHENTICATING...';
+    
+    // UI Feedback
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking Database...';
+    btn.disabled = true;
 
     const payload = {
         email: document.getElementById('email').value,
@@ -205,21 +208,27 @@
         const data = await res.json();
 
         if (data.success) {
-            // Store the whole data object (includes user and team info)
+            // Save the session (Team details + User details)
             localStorage.setItem('captainInfo', JSON.stringify(data));
             
-            // Redirect to the specific Dressing Room
+            // Redirect to the specific team room using the ID (Team Name)
             window.location.href = `dressing-room.html?id=${encodeURIComponent(data.team.name)}`;
         } else {
-            // FIX: Uses the message from backend or a fallback string
-            alert("❌ Login Failed: " + (data.message || "Unknown Error"));
-            btn.innerHTML = '<span>ENTER DRESSING ROOM</span> <i class="fa-solid fa-right-to-bracket"></i>';
+            // This shows the actual error (e.g. "Password incorrect" instead of "Server Error")
+            alert("❌ Login Failed: " + data.message);
+            resetBtn();
         }
     } catch (err) {
-        alert("❌ Connection Failed. Make sure the Render backend is live.");
-        btn.innerHTML = '<span>ENTER DRESSING ROOM</span>';
+        alert("❌ Network Error: Could not connect to Render. Ensure backend is awake.");
+        resetBtn();
     }
 };
+
+function resetBtn() {
+    const btn = document.getElementById('loginBtn');
+    btn.innerHTML = '<span>ENTER DRESSING ROOM</span> <i class="fa-solid fa-right-to-bracket"></i>';
+    btn.disabled = false;
+}
 
         window.onload = loadTeams;
     </script>
