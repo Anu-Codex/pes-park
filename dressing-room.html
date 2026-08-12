@@ -6,63 +6,215 @@
     <title>Dressing Room | PES PARK</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        :root { --bg: #030712; --card: #0f172a; --accent: #10b981; --border: #1e293b; }
-        body { background: var(--bg); color: white; font-family: sans-serif; padding: 15px; }
-        .purse-card { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 20px; border-radius: 20px; border: 1px solid var(--accent); margin-bottom: 20px; text-align: center; }
-        .purse-val { font-size: 2rem; font-weight: 900; color: var(--accent); }
-        
-        .sub-box { background: var(--card); padding: 20px; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 15px; }
-        input, select { width: 100%; padding: 12px; background: #020617; border: 1px solid var(--border); color: white; border-radius: 10px; margin-bottom: 10px; }
-        button { width: 100%; padding: 14px; border-radius: 10px; border: none; font-weight: bold; background: var(--accent); cursor: pointer; }
+        :root {
+            --bg: #020617;
+            --card: #0f172a;
+            --accent: #10b981;
+            --border: #1e293b;
+            --gold: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 15px;
+            padding-bottom: 60px;
+        }
+
+        .container { max-width: 500px; margin: auto; }
+
+        /* Header Area */
+        .room-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px 5px;
+        }
+
+        .team-identity { display: flex; align-items: center; gap: 15px; }
+        .t-logo-room { width: 45px; height: 45px; object-fit: contain; }
+        .t-name-room { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase; font-style: italic; }
+
+        /* Purse Card */
+        .purse-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
+        }
+
+        .purse-label { font-size: 0.7rem; color: var(--accent); font-weight: 800; letter-spacing: 2px; margin-bottom: 10px; display: block; }
+        .purse-value { font-size: 2.5rem; font-weight: 900; color: white; }
+        .purse-value span { color: var(--accent); font-size: 1.2rem; margin-left: 5px; }
+
+        /* Action Box */
+        .sub-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        h4 { margin: 0 0 15px; font-size: 0.9rem; color: #94a3b8; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+
+        label { display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 8px; font-weight: bold; }
+        input, select {
+            width: 100%; padding: 12px; background: #020617; border: 1px solid var(--border);
+            color: white; border-radius: 10px; margin-bottom: 15px; font-size: 0.9rem; outline: none; box-sizing: border-box;
+        }
+
+        .action-btn {
+            width: 100%; padding: 15px; background: var(--accent); color: #020617;
+            border: none; border-radius: 12px; font-weight: 900; cursor: pointer; transition: 0.3s;
+        }
+
+        /* Squad List */
+        .player-row-mini {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .p-info-mini { display: flex; align-items: center; gap: 10px; }
+        .p-img-mini { width: 30px; height: 30px; border-radius: 6px; object-fit: cover; }
+        .p-val-mini { color: var(--accent); font-weight: bold; font-size: 0.85rem; }
+
+        #loading-overlay {
+            position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
     </style>
 </head>
 <body>
-    <h2 id="roomTitle">Dressing Room</h2>
-    
-    <div class="purse-card">
-        <div style="font-size: 0.7rem; opacity: 0.7;">REMAINING PURSE</div>
-        <div class="purse-val" id="myPurse">0M</div>
-    </div>
 
-    <div class="sub-box">
-        <h4><i class="fa-solid fa-paper-plane"></i> Release / Offer Player</h4>
-        <select id="myPlayers"><option>Loading Squad...</option></select>
-        <input type="number" id="releaseFee" placeholder="Release Fee (Deducted from Purse)">
-        <input type="text" id="addons" placeholder="Add-ons (Optional)">
-        
-        <label style="font-size:0.7rem; color: #94a3b8;">Offer to Specific Team?</label>
-        <select id="targetTeam"><option value="General">Public Market (General)</option></select>
-        
-        <button onclick="postRelease()">Post to Market</button>
+    <div id="loading-overlay"><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--accent)"></i></div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="room-header">
+            <div class="team-identity">
+                <img id="displayLogo" src="" class="t-logo-room">
+                <span id="displayName" class="t-name-room">Loading...</span>
+            </div>
+            <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:1.2rem;"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+
+        <!-- Purse -->
+        <div class="purse-card">
+            <span class="purse-label">REMAINING PURSE</span>
+            <div class="purse-value" id="displayPurse">0<span>M</span></div>
+        </div>
+
+        <!-- Transfer Action -->
+        <div class="sub-box">
+            <h4><i class="fa-solid fa-paper-plane"></i> Transfer Market Listing</h4>
+            
+            <label>Select Player to Release</label>
+            <select id="playerToRelease"></select>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <label>Release Fee (M)</label>
+                    <input type="number" id="releaseFee" placeholder="e.g. 50">
+                </div>
+                <div>
+                    <label>Add-ons / Terms</label>
+                    <input type="text" id="addons" placeholder="Optional">
+                </div>
+            </div>
+
+            <label>Target Offer (Team Name)</label>
+            <select id="targetTeam">
+                <option value="General">Public Market (All Teams)</option>
+            </select>
+
+            <button class="action-btn" onclick="submitTransfer()">PUBLISH LISTING</button>
+        </div>
+
+        <!-- Squad List -->
+        <div class="sub-box">
+            <h4><i class="fa-solid fa-users"></i> Current Squad</h4>
+            <div id="squadList"></div>
+        </div>
     </div>
 
     <script>
         const API = "https://pes-park-backend.onrender.com";
-        const captainData = JSON.parse(localStorage.getItem('captainInfo')); // Saved during login
+        const urlParams = new URLSearchParams(window.location.search);
+        const teamNameFromURL = urlParams.get('id'); // Get unique ID from URL
 
-        async function initRoom() {
-            if(!captainData) window.location.href = 'login.html';
-            document.getElementById('roomTitle').innerText = `${captainData.team.name} Dressing Room`;
-            document.getElementById('myPurse').innerText = captainData.team.budget + "M";
+        // Verify Session
+        const captainInfo = JSON.parse(localStorage.getItem('captainInfo'));
 
-            // Load Squad
-            const pRes = await fetch(`${API}/api/teams/profile/${captainData.team.name}`);
-            const data = await pRes.json();
-            document.getElementById('myPlayers').innerHTML = data.players.map(p => `<option value="${p.name}">${p.name} (${p.marketValue}M)</option>`).join('');
+        async function initDressingRoom() {
+            // Security: If no login or trying to enter wrong team room
+            if (!captainInfo || captainInfo.team.name !== teamNameFromURL) {
+                alert("Unauthorized Access");
+                window.location.href = 'captain-login.html';
+                return;
+            }
 
-            // Load Other Teams for Dropdown
-            const tRes = await fetch(`${API}/api/teams/all`);
-            const teams = await tRes.json();
-            document.getElementById('targetTeam').innerHTML += teams.filter(t => t.name !== captainData.team.name).map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+            try {
+                // Fetch full data for this team
+                const res = await fetch(`${API}/api/teams/profile/${encodeURIComponent(teamNameFromURL)}`);
+                const data = await res.json();
+
+                // 1. Update Header & Purse
+                document.getElementById('displayName').innerText = data.team.name;
+                document.getElementById('displayLogo').src = data.team.logoUrl || data.team.logo;
+                document.getElementById('displayPurse').innerHTML = `${data.team.budget}<span>M</span>`;
+
+                // 2. Fill Player Dropdown & Squad List
+                const playerSelect = document.getElementById('playerToRelease');
+                const squadContainer = document.getElementById('squadList');
+                
+                playerSelect.innerHTML = data.players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+                squadContainer.innerHTML = data.players.map(p => `
+                    <div class="player-row-mini">
+                        <div class="p-info-mini">
+                            <img src="${p.image}" class="p-img-mini">
+                            <span style="font-size:0.9rem;">${p.name}</span>
+                        </div>
+                        <span class="p-val-mini">${p.marketValue}M</span>
+                    </div>
+                `).join('');
+
+                // 3. Load Other Teams for "Offer" dropdown
+                const tRes = await fetch(`${API}/api/teams/all`);
+                const allTeams = await tRes.json();
+                const targetSelect = document.getElementById('targetTeam');
+                allTeams.filter(t => t.name !== teamNameFromURL).forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.name;
+                    opt.innerText = t.name;
+                    targetSelect.appendChild(opt);
+                });
+
+                document.getElementById('loading-overlay').style.display = 'none';
+
+            } catch (err) {
+                console.error(err);
+                alert("Error loading room data.");
+            }
         }
 
-        async function postRelease() {
+        async function submitTransfer() {
             const fee = document.getElementById('releaseFee').value;
-            if(!fee || fee < 0) return alert("Enter valid fee");
+            if(!fee || fee <= 0) return alert("Please enter a release fee!");
+
+            const btn = document.querySelector('.action-btn');
+            btn.innerText = "PUBLISHING...";
+            btn.disabled = true;
 
             const payload = {
-                playerName: document.getElementById('myPlayers').value,
-                fromTeam: captainData.team.name,
+                playerName: document.getElementById('playerToRelease').value,
+                fromTeam: teamNameFromURL,
                 releaseFee: fee,
                 addons: document.getElementById('addons').value,
                 targetTeam: document.getElementById('targetTeam').value
@@ -73,13 +225,23 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(payload)
             });
-            
+
             if(res.ok) {
-                alert("Listing Published! Purse Deducted.");
+                alert("✅ Listing posted! Fee deducted from your purse.");
                 location.reload();
+            } else {
+                alert("Failed to post listing.");
+                btn.innerText = "PUBLISH LISTING";
+                btn.disabled = false;
             }
         }
-        initRoom();
+
+        function logout() {
+            localStorage.removeItem('captainInfo');
+            window.location.href = 'captain-login.html';
+        }
+
+        window.onload = initDressingRoom;
     </script>
 </body>
 </html>
