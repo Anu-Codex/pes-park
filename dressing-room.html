@@ -6,122 +6,54 @@
     <title>Dressing Room | PES PARK</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        :root {
-            --bg: #020617;
-            --card: #0f172a;
-            --accent: #10b981;
-            --border: #1e293b;
-            --gold: #f59e0b;
-            --danger: #ef4444;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: white;
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 15px;
-            padding-bottom: 60px;
-        }
-
+        :root { --bg: #030712; --card: #0f172a; --accent: #10b981; --border: #1e293b; --danger: #ef4444; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 15px; }
         .container { max-width: 500px; margin: auto; }
 
-        /* Header Area */
-        .room-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding: 10px 5px;
-        }
+        /* Header Card */
+        .header-card { background: var(--card); border-radius: 24px; padding: 25px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .t-logo { width: 50px; height: 50px; object-fit: contain; }
+        .purse-val { font-size: 2rem; font-weight: 900; color: var(--accent); letter-spacing: -1px; }
 
-        .team-identity { display: flex; align-items: center; gap: 15px; }
-        .t-logo-room { width: 45px; height: 45px; object-fit: contain; }
-        .t-name-room { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase; font-style: italic; }
+        /* Listing Box */
+        .sub-box { background: var(--card); padding: 20px; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        h4 { margin: 0 0 20px; font-size: 0.9rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
+        
+        label { font-size: 0.7rem; color: #64748b; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        input, select { width: 100%; padding: 14px; background: #020617; border: 1px solid var(--border); color: white; border-radius: 12px; margin-bottom: 15px; font-size: 0.9rem; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--accent); }
 
-        /* Purse Card */
-        .purse-card {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border: 1px solid var(--accent);
-            border-radius: 20px;
-            padding: 25px;
-            text-align: center;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.1);
-        }
+        .btn-publish { width: 100%; padding: 16px; background: var(--accent); color: #020617; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
+        .btn-publish:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .purse-label { font-size: 0.7rem; color: var(--accent); font-weight: 800; letter-spacing: 2px; margin-bottom: 10px; display: block; }
-        .purse-value { font-size: 2.5rem; font-weight: 900; color: white; }
-        .purse-value span { color: var(--accent); font-size: 1.2rem; margin-left: 5px; }
-
-        /* Action Box */
-        .sub-box {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        h4 { margin: 0 0 15px; font-size: 0.9rem; color: #94a3b8; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
-
-        label { display: block; font-size: 0.7rem; color: #64748b; margin-bottom: 8px; font-weight: bold; }
-        input, select {
-            width: 100%; padding: 12px; background: #020617; border: 1px solid var(--border);
-            color: white; border-radius: 10px; margin-bottom: 15px; font-size: 0.9rem; outline: none; box-sizing: border-box;
-        }
-
-        .action-btn {
-            width: 100%; padding: 15px; background: var(--accent); color: #020617;
-            border: none; border-radius: 12px; font-weight: 900; cursor: pointer; transition: 0.3s;
-        }
-
-        /* Squad List */
-        .player-row-mini {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .p-info-mini { display: flex; align-items: center; gap: 10px; }
-        .p-img-mini { width: 30px; height: 30px; border-radius: 6px; object-fit: cover; }
-        .p-val-mini { color: var(--accent); font-weight: bold; font-size: 0.85rem; }
-
-        #loading-overlay {
-            position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg);
-            display: flex; justify-content: center; align-items: center; z-index: 1000;
-        }
+        /* Squad Item */
+        .squad-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 15px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        .p-img { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; }
     </style>
 </head>
 <body>
 
-    <div id="loading-overlay"><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--accent)"></i></div>
-
     <div class="container">
         <!-- Header -->
-        <div class="room-header">
-            <div class="team-identity">
-                <img id="displayLogo" src="" class="t-logo-room">
-                <span id="displayName" class="t-name-room">Loading...</span>
+        <div class="header-card">
+            <img id="tLogo" src="" class="t-logo">
+            <div>
+                <div style="font-size: 0.65rem; color: var(--text-dim);">REMAINING PURSE</div>
+                <div class="purse-val" id="tPurse">0M</div>
             </div>
-            <button onclick="logout()" style="background:none; border:none; color:var(--danger); font-size:1.2rem;"><i class="fa-solid fa-right-from-bracket"></i></button>
         </div>
 
-        <!-- Purse -->
-        <div class="purse-card">
-            <span class="purse-label">REMAINING PURSE</span>
-            <div class="purse-value" id="displayPurse">0<span>M</span></div>
-        </div>
-
-        <!-- Transfer Action -->
+        <!-- Listing Form -->
         <div class="sub-box">
             <h4><i class="fa-solid fa-paper-plane"></i> Transfer Market Listing</h4>
             
             <label>Select Player to Release</label>
-            <select id="playerToRelease"></select>
+            <select id="playerList"></select>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div>
                     <label>Release Fee (M)</label>
-                    <input type="number" id="releaseFee" placeholder="e.g. 50">
+                    <input type="number" id="fee" placeholder="e.g. 50">
                 </div>
                 <div>
                     <label>Add-ons / Terms</label>
@@ -129,85 +61,73 @@
                 </div>
             </div>
 
-            <label>Target Offer (Team Name)</label>
+            <label>Target Offer (Receiver)</label>
             <select id="targetTeam">
                 <option value="General">Public Market (All Teams)</option>
             </select>
 
-            <button class="action-btn" onclick="submitTransfer()">PUBLISH LISTING</button>
+            <button class="btn-publish" onclick="publishListing()" id="pubBtn">Publish Listing</button>
         </div>
 
         <!-- Squad List -->
         <div class="sub-box">
             <h4><i class="fa-solid fa-users"></i> Current Squad</h4>
-            <div id="squadList"></div>
+            <div id="squadDisplay"></div>
         </div>
+        <!-- Incoming Offers Section -->
+<div class="sub-box" id="offersBox" style="border-left: 4px solid var(--gold); display: none;">
+    <h4><i class="fa-solid fa-bell-concierge"></i> Incoming Offers</h4>
+    <div id="incomingOffersList">
+        <!-- Offers will be injected here -->
+    </div>
+</div>
     </div>
 
     <script>
         const API = "https://pes-park-backend.onrender.com";
-        const urlParams = new URLSearchParams(window.location.search);
-        const teamNameFromURL = urlParams.get('id'); // Get unique ID from URL
+        const data = JSON.parse(localStorage.getItem('activeCaptainTeam'));
 
-        // Verify Session
-        const captainInfo = JSON.parse(localStorage.getItem('captainInfo'));
+        if(!data) window.location.href = 'captain-login.html';
 
-        async function initDressingRoom() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const teamIdFromURL = urlParams.get('id');
+        function init() {
+            document.getElementById('tLogo').src = data.logo;
+            document.getElementById('tPurse').innerText = data.purse + "M";
 
-    // 1. Get the data we saved during login
-    const data = JSON.parse(localStorage.getItem('activeCaptainTeam'));
-
-    // 2. FIXED SECURITY CHECK
-    // We compare the ID in the URL to the Team Name in the login data
-    if (!data || data.teamName !== teamIdFromURL) {
-        alert("⚠️ Unauthorised Access: Please login again.");
-        window.location.href = 'captain-login.html';
-        return;
-    }
-
-    try {
-        // 3. Set UI Header & Purse (using data imported from Auction DB)
-        document.getElementById('displayName').innerText = data.teamName + " DRESSING ROOM";
-        document.getElementById('displayLogo').src = data.logo;
-        document.getElementById('displayPurse').innerHTML = `${data.purse}<span>M</span>`;
-
-        // 4. Render Squad
-        const squadBox = document.getElementById('squadList');
-        squadBox.innerHTML = data.squad.map(p => {
-            // Extract numbers from "Team (50M)"
-            const price = p.soldTo.match(/\d+/) || "0"; 
-            return `
-            <div class="player-row-mini">
-                <div class="p-info-mini">
-                    <img src="${p.imageUrl}" class="p-img-mini">
-                    <span style="font-size:0.9rem;">${p.name}</span>
+            // Fill Squad
+            document.getElementById('playerList').innerHTML = data.squad.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+            document.getElementById('squadDisplay').innerHTML = data.squad.map(p => `
+                <div class="squad-item">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <img src="${p.imageUrl}" class="p-img">
+                        <span style="font-weight:bold; font-size:0.9rem;">${p.name}</span>
+                    </div>
+                    <span style="color:var(--accent); font-weight:800;">${p.soldTo.match(/\d+/)}M</span>
                 </div>
-                <span class="p-val-mini">${price}M</span>
-            </div>`;
-        }).join('');
+            `).join('');
 
-        // Hide loading spinner
-        document.getElementById('loading-overlay').style.display = 'none';
-
-    } catch (err) {
-        console.error(err);
-        alert("Error displaying imported stats.");
-    }
+            // Load Other Teams
+            fetch(`${API}/api/teams/all`).then(r => r.json()).then(teams => {
+                const sel = document.getElementById('targetTeam');
+                teams.filter(t => t.name !== data.teamName).forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.name; opt.innerText = t.name;
+                    sel.appendChild(opt);
+                });
+            });
         }
 
-        async function submitTransfer() {
-            const fee = document.getElementById('releaseFee').value;
-            if(!fee || fee <= 0) return alert("Please enter a release fee!");
+        async function publishListing() {
+            const fee = document.getElementById('fee').value;
+            if(!fee || fee <= 0) return alert("Please set a valid release fee.");
+            if(fee > data.purse) return alert("Insufficient funds in purse!");
 
-            const btn = document.querySelector('.action-btn');
+            const btn = document.getElementById('pubBtn');
             btn.innerText = "PUBLISHING...";
             btn.disabled = true;
 
             const payload = {
-                playerName: document.getElementById('playerToRelease').value,
-                fromTeam: teamNameFromURL,
+                playerName: document.getElementById('playerList').value,
+                fromTeam: data.teamName,
                 releaseFee: fee,
                 addons: document.getElementById('addons').value,
                 targetTeam: document.getElementById('targetTeam').value
@@ -220,21 +140,74 @@
             });
 
             if(res.ok) {
-                alert("✅ Listing posted! Fee deducted from your purse.");
+                alert("✅ Success! Your player is now on the market.");
                 location.reload();
-            } else {
-                alert("Failed to post listing.");
-                btn.innerText = "PUBLISH LISTING";
-                btn.disabled = false;
             }
         }
+        init();
+// 1. Add this to your init() function to fetch offers sent to the logged-in captain
+async function loadIncomingOffers() {
+    const res = await fetch(`${API}/api/market/listings`);
+    const allListings = await res.json();
+    
+    // Filter listings where target is "General" or specifically this team
+    const myOffers = allListings.filter(l => 
+        l.targetTeam === data.teamName || (l.targetTeam === "General" && l.fromTeam !== data.teamName)
+    );
 
-        function logout() {
-            localStorage.removeItem('captainInfo');
-            window.location.href = 'captain-login.html';
+    const container = document.getElementById('incomingOffersList');
+    if (myOffers.length > 0) {
+        document.getElementById('offersBox').style.display = 'block';
+        container.innerHTML = myOffers.map(o => `
+            <div class="squad-item" style="border-color: var(--gold); background: rgba(245, 158, 11, 0.05); flex-direction:column; align-items:flex-start;">
+                <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                    <div>
+                        <span style="font-size:0.6rem; color:var(--gold); font-weight:bold;">OFFER FROM: ${o.fromTeam}</span>
+                        <div style="font-weight:bold; font-size:1.1rem;">${o.playerName}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.6rem; color:var(--text-dim);">FEE</span>
+                        <div style="font-size:1.2rem; font-weight:900; color:white;">${o.releaseFee}M</div>
+                    </div>
+                </div>
+                <button onclick="acceptOffer('${o._id}')" style="width:100%; margin-top:10px; padding:8px; background:var(--gold); color:black; font-size:0.75rem; border-radius:8px;">
+                    ACCEPT & TRANSFER
+                </button>
+            </div>
+        `).join('');
+    }
+}
+
+// 2. Function to trigger the acceptance
+async function acceptOffer(id) {
+    if (!confirm("Are you sure? This will deduct the fee from your purse and move the player to your squad.")) return;
+
+    try {
+        const res = await fetch(`${API}/api/market/accept-offer`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                listingId: id,
+                buyerTeamName: data.teamName
+            })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            alert("🎊 DEAL DONE! Check your squad now.");
+            location.reload(); // Refresh to show new player and updated purse
+        } else {
+            alert("❌ Error: " + result.error);
         }
+    } catch (e) {
+        alert("Failed to connect to transfer server.");
+    }
+}
 
-        window.onload = initDressingRoom;
+// Call loadIncomingOffers inside your window.onload
+
+loadIncomingOffers();
+
     </script>
 </body>
 </html>
