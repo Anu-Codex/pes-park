@@ -164,33 +164,32 @@
 
     <script>
         // Ensure this URL is exactly what you see in Render Dashboard
-const API_URL = "https://nexus-acl-backend.onrender.com"; 
-
-
-
-        // 1. Load Teams into Dropdown
-        async function loadTeams() {
+async function loadTeams() {
     const select = document.getElementById('teamSelect');
-    const API_URL = "https://nexus-acl-backend.onrender.com"; // Ensure this matches your Render URL
+    // MAKE SURE THIS URL IS EXACTLY YOUR RENDER URL
+    const API_URL = "https://nexus-acl-backend.onrender.com"; 
 
     try {
         const res = await fetch(`${API_URL}/api/teams/all`);
+        
+        if (!res.ok) {
+            throw new Error(`Server responded with ${res.status}`);
+        }
+
         const teams = await res.json();
 
-        if (teams.length > 0) {
-            select.innerHTML = '<option value="">Choose your team...</option>'; // Clear "Loading"
+        if (teams && teams.length > 0) {
+            select.innerHTML = '<option value="">Choose your team...</option>';
             teams.forEach(team => {
                 const opt = document.createElement('option');
                 opt.value = team.name;
                 opt.innerText = team.name;
                 select.appendChild(opt);
             });
-        } else {
-            select.innerHTML = '<option value="">No teams found in DB</option>';
         }
     } catch (e) {
-        console.error("Failed to load teams:", e);
-        select.innerHTML = '<option value="">Error connecting to server</option>';
+        // This will pop up on your mobile and tell us the real error
+        alert("Connection Error: " + e.message + "\nCheck if Render is 'Live'");
     }
 }
 
