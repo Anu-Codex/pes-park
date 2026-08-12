@@ -330,6 +330,43 @@
                         <i class="fa-solid fa-bullhorn"></i> Publish Listing
                     </button>
                 </div>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+    <button onclick="showTab('transfer')" id="btnTabTrans" style="flex:1; padding:10px; border-radius:10px; border:none; background:var(--accent); font-weight:bold; cursor:pointer;">TRANSFER PLAYER</button>
+    <button onclick="showTab('trade')" id="btnTabTrade" style="flex:1; padding:10px; border-radius:10px; border:none; background:var(--card); color:white; font-weight:bold; cursor:pointer;">TRADE PLAYER</button>
+</div>
+
+<!-- TRADE PANEL (Hidden by default) -->
+<div id="tradePanel" class="sub-box" style="display:none; border-left:4px solid var(--gold);">
+    <h4>PROPOSE A TRADE</h4>
+    
+    <label style="font-size:0.7rem; color:#64748b;">MY PLAYER TO GIVE</label>
+    <select id="myTradePlayer"></select>
+
+    <label style="font-size:0.7rem; color:#64748b; margin-top:10px; display:block;">TARGET TEAM</label>
+    <select id="tradeTargetTeam" onchange="loadTargetTeamPlayers(this.value)">
+        <option value="">Select Team...</option>
+    </select>
+
+    <label style="font-size:0.7rem; color:#64748b; margin-top:10px; display:block;">PLAYER I WANT FROM THEM</label>
+    <select id="targetTradePlayer"><option>Select Team First...</option></select>
+
+    <label style="font-size:0.7rem; color:#64748b; margin-top:10px; display:block;">CASH I WILL PAY (M) - OPTIONAL</label>
+    <input type="number" id="tradeCash" placeholder="Extra cash (e.g. 10)">
+
+    <input type="text" id="tradeAddons" placeholder="Add-ons / Terms">
+
+    <select id="tradeVisibility">
+        <option value="private">Private (Email Captain)</option>
+        <option value="public">Public (On Market)</option>
+    </select>
+
+    <button class="btn-publish" style="background:var(--gold)" onclick="publishTrade()">Propose Trade Swap</button>
+</div>
+
+<!-- Keep your existing Transfer Panel, but give it an ID -->
+<div id="transferPanel" class="sub-box">
+    <!-- ... (Your existing Transfer List HTML) ... -->
+</div>
             </div>
         </div>
     </div>
@@ -353,6 +390,7 @@
     if (cachedData) {
         renderUI(JSON.parse(cachedData));
         document.getElementById('loading-overlay').style.display = 'none';
+        
     }
 
     try {
@@ -370,6 +408,7 @@
         console.error("Sync failed, using offline data");
     } finally {
         document.getElementById('loading-overlay').style.display = 'none';
+        
     }
 }
 
@@ -379,6 +418,7 @@ function renderUI(data) {
     document.getElementById('displayName').innerText = data.team.name + " COMMAND";
     document.getElementById('tPurse').innerHTML = (data.team.budget || 0) + "<span>M</span>";
     if(data.team.logoUrl) document.getElementById('tLogo').src = data.team.logoUrl;
+    document.getElementById('myTradePlayer').innerHTML = data.players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
 
     // Set Stats
     document.getElementById('squadCount').innerHTML = data.players.length + "<span>Players</span>";
@@ -399,6 +439,13 @@ function renderUI(data) {
     const targetSelect = document.getElementById('targetTeam');
     targetSelect.innerHTML = '<option value="General">Public Market (Everyone)</option>' + 
         data.allTeams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+    allTeams.forEach(t => {
+    if (t.name !== teamName) {
+        const opt = document.createElement('option');
+        opt.value = t.name; opt.innerText = t.name;
+        document.getElementById('tradeTargetTeam').appendChild(opt);
+    }
+});
 
     // Offers
     const offersBox = document.getElementById('offersBox');
@@ -474,6 +521,76 @@ function renderUI(data) {
         }
 
         window.onload = init;
+        // Tab Switching
+function showTab(type) {
+    if(type === 'transfer') {
+        document.getElementById('transferPanel').style.display = 'block';
+        document.getElementById('tradePanel').style.display = 'none';
+        document.getElementById('btnTabTrans').style.background = 'var(--accent)';
+        document.getElementById('btnTabTrade').style.background = 'var(--card)';
+    } else {
+        document.getElementById('transferPanel').style.display = 'none';
+        document.getElementById('tradePanel').style.display = 'block';
+        document.getElementById('btnTabTrans').style.background = 'var(--card)';
+        document.getElementById('btnTabTrade').style.background = 'var(--gold)';
+    }
+}
+
+// Populate My Players for Trade (Inside your init function)
+// Add this:
+
+// Fetch Players of Target Team when selected
+async function loadTargetTeamPlayers(tName) {
+    if(!tName) return;
+    const res = await fetch(`${API}/api/teams/players/${encodeURIComponent(tName)}`);
+    const players = await res.json();
+    document.getElementById('targetTradePlayer').innerHTML = players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+}
+
+// Also populate the tradeTargetTeam dropdown (Inside your existing team loading logic)
+// Add this:
+
+
+// Publish Trade
+async function publishTrade() {
+    const payload = {
+        fromTeam: teamName,
+        myPlayer: document.getElementById('myTradePlayer').value,
+        targetTeam: document.getElementById('tradeTargetTeam').value,
+        targetPlayer: document.getElementById('targetTradePlayer').value,
+        cashOffer: document.getElementById('tradeCash').value,
+        addons: document.getElementById('tradeAddons').value,
+        isPublic: document.getElementById('tradeVisibility').value === 'public'
+    };
+
+    if(!payload.targetPlayer) return alert("Select the player you want to swap for!");
+
+    const res = await fetch(`${API}/api/market/list-trade`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    });
+    
+    if(res.ok) { alert("Trade Proposed! ✅"); location.reload(); }
+}
+
+// Handle Acceptance in LoadOffers (Logic update)
+// Update your loadOffers map logic to check for "TYPE === TRADE"
+// Example snippet for loadOffers():
+/*
+    if(o.type === "TRADE") {
+        return `<div>${o.fromTeam} wants ${o.tradePlayerWanted} in exchange for ${o.playerName} + ${o.releaseFee}M 
+                <button onclick="acceptTrade('${o._id}')">ACCEPT SWAP</button></div>`;
+    }
+*/
+async function acceptTrade(id) {
+    const res = await fetch(`${API}/api/market/accept-trade`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ listingId: id, acceptorTeam: teamName })
+    });
+    if(res.ok) { alert("Swap Success! Players updated. ✅"); location.reload(); }
+}
     </script>
 </body>
 </html>
