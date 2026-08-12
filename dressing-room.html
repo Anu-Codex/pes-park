@@ -89,31 +89,55 @@
 
         if(!data) window.location.href = 'captain-login.html';
 
-        function init() {
-            document.getElementById('tLogo').src = data.logo;
-            document.getElementById('tPurse').innerText = data.purse + "M";
+        async function initDressingRoom() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const teamIdFromURL = urlParams.get('id');
+    const localData = JSON.parse(localStorage.getItem('activeCaptainTeam'));
 
-            // Fill Squad
-            document.getElementById('playerList').innerHTML = data.squad.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-            document.getElementById('squadDisplay').innerHTML = data.squad.map(p => `
-                <div class="squad-item">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <img src="${p.imageUrl}" class="p-img">
-                        <span style="font-weight:bold; font-size:0.9rem;">${p.name}</span>
-                    </div>
-                    <span style="color:var(--accent); font-weight:800;">${p.soldTo.match(/\d+/)}M</span>
+    if (!localData || localData.teamName !== teamIdFromURL) {
+        window.location.href = 'captain-login.html';
+        return;
+    }
+
+    try {
+        // FIXED: We re-fetch the latest data to see updated logos and squad
+        // We use the same login payload to get a fresh 'Data Pack'
+        const res = await fetch(`${API}/api/teams/profile/${encodeURIComponent(teamIdFromURL)}`);
+        const data = await res.json();
+
+        // 1. Update Logo & Name (Force refresh from DB)
+        const logoEl = document.getElementById('displayLogo');
+        logoEl.src = data.team.logoUrl + "?t=" + new Date().getTime(); // Prevents browser caching old logo
+        document.getElementById('displayName').innerText = data.team.name;
+        document.getElementById('displayPurse').innerHTML = `${data.team.budget}<span>M</span>`;
+
+        // 2. Populate 'Select Player to Release' Dropdown
+        const playerSelect = document.getElementById('playerToRelease');
+        if (data.players.length > 0) {
+            playerSelect.innerHTML = data.players.map(p => 
+                `<option value="${p.name}">${p.name}</option>`
+            ).join('');
+        } else {
+            playerSelect.innerHTML = '<option value="">No players in squad</option>';
+        }
+
+        // 3. Render Squad List
+        const squadBox = document.getElementById('squadList');
+        squadBox.innerHTML = data.players.map(p => `
+            <div class="player-row-mini">
+                <div class="p-info-mini">
+                    <img src="${p.image || p.imageUrl}" class="p-img-mini">
+                    <span style="font-size:0.9rem;">${p.name}</span>
                 </div>
-            `).join('');
+                <span class="p-val-mini">${p.marketValue || p.soldTo.match(/\d+/)}M</span>
+            </div>
+        `).join('');
 
-            // Load Other Teams
-            fetch(`${API}/api/teams/all`).then(r => r.json()).then(teams => {
-                const sel = document.getElementById('targetTeam');
-                teams.filter(t => t.name !== data.teamName).forEach(t => {
-                    const opt = document.createElement('option');
-                    opt.value = t.name; opt.innerText = t.name;
-                    sel.appendChild(opt);
-                });
-            });
+        document.getElementById('loading-overlay').style.display = 'none';
+    } catch (err) {
+        console.error(err);
+        alert("Sync Error: Could not load latest squad data.");
+    }
         }
 
         async function publishListing() {
@@ -144,7 +168,7 @@
                 location.reload();
             }
         }
-        init();
+        initDressingRoom();
 // 1. Add this to your init() function to fetch offers sent to the logged-in captain
 async function loadIncomingOffers() {
     const res = await fetch(`${API}/api/market/listings`);
