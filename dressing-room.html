@@ -153,55 +153,48 @@
         const captainInfo = JSON.parse(localStorage.getItem('captainInfo'));
 
         async function initDressingRoom() {
-            // Security: If no login or trying to enter wrong team room
-            if (!captainInfo || captainInfo.team.name !== teamNameFromURL) {
-                alert("Unauthorized Access");
-                window.location.href = 'captain-login.html';
-                return;
-            }
+    const urlParams = new URLSearchParams(window.location.search);
+    const teamIdFromURL = urlParams.get('id');
 
-            try {
-                // Fetch full data for this team
-                const res = await fetch(`${API}/api/teams/profile/${encodeURIComponent(teamNameFromURL)}`);
-                const data = await res.json();
+    // 1. Get the data we saved during login
+    const data = JSON.parse(localStorage.getItem('activeCaptainTeam'));
 
-                // 1. Update Header & Purse
-                document.getElementById('displayName').innerText = data.team.name;
-                document.getElementById('displayLogo').src = data.team.logoUrl || data.team.logo;
-                document.getElementById('displayPurse').innerHTML = `${data.team.budget}<span>M</span>`;
+    // 2. FIXED SECURITY CHECK
+    // We compare the ID in the URL to the Team Name in the login data
+    if (!data || data.teamName !== teamIdFromURL) {
+        alert("⚠️ Unauthorised Access: Please login again.");
+        window.location.href = 'captain-login.html';
+        return;
+    }
 
-                // 2. Fill Player Dropdown & Squad List
-                const playerSelect = document.getElementById('playerToRelease');
-                const squadContainer = document.getElementById('squadList');
-                
-                playerSelect.innerHTML = data.players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-                squadContainer.innerHTML = data.players.map(p => `
-                    <div class="player-row-mini">
-                        <div class="p-info-mini">
-                            <img src="${p.image}" class="p-img-mini">
-                            <span style="font-size:0.9rem;">${p.name}</span>
-                        </div>
-                        <span class="p-val-mini">${p.marketValue}M</span>
-                    </div>
-                `).join('');
+    try {
+        // 3. Set UI Header & Purse (using data imported from Auction DB)
+        document.getElementById('displayName').innerText = data.teamName + " DRESSING ROOM";
+        document.getElementById('displayLogo').src = data.logo;
+        document.getElementById('displayPurse').innerHTML = `${data.purse}<span>M</span>`;
 
-                // 3. Load Other Teams for "Offer" dropdown
-                const tRes = await fetch(`${API}/api/teams/all`);
-                const allTeams = await tRes.json();
-                const targetSelect = document.getElementById('targetTeam');
-                allTeams.filter(t => t.name !== teamNameFromURL).forEach(t => {
-                    const opt = document.createElement('option');
-                    opt.value = t.name;
-                    opt.innerText = t.name;
-                    targetSelect.appendChild(opt);
-                });
+        // 4. Render Squad
+        const squadBox = document.getElementById('squadList');
+        squadBox.innerHTML = data.squad.map(p => {
+            // Extract numbers from "Team (50M)"
+            const price = p.soldTo.match(/\d+/) || "0"; 
+            return `
+            <div class="player-row-mini">
+                <div class="p-info-mini">
+                    <img src="${p.imageUrl}" class="p-img-mini">
+                    <span style="font-size:0.9rem;">${p.name}</span>
+                </div>
+                <span class="p-val-mini">${price}M</span>
+            </div>`;
+        }).join('');
 
-                document.getElementById('loading-overlay').style.display = 'none';
+        // Hide loading spinner
+        document.getElementById('loading-overlay').style.display = 'none';
 
-            } catch (err) {
-                console.error(err);
-                alert("Error loading room data.");
-            }
+    } catch (err) {
+        console.error(err);
+        alert("Error displaying imported stats.");
+    }
         }
 
         async function submitTransfer() {
