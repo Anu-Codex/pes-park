@@ -6,208 +6,138 @@
     <title>Dressing Room | PES PARK</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        :root { --bg: #030712; --card: #0f172a; --accent: #10b981; --border: #1e293b; --danger: #ef4444; --gold: #f59e0b; }
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 15px; }
+        :root { --bg: #030712; --card: #0f172a; --accent: #10b981; --border: #1e293b; --gold: #f59e0b; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 15px; }
+        #loading-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 9999; }
         .container { max-width: 500px; margin: auto; }
-
-        /* Loading Overlay */
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-
-        /* Header Card */
         .header-card { background: var(--card); border-radius: 24px; padding: 25px; border: 1px solid var(--border); display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .t-logo { width: 50px; height: 50px; object-fit: contain; background: #020617; border-radius: 8px; }
-        .purse-val { font-size: 2rem; font-weight: 900; color: var(--accent); letter-spacing: -1px; }
-
-        /* Boxes */
-        .sub-box { background: var(--card); padding: 20px; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-        h4 { margin: 0 0 20px; font-size: 0.9rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
-        
-        label { font-size: 0.7rem; color: #64748b; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block; }
-        input, select { width: 100%; padding: 14px; background: #020617; border: 1px solid var(--border); color: white; border-radius: 12px; margin-bottom: 15px; font-size: 0.9rem; outline: none; }
-
-        .btn-publish { width: 100%; padding: 16px; background: var(--accent); color: #020617; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
-
-        /* Squad Item */
-        .squad-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 15px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
-        .p-img { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; }
+        .t-logo { width: 50px; height: 50px; object-fit: contain; }
+        .sub-box { background: var(--card); padding: 20px; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 20px; }
+        input, select { width: 100%; padding: 14px; background: #020617; border: 1px solid var(--border); color: white; border-radius: 12px; margin-bottom: 15px; outline: none; }
+        .btn-publish { width: 100%; padding: 16px; background: var(--accent); color: #020617; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; }
+        .squad-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 15px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <!-- Loading screen while data syncs -->
-    <div id="loading-overlay"><i class="fa-solid fa-circle-notch fa-spin fa-2x" style="color:var(--accent)"></i></div>
-
-    <div class="container">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <a href="captain-login.html" style="color:var(--danger); text-decoration:none; font-size:0.8rem; font-weight:bold;"><i class="fa-solid fa-power-off"></i> LOGOUT</a>
-            <span id="displayName" style="font-weight:900; font-style:italic; color:var(--accent); text-transform:uppercase;">Team Room</span>
-        </div>
-
-        <!-- Header -->
-        <div class="header-card">
-            <img id="displayLogo" src="" class="t-logo" onerror="this.src='https://via.placeholder.com/50'">
-            <div>
-                <div style="font-size: 0.65rem; color: #64748b;">REMAINING PURSE</div>
-                <div class="purse-val" id="displayPurse">0M</div>
-            </div>
-        </div>
-
-        <!-- Listing Form -->
-        <div class="sub-box">
-            <h4><i class="fa-solid fa-paper-plane"></i> Transfer Market Listing</h4>
-            <label>Select Player to Release</label>
-            <select id="playerToRelease"></select>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div>
-                    <label>Release Fee (M)</label>
-                    <input type="number" id="fee" placeholder="e.g. 50">
-                </div>
-                <div>
-                    <label>Add-ons / Terms</label>
-                    <input type="text" id="addons" placeholder="Optional">
-                </div>
-            </div>
-
-            <label>Target Offer (Receiver)</label>
-            <select id="targetTeam">
-                <option value="General">Public Market (All Teams)</option>
-            </select>
-
-            <button class="btn-publish" onclick="publishListing()" id="pubBtn">Publish Listing</button>
-        </div>
-
-        <!-- Incoming Offers -->
-        <div class="sub-box" id="offersBox" style="border-left: 4px solid var(--gold); display: none;">
-            <h4><i class="fa-solid fa-bell-concierge"></i> Incoming Offers</h4>
-            <div id="incomingOffersList"></div>
-        </div>
-
-        <!-- Squad List -->
-        <div class="sub-box">
-            <h4><i class="fa-solid fa-users"></i> Current Squad</h4>
-            <div id="squadList"></div>
+    <div id="loading-overlay">
+        <div style="text-align:center;">
+            <i class="fa-solid fa-circle-notch fa-spin fa-3x" style="color:var(--accent)"></i>
+            <p style="margin-top:15px; font-size:0.7rem; color:#64748b; letter-spacing:2px;">SYNCING SQUAD...</p>
         </div>
     </div>
 
-<script>
-    const API = "https://pes-park-backend.onrender.com";
-    const urlParams = new URLSearchParams(window.location.search);
-    const teamIdFromURL = urlParams.get('id');
-    const localData = JSON.parse(localStorage.getItem('activeCaptainTeam'));
+    <div class="container">
+        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+            <a href="captain-login.html" style="color:#ef4444; text-decoration:none; font-size:0.8rem; font-weight:bold;">LOGOUT</a>
+            <span id="displayName" style="font-weight:bold; color:var(--accent);">TEAM ROOM</span>
+        </div>
 
-    async function initDressingRoom() {
-        const loader = document.getElementById('loading-overlay');
+        <div class="header-card">
+            <img id="tLogo" src="https://via.placeholder.com/50" class="t-logo">
+            <div>
+                <div style="font-size: 0.6rem; color: #64748b;">PURSE REMAINING</div>
+                <div id="tPurse" style="font-size:2rem; font-weight:900; color:var(--accent);">0M</div>
+            </div>
+        </div>
 
-        // Security Check
-        if (!localData || localData.teamName !== teamIdFromURL) {
-            window.location.href = 'captain-login.html';
-            return;
-        }
+        <div class="sub-box">
+            <h4>TRANSFER LISTING</h4>
+            <select id="playerList"></select>
+            <input type="number" id="fee" placeholder="Release Fee (M)">
+            <input type="text" id="addons" placeholder="Terms (Optional)">
+            <select id="targetTeam"><option value="General">Public Market</option></select>
+            <button class="btn-publish" onclick="publishListing()">Publish</button>
+        </div>
 
-        try {
-            // Fetch fresh data from the new backend route
-            const res = await fetch(`${API}/api/teams/profile/${encodeURIComponent(teamIdFromURL)}`);
-            if (!res.ok) throw new Error("Backend Route Missing");
-            
-            const fresh = await res.json();
+        <div class="sub-box" id="offersBox" style="display:none; border-left:4px solid var(--gold);">
+            <h4 style="color:var(--gold)">INCOMING OFFERS</h4>
+            <div id="incomingOffersList"></div>
+        </div>
 
-            // 1. Update Header (Fixing ID mismatches)
-            document.getElementById('displayName').innerText = fresh.team.name;
-            const logoImg = document.getElementById('tLogo'); // Matches your HTML ID
-            if(logoImg) logoImg.src = fresh.team.logoUrl || fresh.team.logo;
-            
-            const purseVal = document.getElementById('tPurse'); // Matches your HTML ID
-            if(purseVal) purseVal.innerText = fresh.team.budget + "M";
+        <div class="sub-box">
+            <h4>MY SQUAD</h4>
+            <div id="squadDisplay"></div>
+        </div>
+    </div>
 
-            // 2. Fill Squad Dropdown
-            const playerSelect = document.getElementById('playerList');
-            if(playerSelect) {
-                playerSelect.innerHTML = fresh.players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    <script>
+        const API = "https://pes-park-backend.onrender.com";
+        const urlParams = new URLSearchParams(window.location.search);
+        const teamName = urlParams.get('id');
+        const captainData = JSON.parse(localStorage.getItem('activeCaptainTeam'));
+
+        // EMERGENCY LOADER KILLER (If database is slow, show page anyway after 3s)
+        setTimeout(() => { document.getElementById('loading-overlay').style.display = 'none'; }, 3000);
+
+        async function init() {
+            if (!captainData || teamName !== captainData.teamName) {
+                window.location.href = 'captain-login.html';
+                return;
             }
 
-            // 3. Render Squad List
-            const squadBox = document.getElementById('squadDisplay');
-            if(squadBox) {
-                squadBox.innerHTML = fresh.players.map(p => `
+            try {
+                const res = await fetch(`${API}/api/teams/profile/${encodeURIComponent(teamName)}`);
+                const data = await res.json();
+
+                document.getElementById('displayName').innerText = data.team.name;
+                document.getElementById('tPurse').innerText = data.team.budget + "M";
+                if(data.team.logoUrl) document.getElementById('tLogo').src = data.team.logoUrl;
+
+                document.getElementById('playerList').innerHTML = data.players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+                document.getElementById('squadDisplay').innerHTML = data.players.map(p => `
                     <div class="squad-item">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <img src="${p.imageUrl || p.image}" class="p-img" onerror="this.src='https://via.placeholder.com/40'">
-                            <span style="font-weight:bold; font-size:0.9rem;">${p.name}</span>
-                        </div>
-                        <span style="color:var(--accent); font-weight:800;">${p.soldTo.match(/\d+/)}M</span>
+                        <span><b>${p.name}</b></span>
+                        <span style="color:var(--accent)">${p.soldTo.match(/\d+/)}M</span>
                     </div>
-                `).join('') || '<p style="text-align:center; padding:20px; color:#475569;">No players found</p>';
-            }
+                `).join('');
 
-            // 4. Load Offers
-            loadIncomingOffers();
-
-        } catch (err) {
-            console.error("Initialization Error:", err);
-            // Fallback: Use local data if backend fetch fails so the screen isn't empty
-            document.getElementById('displayName').innerText = localData.teamName;
-            document.getElementById('tPurse').innerText = localData.purse + "M";
-        } finally {
-            // ALWAYS hide the loader at the end
-            if(loader) loader.style.display = 'none';
+                loadOffers();
+            } catch (e) { console.log("Load failed, using cached data"); }
+            document.getElementById('loading-overlay').style.display = 'none';
         }
-    }
 
-    async function loadIncomingOffers() {
-        try {
+        async function loadOffers() {
             const res = await fetch(`${API}/api/market/listings`);
-            const listings = await res.json();
-            const myOffers = listings.filter(l => l.targetTeam === teamIdFromURL || (l.targetTeam === "General" && l.fromTeam !== teamIdFromURL));
-
-            const box = document.getElementById('offersBox');
-            const list = document.getElementById('incomingOffersList');
-            
-            if (myOffers.length > 0 && box && list) {
-                box.style.display = 'block';
-                list.innerHTML = myOffers.map(o => `
-                    <div class="squad-item" style="border-color:var(--gold); flex-direction:column; align-items:start; background:rgba(245,158,11,0.05)">
-                        <div style="display:flex; justify-content:space-between; width:100%;">
-                            <div><small style="color:var(--gold)">FROM: ${o.fromTeam}</small><div style="font-weight:bold;">${o.playerName}</div></div>
-                            <div style="text-align:right;"><small>FEE</small><div style="font-weight:900;">${o.releaseFee}M</div></div>
-                        </div>
-                        <button onclick="acceptOffer('${o._id}')" style="width:100%; margin-top:10px; padding:10px; background:var(--gold); color:black; border-radius:10px; font-weight:bold; border:none; cursor:pointer;">ACCEPT & TRANSFER</button>
+            const list = await res.json();
+            const myOffers = list.filter(l => l.targetTeam === teamName || (l.targetTeam === "General" && l.fromTeam !== teamName));
+            if(myOffers.length > 0) {
+                document.getElementById('offersBox').style.display = 'block';
+                document.getElementById('incomingOffersList').innerHTML = myOffers.map(o => `
+                    <div class="squad-item" style="flex-direction:column; align-items:start;">
+                        <div><b>${o.playerName}</b> from ${o.fromTeam}</div>
+                        <button onclick="acceptOffer('${o._id}')" style="width:100%; margin-top:10px; background:var(--gold); border:none; padding:8px; border-radius:8px; font-weight:bold;">ACCEPT ${o.releaseFee}M</button>
                     </div>
                 `).join('');
             }
-        } catch(e) { console.log("Offer load failed"); }
-    }
+        }
 
-    async function acceptOffer(id) {
-        if(!confirm("Deduct fee and transfer player to your squad?")) return;
-        const res = await fetch(`${API}/api/market/accept-offer`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ listingId: id, buyerTeamName: teamIdFromURL })
-        });
-        if(res.ok) { alert("Deal Complete! 🤝"); location.reload(); }
-        else { alert("Transfer failed. Check your purse balance."); }
-    }
+        async function acceptOffer(id) {
+            const res = await fetch(`${API}/api/market/accept-offer`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ listingId: id, buyerTeamName: teamName })
+            });
+            if(res.ok) { alert("Transferred! ✅"); location.reload(); }
+        }
 
-    async function publishListing() {
-        const fee = document.getElementById('fee').value;
-        if(!fee || fee <= 0) return alert("Enter a valid fee.");
-        const payload = {
-            playerName: document.getElementById('playerList').value,
-            fromTeam: teamIdFromURL,
-            releaseFee: fee,
-            addons: document.getElementById('addons').value,
-            targetTeam: document.getElementById('targetTeam').value
-        };
-        const res = await fetch(`${API}/api/market/list-player`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        });
-        if(res.ok) { alert("Published!"); location.reload(); }
-    }
+        async function publishListing() {
+            const payload = {
+                playerName: document.getElementById('playerList').value,
+                fromTeam: teamName,
+                releaseFee: document.getElementById('fee').value,
+                addons: document.getElementById('addons').value,
+                targetTeam: document.getElementById('targetTeam').value
+            };
+            const res = await fetch(`${API}/api/market/list-player`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            if(res.ok) location.reload();
+        }
 
-    window.onload = initDressingRoom;
-</script>
+        window.onload = init;
+    </script>
 </body>
 </html>
