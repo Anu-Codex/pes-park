@@ -170,21 +170,29 @@ const API_URL = "https://nexus-acl-backend.onrender.com";
 
         // 1. Load Teams into Dropdown
         async function loadTeams() {
-            try {
-                const res = await fetch(`${API}/api/teams/all`);
-                const teams = await res.json();
-                const select = document.getElementById('teamSelect');
-                
-                teams.forEach(team => {
-                    const opt = document.createElement('option');
-                    opt.value = team.name; // We use name to match User.name in database
-                    opt.innerText = team.name;
-                    select.appendChild(opt);
-                });
-            } catch (e) {
-                console.error("Failed to load teams");
-            }
+    const select = document.getElementById('teamSelect');
+    const API_URL = "https://nexus-acl-backend.onrender.com"; // Ensure this matches your Render URL
+
+    try {
+        const res = await fetch(`${API_URL}/api/teams/all`);
+        const teams = await res.json();
+
+        if (teams.length > 0) {
+            select.innerHTML = '<option value="">Choose your team...</option>'; // Clear "Loading"
+            teams.forEach(team => {
+                const opt = document.createElement('option');
+                opt.value = team.name;
+                opt.innerText = team.name;
+                select.appendChild(opt);
+            });
+        } else {
+            select.innerHTML = '<option value="">No teams found in DB</option>';
         }
+    } catch (e) {
+        console.error("Failed to load teams:", e);
+        select.innerHTML = '<option value="">Error connecting to server</option>';
+    }
+}
 
         // 2. Handle Login
         document.getElementById('captainLoginForm').onsubmit = async (e) => {
