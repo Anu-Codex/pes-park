@@ -414,49 +414,69 @@
 
 // Move all your UI logic into this single function
 function renderUI(data) {
-    // Set Header/Hero
+    // 1. Set Header/Hero
     document.getElementById('displayName').innerText = data.team.name + " COMMAND";
     document.getElementById('tPurse').innerHTML = (data.team.budget || 0) + "<span>M</span>";
     if(data.team.logoUrl) document.getElementById('tLogo').src = data.team.logoUrl;
-    document.getElementById('myTradePlayer').innerHTML = data.players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-    document.getElementById('targetTradePlayer').innerHTML = players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-        
 
-    // Set Stats
+    // 2. Set Stats
     document.getElementById('squadCount').innerHTML = data.players.length + "<span>Players</span>";
-    
-    // Squad Table & Total Investment
+
+    // 3. Squad Table & Total Investment calculation
     let totalSpent = 0;
     document.getElementById('squadDisplay').innerHTML = data.players.map(p => {
         const price = p.soldTo.match(/\d+/) ? p.soldTo.match(/\d+/)[0] : 0;
         totalSpent += parseInt(price);
-        return `<tr><td class="p-name">${p.name}</td><td class="p-price">${price}M</td><td class="p-mv">${p.marketValue || 0}M</td></tr>`;
+        return `<tr style="border-bottom:1px solid var(--border)">
+            <td class="p-name">${p.name}</td>
+            <td class="p-price">${price}M</td>
+            <td class="p-mv">${p.marketValue || 0}M</td>
+        </tr>`;
     }).join('');
     document.getElementById('totalInvestment').innerHTML = totalSpent + "<span>M</span>";
 
-    // Player List Dropdown
-    document.getElementById('playerList').innerHTML = data.players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-    document.getElementById('myTradePlayer').innerHTML = data.players.map(p => 
-    `<option value="${p.name}">${p.name}</option>`
-).join('');
+    // 4. Populate "My Player" Dropdowns (Used in Transfer AND Trade tabs)
+    const myPlayersHTML = data.players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    document.getElementById('playerList').innerHTML = myPlayersHTML;      // For Transfer
+    document.getElementById('myTradePlayer').innerHTML = myPlayersHTML;  // For Trade
 
-    // Target Team Dropdown
-    const targetSelect = document.getElementById('targetTeam');
-    targetSelect.innerHTML = '<option value="General">Public Market (Everyone)</option>' + 
-        data.allTeams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+    // 5. Populate Team Dropdowns (Transfer Target vs Trade Target)
+    const teamsHTML = data.allTeams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
     
+    // Transfer Dropdown (Always includes Public Market)
+    document.getElementById('targetTeam').innerHTML = '<option value="General">Public Market (Everyone)</option>' + teamsHTML;
+    
+    // Trade Dropdown (Initial state)
+    document.getElementById('tradeTargetTeam').innerHTML = '<option value="">Select Team to Trade With...</option>' + teamsHTML;
+    
+    // Clear the "Target Trade Player" dropdown until a team is selected
+    document.getElementById('targetTradePlayer').innerHTML = '<option>Select Team Above First...</option>';
 
-    // Offers
+    // 6. Handle Incoming Offers (Modified to handle both Transfer and Trade)
     const offersBox = document.getElementById('offersBox');
     if(data.offers && data.offers.length > 0) {
         offersBox.style.display = 'block';
-        document.getElementById('incomingOffersList').innerHTML = data.offers.map(o => `
-            <div class="offer-card">
-                <div style="font-size:0.8rem; margin-bottom:5px;"><b>${o.fromTeam}</b> sent offer for:</div>
-                <div style="font-weight:700; font-size:1.1rem; color:white;">${o.playerName}</div>
-                <button class="accept-btn" onclick="acceptOffer('${o._id}')">CONFIRM SIGNING (${o.releaseFee}M)</button>
-            </div>
-        `).join('');
+        document.getElementById('incomingOffersList').innerHTML = data.offers.map(o => {
+            if (o.type === "TRADE") {
+                // If the offer is a TRADE swap proposal
+                return `
+                <div class="offer-card" style="border-left: 4px solid var(--gold); background: rgba(245, 158, 11, 0.05); padding:15px; margin-bottom:10px; border-radius:12px;">
+                    <div style="font-size:0.75rem; color:var(--gold); font-weight:bold;">TRADE PROPOSAL</div>
+                    <div style="font-size:0.9rem; margin:5px 0;"><b>${o.fromTeam}</b> wants to swap <b>${o.playerName}</b> for your <b>${o.tradePlayerWanted}</b></div>
+                    <div style="font-size:0.75rem; color:var(--text-dim);">Cash Offer: ${o.releaseFee}M</div>
+                    <button class="accept-btn" style="background:var(--gold); color:black; width:100%; margin-top:10px; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="acceptTrade('${o._id}')">CONFIRM SWAP</button>
+                </div>`;
+            } else {
+                // If the offer is a regular TRANSFER listing
+                return `
+                <div class="offer-card" style="padding:15px; border:1px solid var(--border); margin-bottom:10px; border-radius:12px; background:rgba(255,255,255,0.02)">
+                    <div style="font-size:0.8rem; margin-bottom:5px;"><b>${o.fromTeam}</b> sent offer for:</div>
+                    <div style="font-weight:700; font-size:1.1rem; color:white;">${o.playerName}</div>
+                    <div style="font-size:0.7rem; color:var(--text-dim); margin-top:5px;">Fee: ${o.releaseFee}M</div>
+                    <button class="accept-btn" style="width:100%; background:var(--accent); color:black; margin-top:10px; padding:8px; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="acceptOffer('${o._id}')">CONFIRM SIGNING (${o.releaseFee}M)</button>
+                </div>`;
+            }
+        }).join('');
     } else {
         offersBox.style.display = 'none';
     }
