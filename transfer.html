@@ -86,6 +86,27 @@
             `).join('');
         }
         loadMarket();
+        // Add this inside the loadMarket() function in transfer.html
+async function loadListings() {
+    const res = await fetch(`${API}/api/market/listings`);
+    const data = await res.json();
+    
+    document.getElementById('marketNews').innerHTML = data.map(l => `
+        <div class="news-card" style="border-left: 4px solid ${l.targetTeam === 'General' ? '#10b981' : '#ef4444'}">
+            <span class="news-tag" style="background:${l.targetTeam === 'General' ? '#10b981' : '#f59e0b'}">
+                ${l.targetTeam === 'General' ? 'TRANSFER LISTED' : 'PRIVATE OFFER'}
+            </span>
+            <h3 style="margin:5px 0;">${l.playerName}</h3>
+            <p style="font-size:0.8rem; color:#94a3b8;">
+                From: <b>${l.fromTeam}</b><br>
+                Target: <b>${l.targetTeam}</b><br>
+                Fee: <b style="color:white;">${l.releaseFee}M</b>
+            </p>
+            <p style="font-size:0.7rem; font-style:italic;">"${l.addons || 'No specific terms'}"</p>
+        </div>
+    `).join('');
+}
+loadListings();
     </script>
 </body>
 </html>
