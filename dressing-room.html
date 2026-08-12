@@ -145,21 +145,34 @@ try {
             if(res.ok) { alert("Transferred! ✅"); location.reload(); }
         }
 
-        async function publishListing() {
-            const payload = {
-                playerName: document.getElementById('playerList').value,
-                fromTeam: teamName,
-                releaseFee: document.getElementById('fee').value,
-                addons: document.getElementById('addons').value,
-                targetTeam: document.getElementById('targetTeam').value
-            };
-            const res = await fetch(`${API}/api/market/list-player`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            if(res.ok) location.reload();
-        }
+        // --- Check this in your dressing-room script ---
+async function publishListing() {
+    const feeInput = document.getElementById('fee').value;
+    const playerInput = document.getElementById('playerList').value;
+    const targetInput = document.getElementById('targetTeam').value;
+    const addonsInput = document.getElementById('addons').value;
+
+    if(!feeInput || !playerInput) return alert("Select player and fee!");
+
+    const res = await fetch(`${API}/api/market/list-player`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            playerName: playerInput,
+            fromTeam: teamName, // This is the teamIdFromURL
+            releaseFee: feeInput,
+            addons: addonsInput,
+            targetTeam: targetInput
+        })
+    });
+    
+    if(res.ok) {
+        alert("✅ Listing successful! Email sent to target captain (if private).");
+        location.reload();
+    } else {
+        alert("❌ Error: Server could not process listing.");
+    }
+}
 
         window.onload = init;
     </script>
