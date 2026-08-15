@@ -645,6 +645,9 @@ function selectChar(el, url) {
         alert("Error saving profile");
     }
         }
+        function closeModal() {
+    document.getElementById('avatarModal').style.display = 'none';
+        }
         // Function to handle Squad Image Upload to ImgBB
 async function handleSquadUpload(input) {
     const file = input.files[0];
