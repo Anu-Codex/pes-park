@@ -864,6 +864,42 @@
     text-transform: uppercase;
     letter-spacing: 1px;
 }
+        /* Partial Loader Styling */
+#partial-loader {
+    width: 100%;
+    height: 400px; /* Space it takes while loading */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.processing-ring {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(250, 204, 21, 0.2); /* Dim yellow */
+    border-top: 4px solid #facc15; /* Bright yellow */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+#partial-loader p {
+    color: #facc15;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Optional: Hide the old full-screen splash loader if you want it gone */
+#loader-overlay { display: none !important; }
     </style>
 </head>
 <body>
@@ -926,9 +962,17 @@
             <nav class="top-nav">
                 <a href="#" class="nav-item active"><i class="fa-solid fa-chart-simple"></i></a>
                 <a href="halloffame.html" class="nav-item"><i class="fa-solid fa-trophy"></i></a>
+                <a href="https://nexus-acl-auction.vercel.app/auction.html" class="nav-item" target="_blank">
+        <i class="fa-solid fa-gavel"></i>
+                </a>
                 <a href="login.html" class="nav-item"><i class="fa-solid fa-right-to-bracket"></i></a>
             </nav>
         </header>
+        <div id="partial-loader">
+    <div class="processing-ring"></div>
+    <p>CONNECTING TO NEXUS LEGENDS OFFICIAL PLAYERS DATABASE</p>
+        </div>
+        <div id="main-content-area" style="display: none;">
 
         <!-- 1st DIV: LEAGUE INFO & STATS -->
         <section class="league-card">
@@ -1041,41 +1085,42 @@
 
     // 2. Fetch Data and Setup UI
     async function initPage() {
-        // --- FIND AND REPLACE THIS SECTION INSIDE YOUR SCRIPT ---
-try {
-    // 1. Fetch Stats (The top 4 boxes)
-    const statsRes = await fetch(`${API}/api/stats`);
-    const stats = await statsRes.json();
+    const loader = document.getElementById('partial-loader');
+    const content = document.getElementById('main-content-area');
 
-    if (stats) {
-        // FIX: BDR Box (Ensures value and name are correctly matched)
-        document.getElementById('bdrVal').innerText = (stats.bdrValue ?? 0) + "Pts";
-        document.getElementById('bdrName').innerText = stats.bdrName || "None";
+    try {
+        // 1. Fetch Stats from Backend
+        const statsRes = await fetch(`${API}/api/stats`);
+        const stats = await statsRes.json();
 
-        // FIX: MV Box (Adds the "M" suffix and matches the name correctly)
-        document.getElementById('mvVal').innerText = (stats.mvValue ?? 0) + "M";
-        document.getElementById('mvName').innerText = stats.mvName || "None";
-
-        // FIX: Counts
-        document.getElementById('teamCount').innerText = stats.teamsCount ?? 0;
-        document.getElementById('playerCount').innerText = stats.playersCount ?? 0;
-    }
-
-            // Fetch Players
-            const playerRes = await fetch(`${API}/api/players`);
-            allPlayers = await playerRes.json();
-
-            // Update registered count in top boxes
-            document.getElementById('playerCount').innerText = allPlayers.length;
-
-            // Trigger the dashboard view
-            switchView('total');
-
-        } catch (error) {
-            console.error("Initialization Error:", error);
-            document.getElementById('dynamicContent').innerHTML = '<p style="text-align:center; color:red;">Failed to connect to server.</p>';
+        if (stats) {
+            document.getElementById('bdrVal').innerText = (stats.bdrValue ?? 0) + "Pts";
+            document.getElementById('bdrName').innerText = stats.bdrName || "None";
+            document.getElementById('mvVal').innerText = (stats.mvValue ?? 0) + "M";
+            document.getElementById('mvName').innerText = stats.mvName || "None";
+            document.getElementById('teamCount').innerText = stats.teamsCount ?? 0;
+            document.getElementById('playerCount').innerText = stats.playersCount ?? 0;
         }
+
+        // 2. Fetch Players from Backend
+        const playerRes = await fetch(`${API}/api/players`);
+        allPlayers = await playerRes.json();
+
+        // 3. DATA LOADED: Hide loader and show content
+        loader.style.display = 'none';
+        content.style.display = 'block';
+
+        // Trigger initial view
+        switchView('total');
+
+    } catch (error) {
+        console.error("Initialization Error:", error);
+        loader.innerHTML = '<p style="color:#ef4444;">Server Connection Failed</p>';
     }
+}
+
+// Ensure you call initPage on load
+window.addEventListener('DOMContentLoaded', initPage);
 
     // 3. View Toggler (BDR vs Total Players)
     function toggleView() {
