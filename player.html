@@ -132,6 +132,44 @@
     letter-spacing: 0.5px;
 }
 .captain-badge i { font-size: 0.8rem; }
+        .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal-content {
+    background: #111827; width: 90%; max-width: 400px; border-radius: 20px;
+    padding: 24px; border: 1px solid #1f2937;
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.close-x { background: transparent; border: none; color: #9ca3af; font-size: 24px; }
+
+.section-label { font-size: 0.7rem; color: #6b7280; font-weight: 800; letter-spacing: 1px; margin-bottom: 12px; }
+
+.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+.upload-box {
+    border: 2px dashed #374151; border-radius: 15px; height: 120px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #9ca3af; font-size: 0.8rem; cursor: pointer; transition: 0.3s;
+}
+.upload-box:hover { border-color: #10b981; color: #10b981; background: rgba(16,185,129,0.05); }
+.upload-box i { font-size: 1.5rem; margin-bottom: 10px; }
+
+.character-grid { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; }
+.char-item {
+    min-width: 80px; height: 80px; border-radius: 12px; border: 2px solid transparent;
+    cursor: pointer; position: relative; overflow: hidden; background: #1f2937;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.char-item img { width: 100%; height: 100%; object-fit: cover; }
+.char-item.active { border-color: #10b981; }
+.char-item.active::after {
+    content: "\f058"; font-family: "Font Awesome 6 Free"; font-weight: 900;
+    position: absolute; top: 5px; right: 5px; color: #10b981; background: #111827; border-radius: 50%;
+}
+
+.modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; }
+.btn-cancel { background: transparent; border: none; color: #9ca3af; font-weight: bold; }
+.btn-save { background: #10b981; color: #000; border: none; padding: 10px 25px; border-radius: 8px; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -231,6 +269,9 @@
 
     let playerMatches = [];
     let myName = "";
+    let selectedAvatarUrl = "";
+    let selectedBgUrl = "";
+    const IMGBB_API_KEY = "d78a83d90df20f4244a14823e5bdd755";
 
     async function loadProfile() {
         try {
@@ -339,6 +380,117 @@ if (playerMatches.length > 0) {
     }
 
     loadProfile();
+        document.getElementById('avatar').onclick = function() {
+    document.getElementById('avatarModal').style.display = 'flex';
+};
+        function closeModal() {
+    document.getElementById('avatarModal').style.display = 'none';
+}
+
+async function handleFileUpload(input, type) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // Show loading state on button
+    const btn = document.getElementById('saveAvatarBtn');
+    btn.innerText = "Uploading...";
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+            method: "POST",
+            body: formData
+        });
+        const data = await res.json();
+        
+        if (type === 'avatar') {
+            selectedAvatarUrl = data.data.url;
+            alert("Avatar Uploaded!");
+        } else {
+            selectedBgUrl = data.data.url;
+            alert("Background Uploaded!");
+        }
+    } catch (err) {
+        alert("Upload failed. Check API Key.");
+    } finally {
+        btn.innerText = "Save";
+        btn.disabled = false;
+    }
+}
+
+function selectChar(el, url) {
+    // UI selection feedback
+    document.querySelectorAll('.char-item').forEach(item => item.classList.remove('active'));
+    el.classList.add('active');
+    selectedAvatarUrl = (url === 'none') ? "" : url;
+}
+        async function saveImages() {
+    try {
+        const response = await fetch(`${API}/api/players/${playerId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                image: selectedAvatarUrl,
+                backgroundImage: selectedBgUrl // Ensure your backend schema has this field
+            })
+        });
+
+        if (response.ok) {
+            alert("Profile Updated!");
+            location.reload();
+        }
+    } catch (err) {
+        console.error(err);
+    }
+        }
     </script>
+    <!-- Modal Overlay -->
+<div id="avatarModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Choose an avatar</h3>
+            <button onclick="closeModal()" class="close-x">&times;</button>
+        </div>
+
+        <div class="modal-body">
+            <p class="section-label">UPLOAD YOUR OWN</p>
+            <div class="upload-grid">
+                <div class="upload-box" onclick="document.getElementById('avatarInput').click()">
+                    <i class="fa-solid fa-upload"></i>
+                    <span>Avatar image</span>
+                    <input type="file" id="avatarInput" hidden onchange="handleFileUpload(this, 'avatar')">
+                </div>
+                <div class="upload-box" onclick="document.getElementById('bgInput').click()">
+                    <i class="fa-regular fa-image"></i>
+                    <span>Background image</span>
+                    <input type="file" id="bgInput" hidden onchange="handleFileUpload(this, 'bg')">
+                </div>
+            </div>
+
+            <p class="section-label">OR PICK A CHARACTER</p>
+            <div class="character-grid" id="charGrid">
+                <div class="char-item active" onclick="selectChar(this, 'none')">
+                    <div class="char-circle"><i class="fa-solid fa-ban"></i></div>
+                    <span>None</span>
+                </div>
+                <!-- Predefined characters -->
+                <div class="char-item" onclick="selectChar(this, 'https://i.ibb.co/Gv3hDyk/goku.jpg')">
+                    <img src="https://i.ibb.co/Gv3hDyk/goku.jpg">
+                </div>
+                <div class="char-item" onclick="selectChar(this, 'https://i.ibb.co/9V0v9J0/naruto.jpg')">
+                    <img src="https://i.ibb.co/9V0v9J0/naruto.jpg">
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+            <button class="btn-save" id="saveAvatarBtn" onclick="saveImages()">Save</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>
