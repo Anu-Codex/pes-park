@@ -59,48 +59,93 @@
 
     <script>
         const API = "https://pes-park-backend.onrender.com";
-        const teamName = new URLSearchParams(window.location.search).get('id');
+// Get the ID and decode it (converts %20 back to spaces)
+const teamParam = new URLSearchParams(window.location.search).get('id');
+const teamName = decodeURIComponent(teamParam);
 
-        async function loadTeam() {
-            const res = await fetch(`${API}/api/teams/profile/${teamName}`);
-            const data = await res.json();
+async function loadTeam() {
+    try {
+        const res = await fetch(`${API}/api/teams/profile/${encodeURIComponent(teamName)}`);
+        
+        if (!res.ok) throw new Error("Team not found");
+        
+        const data = await res.json();
 
-            document.getElementById('tName').innerText = data.team.name;
-            document.getElementById('tLogo').src = data.team.logoUrl || data.team.logo;
+        // Check if team data exists to prevent crash
+        if (!data.team) {
+            document.getElementById('loading').innerHTML = "Team data not found in database.";
+            return;
+        }
 
-            // Render Recent Form
-            document.getElementById('recentForm').innerHTML = data.matches.map(m => {
-                const win = (m.playerA === teamName && m.scoreA > m.scoreB) || (m.playerB === teamName && m.scoreB > m.scoreA);
-                const draw = m.scoreA === m.scoreB;
-                return `<span class="badge" style="background:${win ? '#10b981' : (draw ? '#f59e0b' : '#ef4444')}; color:black;">${win?'W':(draw?'D':'L')}</span>`;
-            }).join('');
+        // 1. Set Header
+        document.getElementById('tName').innerText = data.team.name;
+        document.getElementById('tLogo').src = data.team.logoUrl || data.team.logo || 'https://via.placeholder.com/50';
 
-            // Render Players (Matching Image)
-            document.getElementById('playerList').innerHTML = data.players.map(p => `
-                <div class="player-item">
+        // 2. Render Recent Form (with safety check)
+        const matches = data.matches || [];
+        document.getElementById('recentForm').innerHTML = matches.length > 0 
+            ? matches.map(m => {
+                const isPlayerA = m.playerA === teamName;
+                const myScore = isPlayerA ? m.scoreA : m.scoreB;
+                const oppScore = isPlayerA ? m.scoreB : m.scoreA;
+                
+                const win = myScore > oppScore;
+                const draw = myScore === oppScore;
+                
+                return `<span class="badge" style="background:${win ? '#10b981' : (draw ? '#f59e0b' : '#ef4444')}; color:black;">${win ? 'W' : (draw ? 'D' : 'L')}</span>`;
+            }).join('')
+            : '<span style="color:#64748b; font-size:0.8rem;">No recent matches</span>';
+
+        // 3. Render Players (with safety check)
+        const players = data.players || [];
+        document.getElementById('playerList').innerHTML = players.length > 0
+            ? players.map(p => `
+                <div class="player-item" onclick="window.location.href='player.html?id=${p._id}'" style="cursor:pointer">
                     <div class="p-main">
-                        <img src="${p.squadImage || p.image}" class="p-img">
+                        <img src="${p.image || 'https://via.placeholder.com/45'}" class="p-img" onerror="this.src='https://via.placeholder.com/45'">
                         <div>
                             <div class="p-name">${p.name}</div>
-                            <div class="p-tier">${p.nickname || 'Member'}</div>
+                            <div class="p-tier">${p.nickname || 'Squad Member'}</div>
                         </div>
                     </div>
                     <div class="p-val-area">
-                        <div class="p-val">${p.marketValue}M</div>
-                        <div class="p-bdr">★ ${p.bdrPoints}</div>
+                        <div class="p-val">${p.marketValue || 0}M</div>
+                        <div class="p-bdr" style="color:#f59e0b">★ ${p.bdrPoints || 0}</div>
                     </div>
                 </div>
-            `).join('');
+            `).join('')
+            : '<div class="player-item">No players assigned to this team.</div>';
 
-            // Render Trophies
-            document.getElementById('trophyList').innerHTML = data.trophies.map(t => `
-                <div style="margin-bottom:5px; font-size:0.85rem;">🏆 ${t.title} <small style="color:var(--gold)">(${t.season})</small></div>
-            `).join('') || 'No trophies yet.';
+        // 4. Render Trophies (with safety check)
+        const trophies = data.trophies || [];
+        document.getElementById('trophyList').innerHTML = trophies.length > 0
+            ? trophies.map(t => `
+                <div style="margin-bottom:8px; font-size:0.85rem; display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:1.2rem;">🏆</span> 
+                    <div>
+                        <div style="font-weight:bold;">${t.title}</div>
+                        <div style="color:#f59e0b; font-size:0.7rem;">${t.season}</div>
+                    </div>
+                </div>
+            `).join('')
+            : '<div style="color:#64748b; font-size:0.8rem; padding:10px;">No trophies in the cabinet yet.</div>';
 
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('content').style.display = 'block';
-        }
-        loadTeam();
+        // Show content
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+
+    } catch (err) {
+        console.error("Load Error:", err);
+        document.getElementById('loading').innerHTML = `<span style="color:#ef4444">Error loading team. Make sure the team name is correct.</span>`;
+    }
+}
+
+// Initialize
+if (teamParam) {
+    loadTeam();
+} else {
+    document.getElementById('loading').innerHTML = "No team selected.";
+}
     </script>
 </body>
 </html>
