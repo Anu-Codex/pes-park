@@ -253,49 +253,66 @@
     .trophy-info b { font-size: 1.1rem; }
     .trophy-img-large { width: 35px; height: 35px; }
 }
-        /* Glass Theme Styles */
+        
+
+/* --- CLEANED THEME CSS --- */
 .glass-card-themed {
-    background-size: cover !important;
-    background-position: center !important;
+    position: relative;
+    width: 100%;
+    min-height: 320px;
+    border-radius: 24px;
     border: 1px solid var(--border);
+    overflow: hidden;
+    padding: 20px; /* Reduced padding to fit mobile better */
     margin-bottom: 20px;
+    background-color: #0f172a;
+    background-size: cover;
+    background-position: center;
+    box-sizing: border-box; /* Prevents layout bleed */
 }
 
-/* Remove stray broken image icons */
-img[src=""], img:not([src]) {
-    display: none !important;
-}
-
+/* Dimmer overlay to make text pop */
 .card-overlay {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
+    background: linear-gradient(180deg, rgba(6, 11, 19, 0.4) 0%, rgba(6, 11, 19, 0.9) 100%);
     z-index: 1;
 }
 
+/* Content MUST have z-index 2 to stay above the dim background */
 .card-content-top {
     position: relative;
     z-index: 2;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
 .p-avatar-square {
-    width: 85px;
-    height: 85px;
+    width: 80px;
+    height: 80px;
     border-radius: 18px;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
     background: #1e293b;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
-.p-avatar-square img { width: 100%; height: 100%; object-fit: cover; }
 
-.p-main-info h1 { margin: 0; font-size: 1.8rem; font-weight: 800; }
+.p-main-info {
+    flex: 1;
+}
 
+.p-main-info h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+
+/* Team Pill Style */
 .team-pill {
     display: inline-block;
-    padding: 2px 12px;
+    padding: 3px 10px;
     background: rgba(16, 185, 129, 0.1);
     border: 1px solid rgba(16, 185, 129, 0.4);
     color: #10b981;
@@ -305,37 +322,35 @@ img[src=""], img:not([src]) {
     text-transform: uppercase;
     margin-top: 5px;
 }
-/* Recent Form Styles */
-.recent-form-section { position: relative; z-index: 2; margin: 25px 0; }
-.section-label-tiny { font-size: 0.65rem; color: #94a3b8; font-weight: 800; letter-spacing: 2px; }
 
-.form-dots-wrapper { display: flex; gap: 12px; margin-top: 10px; }
-.form-dot-item { text-align: center; }
-.form-circle { 
-    width: 22px; height: 22px; border-radius: 50%; margin-bottom: 5px;
-}
-.res-letter { font-size: 0.75rem; font-weight: 900; }
-
-/* Stats Grid Styles */
 .stats-grid-glass {
     position: relative;
-    z-index: 2;
+    z-index: 2; /* Crucial: stays above overlay */
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 10px;
 }
 
 .stat-glass-box {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 16px;
-    padding: 15px 5px;
+    padding: 12px 5px;
     text-align: center;
 }
 
-.stat-glass-box span { display: block; font-size: 0.65rem; color: #94a3b8; margin-bottom: 8px; }
-.stat-glass-box b { font-size: 1.4rem; color: white; }
+.stat-glass-box span { display: block; font-size: 0.6rem; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; }
+.stat-glass-box b { font-size: 1.1rem; color: white; }
+
+/* FIX: Ensure Squad Section isn't broken */
+.squad-upload-container {
+    width: 100%;
+    min-height: 200px;
+    border: 2px dashed var(--border);
+    border-radius: 20px;
+    background: var(--card-bg);
+}
     </style>
 </head>
 <body>
