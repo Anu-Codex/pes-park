@@ -245,17 +245,18 @@
             <div id="historyList"></div>
         </div>
 
-        <!-- Head-to-Head Section -->
-<div class="card">
-    <div class="card-header">
-        <i class="fa-solid fa-swords"></i>
-        <h3>Head-to-head record</h3>
+        <!-- HEAD TO HEAD SECTION -->
+<div class="glass-card">
+    <div class="section-title">
+        <i class="fa-solid fa-swords"></i> Head-to-head record
     </div>
-    <select id="h2hSelector" class="modern-select" onchange="calculateH2H()">
+    
+    <!-- Styled Selector -->
+    <select id="h2hSelector" class="h2h-select" onchange="calculateH2H()">
         <option value="">Select opponent...</option>
     </select>
 
-    <!-- H2H Result Area (Hidden until selected) -->
+    <!-- H2H Stats Area (Hidden until an opponent is picked) -->
     <div id="h2hResultArea" style="display:none; margin-top:20px;">
         <div class="h2h-summary-grid">
             <div class="h2h-stat-box win">
@@ -271,7 +272,9 @@
                 <span class="h2h-lab">Losses</span>
             </div>
         </div>
-        <div id="h2hMatchList" class="h2h-mini-list"></div>
+        
+        <!-- List of matches against that specific opponent -->
+        <div id="h2hMatchList"></div>
     </div>
 </div>
 
