@@ -786,6 +786,10 @@
     </div>
     <ul class="nav-links">
         <li onclick="switchView('total')"><i class="fa-solid fa-users"></i> Total Players</li>
+        <li onclick="switchView('teams')"><i class="fa-solid fa-shield-halved"></i> Total Teams</li>
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
+        <li onclick="switchView('auction')"><i class="fa-solid fa-gavel"></i> Auction Tour</li>
+    <li onclick="switchView('soloTour')"><i class="fa-solid fa-user"></i> Solo Tour</li>
         <li onclick="switchView('bdr')"><i class="fa-solid fa-trophy"></i> BDR Rankings</li>
         <li onclick="switchView('market')"><i class="fa-solid fa-chart-line"></i> Market Value</li>
         <li onclick="window.location.href='transfer.html'">
@@ -859,12 +863,9 @@
             <div class="section-title-row">
     <h3>DASHBOARD VIEW</h3>
     <select id="viewSelector" onchange="toggleView()">
-        <option value="total">Total players</option>
-                    <option value="auction">Auction Tour</option>
-                    <option value="quick">Quick Tour</option>
-                    <option value="soloTour">Solo Tour</option>
-                    <option value="Weekend">Weekend Series</option>
-                </select>
+    <option value="total">Total players</option>
+    <option value="teams">Total teams</option>
+    </select>
             </div>
 
             <div class="players-card">
@@ -968,22 +969,11 @@ try {
 
     // 3. View Toggler (BDR vs Total Players)
     function toggleView() {
-        const view = document.getElementById('viewSelector').value;
-        const container = document.getElementById('dynamicContent');
-        const sectionTitle = document.querySelector('.section-title-row h3');
-
-        if (view === "bdr") {
-        renderBDRRankings(container);
-    } else if (view === "market") { // NEW CASE
-        renderMarketValues(container);
-        } else if (view === "auction") {
-            renderAuctionTour(container);
-        } else if (view === "quick") {
-            renderQuickTour(container);
-        } else if (view === "soloTour") {
-            renderSoloTour(container);
-        } else if (view === "Weekend") {
-            renderWeekendSeries(container);
+    const view = document.getElementById('viewSelector').value;
+    const container = document.getElementById('dynamicContent');
+    
+    if (view === "teams") {
+        renderTotalTeams(container);
     } else {
         renderTotalPlayers(container);
     }
@@ -1118,20 +1108,37 @@ function switchView(viewName) {
     const overlay = document.getElementById('menu-overlay');
     const container = document.getElementById('dynamicContent');
     const title = document.querySelector('.section-title-row h3');
+    const selector = document.getElementById('viewSelector');
 
-    // FIX: Explicitly REMOVE the active class, do not "toggle" it
+    // Close Menu
     menu.classList.remove('active');
     overlay.style.display = 'none';
-
-    if (viewName === 'bdr') {
-        if(title) title.innerText = "BDR RANKINGS";
+    if (viewName === 'total') {
+        title.innerText = "DASHBOARD VIEW";
+        selector.value = "total";
+        renderTotalPlayers(container);
+    } else if (viewName === 'teams') {
+        title.innerText = "ALL TEAMS";
+        selector.value = "teams";
+        renderTotalTeams(container);
+    } else if (viewName === 'bdr') {
+        title.innerText = "BDR RANKINGS";
         renderBDRRankings(container);
     } else if (viewName === 'market') {
-        if(title) title.innerText = "MARKET VALUES";
+        title.innerText = "MARKET VALUES";
         renderMarketValues(container);
-    } else {
-        if(title) title.innerText = "DASHBOARD VIEW";
-        renderTotalPlayers(container);
+    } else if (viewName === 'auction') {
+        title.innerText = "AUCTION TOUR";
+        renderAuctionTour(container);
+    } else if (viewName === 'soloTour') {
+        title.innerText = "SOLO TOUR";
+        renderSoloTour(container);
+        } else if (viewName === 'quick') {
+        title.innerText = "QUICK TOUR";
+        renderQuickTour(container);
+    } else if (viewName === 'Weekend') {
+        title.innerText = "WEEKEND SERIES";
+        renderWeekendSeries(container);
     }
 }
 
@@ -1540,6 +1547,34 @@ function renderWeekendSeries(container) {
     createTourUI(container, 'weekend', '#3b82f6'); // Blue Theme
 }
 
+        async function renderTotalTeams(container) {
+    container.innerHTML = '<p style="text-align:center; padding:20px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading Teams...</p>';
+    try {
+        const res = await fetch(`${API}/api/teams/all`);
+        const teams = await res.json();
+
+        if (!teams || teams.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:var(--text-dim); padding:20px;">No teams registered yet.</p>';
+            return;
+        }
+        container.innerHTML = teams.map(t => `
+            <div class="player-row" onclick="window.location.href='team.html?id=${encodeURIComponent(t.name)}'" style="cursor:pointer;">
+                <div class="p-details">
+                    <img src="${t.logo || 'https://via.placeholder.com/40'}" class="p-img" style="object-fit: contain; background: transparent;" onerror="this.src='https://via.placeholder.com/40'">
+                    <div>
+                        <span class="p-name">${t.name}</span>
+                        <span class="p-nick" style="color:var(--accent)">Official Club</span>
+                    </div>
+                </div>
+                <div class="t-details">
+                    <i class="fa-solid fa-chevron-right" style="font-size: 12px; color: var(--border);"></i>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        container.innerHTML = '<p style="text-align:center; color:red;">Error loading teams.</p>';
+    }
+        }
 // THE MASTER UI GENERATOR (Used by all tours)
 async function createTourUI(container, type, themeColor) {
     container.innerHTML = `
