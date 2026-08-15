@@ -347,7 +347,9 @@
             document.getElementById('pAuction').innerText = (p.auctionPrice || 0) + "M";
             document.getElementById('pMarket').innerText = (p.marketValue || 0) + "M";
             document.getElementById('pBDR').innerText = p.bdrPoints || 0;
-            document.getElementById('squadImg').src = p.squadImage || "https://via.placeholder.com/400x200?text=No+Squad+Uploaded";
+            if (p.squadImage) {
+    document.getElementById('squadDisplay').innerHTML = `<img src="${p.squadImage}" style="width:100%; border-radius:15px;">`;
+            }
             
             // --- UPDATE THIS PART IN loadProfile() ---
 const avatarBox = document.getElementById('avatar');
@@ -587,9 +589,7 @@ async function handleSquadUpload(input) {
 }
 
 // Inside your loadProfile(), make sure to display the existing squad image:
-if (p.squadImage) {
-    document.getElementById('squadDisplay').innerHTML = `<img src="${p.squadImage}" style="width:100%; border-radius:15px;">`;
-}
+
     </script>
     <!-- Modal Overlay -->
 <div id="avatarModal" class="modal-overlay" style="display:none;">
