@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Player Profile | PES PARK</title>
+    <title>Player Profile | NEXUS LEGENDS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         :root {
@@ -243,7 +243,7 @@
             // 1. Info & Trophies
             document.getElementById('pName').innerText = p.name;
             document.getElementById('pNick').innerText = p.nickname ? `"${p.nickname}"` : "";
-            document.getElementById('pAuction').innerText = p.auctionPrice || 0;
+            document.getElementById('pAuction').innerText = (p.auctionPrice || 0) + "M";
             document.getElementById('pMarket').innerText = (p.marketValue || 0) + "M";
             document.getElementById('pBDR').innerText = p.bdrPoints || 0;
             document.getElementById('squadImg').src = p.squadImage || "https://via.placeholder.com/400x200?text=No+Squad+Uploaded";
