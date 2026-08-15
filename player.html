@@ -439,9 +439,15 @@ if (playerMatches.length > 0) {
                 return `<div class="match-row"><div class="m-date">${new Date(m.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short'})}</div><div class="m-opp">vs ${isA?m.playerB:m.playerA}</div><div class="m-score">${isA?m.scoreA:m.scoreB}-${isA?m.scoreB:m.scoreA}</div><div class="badge ${res.toLowerCase()}">${res}</div></div>`;
             }).join('') || 'No records found';
 
-            const opps = [...new Set(playerMatches.map(m => m.playerA === myName ? m.playerB : m.playerA))];
-document.getElementById('h2hSelector').innerHTML = '<option value="">Select opponent...</option>' + 
-    opps.map(o => `<option value="${o}">${o}</option>`).join('');
+            // --- NEW: FETCH ALL PLAYERS FROM DATABASE ---
+            const allPlayersRes = await fetch(`${API}/api/players`);
+            const allPlayers = await allPlayersRes.json();
+            
+            // Show everyone except the current player
+            const otherPlayers = allPlayers.filter(p => p.name !== myName);
+
+            document.getElementById('h2hSelector').innerHTML = '<option value="">Select opponent...</option>' + 
+                otherPlayers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
             document.getElementById('loading').style.display = 'none';
             document.getElementById('playerContent').style.display = 'block';
         } catch (e) { console.error(e); }
