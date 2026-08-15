@@ -170,6 +170,35 @@
 .modal-footer { display: flex; justify-content: flex-end; gap: 12px; margin-top: 30px; }
 .btn-cancel { background: transparent; border: none; color: #9ca3af; font-weight: bold; }
 .btn-save { background: #10b981; color: #000; border: none; padding: 10px 25px; border-radius: 8px; font-weight: 800; cursor: pointer; }
+        /* H2H Stat Boxes */
+.h2h-summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+.h2h-stat-box { 
+    padding: 20px; border-radius: 15px; text-align: center; 
+    border: 1px solid rgba(255,255,255,0.05); 
+}
+.h2h-stat-box.win { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.h2h-stat-box.draw { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.h2h-stat-box.loss { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.h2h-val { display: block; font-size: 1.8rem; font-weight: 800; }
+.h2h-lab { font-size: 0.7rem; text-transform: uppercase; font-weight: bold; opacity: 0.8; }
+
+/* Squad Upload Area */
+.squad-upload-container {
+    width: 100%; min-height: 200px; border: 2px dashed #1e293b;
+    border-radius: 20px; cursor: pointer; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.3s; position: relative;
+}
+.squad-upload-container:hover { border-color: #10b981; background: rgba(16,185,129,0.02); }
+.upload-placeholder { text-align: center; color: #94a3b8; }
+.icon-circle { 
+    width: 60px; height: 60px; background: rgba(16,185,129,0.1); 
+    color: #10b981; border-radius: 18px; line-height: 60px; 
+    font-size: 1.5rem; font-weight: bold; margin: 0 auto 15px;
+    border: 2px solid #10b981;
+}
+.upload-hint { font-size: 0.7rem; color: #10b981; font-weight: bold; }
+#squadDisplay img { width: 100%; height: auto; display: block; }
     </style>
 </head>
 <body>
@@ -216,24 +245,53 @@
             <div id="historyList"></div>
         </div>
 
-        <!-- H2H RECORD -->
-        <div class="glass-card">
-            <div class="section-title"><i class="fa-solid fa-swords"></i> Head-to-head record</div>
-            <select id="h2hSelector" class="h2h-select" onchange="calcH2H()">
-                <option value="">Select opponent...</option>
-            </select>
-            <div id="h2hDisplay" class="stats-grid" style="display: none;">
-                <div class="stat-box"><span>Wins</span><b id="hWins" style="color:var(--win)">0</b></div>
-                <div class="stat-box"><span>Draws</span><b id="hDraws" style="color:var(--draw)">0</b></div>
-                <div class="stat-box"><span>Losses</span><b id="hLoss" style="color:var(--loss)">0</b></div>
+        <!-- Head-to-Head Section -->
+<div class="card">
+    <div class="card-header">
+        <i class="fa-solid fa-swords"></i>
+        <h3>Head-to-head record</h3>
+    </div>
+    <select id="h2hSelector" class="modern-select" onchange="calculateH2H()">
+        <option value="">Select opponent...</option>
+    </select>
+
+    <!-- H2H Result Area (Hidden until selected) -->
+    <div id="h2hResultArea" style="display:none; margin-top:20px;">
+        <div class="h2h-summary-grid">
+            <div class="h2h-stat-box win">
+                <span class="h2h-val" id="h2hWins">0</span>
+                <span class="h2h-lab">Wins</span>
+            </div>
+            <div class="h2h-stat-box draw">
+                <span class="h2h-val" id="h2hDraws">0</span>
+                <span class="h2h-lab">Draws</span>
+            </div>
+            <div class="h2h-stat-box loss">
+                <span class="h2h-val" id="h2hLosses">0</span>
+                <span class="h2h-lab">Losses</span>
             </div>
         </div>
+        <div id="h2hMatchList" class="h2h-mini-list"></div>
+    </div>
+</div>
 
-        <!-- PLAYER SQUAD -->
-        <div class="glass-card">
-            <div class="section-title"><i class="fa-solid fa-users-rectangle"></i> Player squad</div>
-            <img id="squadImg" class="squad-img" src="" alt="Squad Loading...">
+<!-- Player Squad Section -->
+<div class="card">
+    <div class="card-header">
+        <i class="fa-regular fa-image"></i>
+        <h3>Player squad</h3>
+    </div>
+    <div class="squad-upload-container" onclick="document.getElementById('squadInput').click()">
+        <div id="squadDisplay">
+            <div class="upload-placeholder">
+                <div class="icon-circle">A</div>
+                <p>No squad image uploaded</p>
+                <span class="upload-hint">Click to upload squad</span>
+            </div>
         </div>
+        <input type="file" id="squadInput" hidden onchange="handleSquadUpload(this)">
+    </div>
+</div>
 
         <!-- SEASON SUMMARY -->
         <div class="glass-card">
@@ -377,34 +435,58 @@ if (playerMatches.length > 0) {
             }).join('') || 'No records found';
 
             const opps = [...new Set(playerMatches.map(m => m.playerA === myName ? m.playerB : m.playerA))];
-            document.getElementById('h2hSelector').innerHTML = '<option value="">Select opponent...</option>' + opps.map(o => `<option value="${o}">${o}</option>`).join('');
-
+document.getElementById('h2hSelector').innerHTML = '<option value="">Select opponent...</option>' + 
+    opps.map(o => `<option value="${o}">${o}</option>`).join('');
             document.getElementById('loading').style.display = 'none';
             document.getElementById('playerContent').style.display = 'block';
         } catch (e) { console.error(e); }
     }
 
-    function calcH2H() {
-        const opp = document.getElementById('h2hSelector').value;
-        if(!opp) { document.getElementById('h2hDisplay').style.display = 'none'; return; }
-        const filtered = playerMatches.filter(m => m.playerA === opp || m.playerB === opp);
-        let w = 0, d = 0, l = 0;
-        filtered.forEach(m => {
-            const myS = m.playerA === myName ? m.scoreA : m.scoreB;
-            const oppS = m.playerA === myName ? m.scoreB : m.scoreA;
-            if(myS > oppS) w++; else if(myS === oppS) d++; else l++;
-        });
-        document.getElementById('hWins').innerText = w; document.getElementById('hDraws').innerText = d; document.getElementById('hLoss').innerText = l;
-        document.getElementById('h2hDisplay').style.display = 'grid';
+    // 1. Calculate H2H when opponent is selected
+function calculateH2H() {
+    const oppName = document.getElementById('h2hSelector').value;
+    const resultArea = document.getElementById('h2hResultArea');
+    const matchList = document.getElementById('h2hMatchList');
+
+    if (!oppName) {
+        resultArea.style.display = 'none';
+        return;
     }
 
-    loadProfile();
-        document.getElementById('avatar').onclick = function() {
-    document.getElementById('avatarModal').style.display = 'flex';
-};
-        function closeModal() {
-    document.getElementById('avatarModal').style.display = 'none';
+    // Filter matches played against this opponent
+    const filtered = playerMatches.filter(m => m.playerA === oppName || m.playerB === oppName);
+
+    let w = 0, d = 0, l = 0;
+    let listHtml = '';
+
+    filtered.forEach(m => {
+        const isA = m.playerA === myName;
+        const myS = isA ? m.scoreA : m.scoreB;
+        const oppS = isA ? m.scoreB : m.scoreA;
+
+        let resText = 'DRAW', resClass = 'f-draw';
+        if (myS > oppS) { w++; resText = 'WIN'; resClass = 'f-win'; }
+        else if (myS < oppS) { l++; resText = 'LOSS'; resClass = 'f-loss'; }
+        else { d++; }
+
+        listHtml += `
+            <div class="match-row">
+                <span class="m-date">${new Date(m.createdAt).toLocaleDateString('en-GB', {day:'numeric', month:'short'})}</span>
+                <span class="res-badge ${resClass}">${resText}</span>
+                <span class="m-score">${myS} - ${oppS}</span>
+            </div>`;
+    });
+
+    document.getElementById('h2hWins').innerText = w;
+    document.getElementById('h2hDraws').innerText = d;
+    document.getElementById('h2hLosses').innerText = l;
+    matchList.innerHTML = listHtml;
+    resultArea.style.display = 'block';
 }
+
+// 2. Add this inside your loadProfile() function where the dropdown was being populated
+// Find the line that creates the 'opps' set and replace it with:
+
 
 async function handleFileUpload(input, type) {
     const file = input.files[0];
@@ -467,6 +549,47 @@ function selectChar(el, url) {
         alert("Error saving profile");
     }
         }
+        // Function to handle Squad Image Upload to ImgBB
+async function handleSquadUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const squadDisplay = document.getElementById('squadDisplay');
+    squadDisplay.innerHTML = `<p style="color:#10b981; font-weight:bold;">Uploading Squad...</p>`;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+        // 1. Upload to ImgBB
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+            method: "POST",
+            body: formData
+        });
+        const data = await res.json();
+        const imageUrl = data.data.url;
+
+        // 2. Save URL to Backend
+        const saveRes = await fetch(`${API}/api/players/${playerId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ squadImage: imageUrl })
+        });
+
+        if (saveRes.ok) {
+            squadDisplay.innerHTML = `<img src="${imageUrl}" style="width:100%; border-radius:15px;">`;
+            alert("Squad Image Updated!");
+        }
+    } catch (err) {
+        alert("Upload Failed!");
+        console.error(err);
+    }
+}
+
+// Inside your loadProfile(), make sure to display the existing squad image:
+if (p.squadImage) {
+    document.getElementById('squadDisplay').innerHTML = `<img src="${p.squadImage}" style="width:100%; border-radius:15px;">`;
+}
     </script>
     <!-- Modal Overlay -->
 <div id="avatarModal" class="modal-overlay" style="display:none;">
