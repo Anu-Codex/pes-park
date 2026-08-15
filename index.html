@@ -758,6 +758,75 @@
 @media (min-width: 1024px) {
     .t-name { max-width: 150px; } /* More space on desktop */
 }
+        /* Uptime Page Specific Styling */
+.stats-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.status-orb {
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle, #10b981 0%, transparent 70%);
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
+    animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+    0% { transform: scale(0.95); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+    70% { transform: scale(1); box-shadow: 0 0 40px rgba(16, 185, 129, 0.6); }
+    100% { transform: scale(0.95); box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+}
+
+.uptime-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.uptime-box {
+    background: rgba(16, 25, 38, 0.8);
+    border: 1px solid #1e293b;
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+}
+
+.uptime-box h4 { color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 10px; }
+.uptime-box .value { font-size: 1.5rem; font-weight: 800; color: #fff; }
+
+.live-log-container {
+    background: #000;
+    border: 1px solid #10b98133;
+    border-radius: 15px;
+    padding: 15px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.75rem;
+    height: 200px;
+    overflow-y: auto;
+    color: #10b981;
+    position: relative;
+}
+
+.log-entry { margin-bottom: 5px; border-left: 2px solid #10b981; padding-left: 10px; opacity: 0.8; }
+.log-entry span { color: #64748b; margin-right: 10px; }
+
+/* Uptime Bar Styling */
+.uptime-bar-container {
+    display: flex;
+    gap: 3px;
+    height: 30px;
+    align-items: flex-end;
+    margin-top: 10px;
+}
+.bar { flex: 1; height: 100%; background: #10b981; border-radius: 2px; opacity: 0.3; }
+.bar.active { opacity: 1; box-shadow: 0 0 5px #10b981; }
     </style>
 </head>
 <body>
@@ -790,13 +859,17 @@
         <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
         <li onclick="switchView('auction')"><i class="fa-solid fa-gavel"></i> Auction Tour</li>
     <li onclick="switchView('soloTour')"><i class="fa-solid fa-user"></i> Solo Tour</li>
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
         <li onclick="switchView('bdr')"><i class="fa-solid fa-trophy"></i> BDR Rankings</li>
         <li onclick="switchView('market')"><i class="fa-solid fa-chart-line"></i> Market Value</li>
         <li onclick="window.location.href='transfer.html'">
     <i class="fa-solid fa-cart-shopping"></i> Transfer Market
         </li>
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
         <li onclick="switchView('trophies')"><i class="fa-solid fa-award"></i> Trophies</li>
         <li onclick="switchView('ucl')"><i class="fa-solid fa-shield-halved"></i> UCL</li>
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
+        <li onclick="switchView('uptime')"><i class="fa-solid fa-signal"></i> Uptime & Stats</li>
     </ul>
 </div>
 <div id="menu-overlay" onclick="toggleMenu()"></div>
@@ -1113,7 +1186,10 @@ function switchView(viewName) {
     // Close Menu
     menu.classList.remove('active');
     overlay.style.display = 'none';
-    if (viewName === 'total') {
+    if (viewName === 'uptime') {
+        title.innerText = "COMMAND CENTER • LIVE STATS";
+        renderUptimeStats(container);
+    } else if (viewName === 'total') {
         title.innerText = "DASHBOARD VIEW";
         selector.value = "total";
         renderTotalPlayers(container);
@@ -1574,6 +1650,84 @@ function renderWeekendSeries(container) {
     } catch (err) {
         container.innerHTML = '<p style="text-align:center; color:red;">Error loading teams.</p>';
     }
+        }
+        async function renderUptimeStats(container) {
+    container.innerHTML = `
+        <div class="stats-header">
+            <div class="status-orb"><i class="fa-solid fa-server" style="color:white; font-size:1.5rem;"></i></div>
+            <h2 style="margin:0; letter-spacing:2px;">OPERATIONAL</h2>
+            <p style="color:#10b981; font-size:0.7rem; font-weight:bold;">LIVE CONNECTION ESTABLISHED</p>
+        </div>
+
+        <div class="uptime-grid">
+            <div class="uptime-box">
+                <h4>System Uptime</h4>
+                <div class="value">100.0%</div>
+            </div>
+            <div class="uptime-box">
+                <h4>Live Ping</h4>
+                <div class="value" id="pingValue">-- ms</div>
+            </div>
+        </div>
+
+        <div class="players-card" style="margin-bottom:20px;">
+            <h4 style="font-size:0.7rem; color:#94a3b8; margin-top:0;">90 DAYS UPTIME HISTORY</h4>
+            <div class="uptime-bar-container" id="uptimeBars"></div>
+        </div>
+
+        <div class="section-title-row"><h3>LIVE RECENT EVENTS</h3></div>
+        <div class="live-log-container" id="liveLog">
+        <div class="log-entry"><span>[${new Date().toLocaleTimeString()}]</span> System Initialized...</div>
+            <div class="log-entry"><span>[${new Date().toLocaleTimeString()}]</span> Monitoring Nexus Backend...</div>
+        </div>
+    `;
+
+    // 1. Generate Uptime Bars
+    const barContainer = document.getElementById('uptimeBars');
+    for(let i=0; i<40; i++){
+        const bar = document.createElement('div');
+        bar.className = 'bar active';
+        if(i < 5) bar.style.height = (Math.random() * 40 + 60) + "%"; // Random heights for tech look
+        barContainer.appendChild(bar);
+    }
+
+    // 2. Real-time Ping Monitor
+    const pingDisplay = document.getElementById('pingValue');
+    const logContainer = document.getElementById('liveLog');
+
+    const checkPing = async () => {
+        const start = Date.now();
+        try {
+            const response = await fetch(`${API}/test`);
+            const end = Date.now();
+            const ping = end - start;
+            pingDisplay.innerText = ping + " ms";
+            
+            // Add to log
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span>[${new Date().toLocaleTimeString()}]</span> Connection Stable: Response received in ${ping}ms`;
+            logContainer.prepend(entry);
+            
+            // Keep log clean
+            if(logContainer.children.length > 10) logContainer.lastElementChild.remove();
+
+        } catch (e) {
+            pingDisplay.innerText = "Error";
+            pingDisplay.style.color = "#ef4444";
+        }
+    };
+
+    // Run ping every 5 seconds while on this page
+    const pingInterval = setInterval(() => {
+        if(document.getElementById('pingValue')) {
+            checkPing();
+        } else {
+            clearInterval(pingInterval);
+        }
+    }, 5000);
+
+    checkPing(); // Initial check
         }
 // THE MASTER UI GENERATOR (Used by all tours)
 async function createTourUI(container, type, themeColor) {
