@@ -350,6 +350,9 @@
             if (p.squadImage) {
     document.getElementById('squadDisplay').innerHTML = `<img src="${p.squadImage}" style="width:100%; border-radius:15px;">`;
             }
+            if (p.backgroundImage) {
+            document.body.style.backgroundImage = `linear-gradient(to bottom, rgba(6, 11, 19, 0.8), #060b13), url("${p.backgroundImage}")`;
+            }
             
             // --- UPDATE THIS PART IN loadProfile() ---
 const avatarBox = document.getElementById('avatar');
