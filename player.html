@@ -199,6 +199,60 @@
 }
 .upload-hint { font-size: 0.7rem; color: #10b981; font-weight: bold; }
 #squadDisplay img { width: 100%; height: auto; display: block; }
+        /* New Premium Trophy Grid */
+.trophy-new-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 columns like Image 2 */
+    gap: 12px;
+}
+
+.trophy-card {
+    background: rgba(2, 6, 23, 0.5); /* Deep dark background */
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+    padding: 15px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.2s;
+}
+
+.trophy-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent);
+}
+
+.trophy-img-large {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.2));
+}
+
+.trophy-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.trophy-info b {
+    font-size: 1.4rem;
+    color: white;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.trophy-info span {
+    font-size: 0.7rem;
+    color: #94a3b8; /* Dim text color */
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+/* Mobile Tweak */
+@media (max-width: 380px) {
+    .trophy-info b { font-size: 1.1rem; }
+    .trophy-img-large { width: 35px; height: 35px; }
+}
     </style>
 </head>
 <body>
@@ -310,18 +364,44 @@
             <div class="summary-row"><span>Goals per match</span><span id="sGPM">0.0</span></div>
         </div>
 
-        <!-- TROPHIES -->
-        <div class="glass-card">
-            <div class="section-title"><i class="fa-solid fa-trophy"></i> Trophies</div>
-            <div class="trophy-grid">
-                <div class="trophy-item"><i class="fa-solid fa-award trophy-icon"></i><div><span class="trophy-count" id="tBallon">0</span><span class="trophy-label">Ballon d'Or</span></div></div>
-                <div class="trophy-item"><i class="fa-solid fa-trophy trophy-icon"></i><div><span class="trophy-count" id="tLeague">0</span><span class="trophy-label">Team League</span></div></div>
-                <div class="trophy-item"><i class="fa-solid fa-medal trophy-icon"></i><div><span class="trophy-count" id="tUCL">0</span><span class="trophy-label">UCL</span></div></div>
-                <div class="trophy-item"><i class="fa-solid fa-star trophy-icon"></i><div><span class="trophy-count" id="tWeekly">0</span><span class="trophy-label">Weekly</span></div></div>
+        <!-- UPDATED TROPHIES SECTION -->
+<div class="glass-card">
+    <div class="section-title"><i class="fa-solid fa-trophy"></i> Trophies</div>
+    <div class="trophy-new-grid">
+        <!-- Ballon d'Or -->
+        <div class="trophy-card">
+            <img src="https://i.postimg.cc/vH0Rd0Sj/232666-removebg-preview.png" class="trophy-img-large">
+            <div class="trophy-info">
+                <b id="tBallon">0</b>
+                <span>Ballon d'Or</span>
             </div>
         </div>
-
+        <!-- Team League -->
+        <div class="trophy-card">
+            <img src="https://i.ibb.co/0fM0Z4M/league-trophy.png" class="trophy-img-large">
+            <div class="trophy-info">
+                <b id="tLeague">0</b>
+                <span>Team League</span>
+            </div>
+        </div>
+        <!-- UCL -->
+        <div class="trophy-card">
+            <img src="https://i.postimg.cc/QdC2NcRm/232668-removebg-preview.png" class="trophy-img-large">
+            <div class="trophy-info">
+                <b id="tUCL">0</b>
+                <span>Solo Golden Boot</span>
+            </div>
+        </div>
+        <!-- Weekly -->
+        <div class="trophy-card">
+            <img src="https://i.postimg.cc/qvqPB29Q/232667-removebg-preview.png" class="trophy-img-large">
+            <div class="trophy-info">
+                <b id="tWeekly">0</b>
+                <span>Auction Golden Boot</span>
+            </div>
+        </div>
     </div>
+</div>
 
     <script>
     const API = "https://pes-park-backend.onrender.com";
