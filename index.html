@@ -886,40 +886,53 @@
     text-transform: uppercase;
     letter-spacing: 1px;
 }
-        /* Partial Loader Styling */
+        /* Professional Centered Loader */
 #partial-loader {
     width: 100%;
-    height: 400px; /* Space it takes while loading */
+    min-height: 70vh; /* This centers it perfectly between header and footer */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 20px;
+    padding: 20px 0;
 }
 
 .processing-ring {
-    width: 60px;
-    height: 60px;
-    border: 4px solid rgba(250, 204, 21, 0.2); /* Dim yellow */
-    border-top: 4px solid #facc15; /* Bright yellow */
+    width: 70px; /* Slightly larger for better visibility */
+    height: 70px;
+    border: 3px solid rgba(250, 204, 21, 0.1);
+    border-top: 3px solid #facc15;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    margin-bottom: 25px; /* Space between ring and text */
+    animation: spin 0.8s cubic-bezier(0.4, 0, 0.2, 1) infinite; /* Smoother animation */
 }
 
 #partial-loader p {
     color: #facc15;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    font-size: 0.9rem;
+    letter-spacing: 1.5px;
+    font-size: 0.8rem;
     margin: 0;
+    max-width: 80%; /* Prevents text from hitting edges on small phones */
+    text-align: center;
+    line-height: 1.5;
+}
+
+/* The small green progress line shown in your image */
+.loader-progress-line {
+    width: 40px;
+    height: 2px;
+    background: #10b981;
+    margin-top: 20px;
+    border-radius: 10px;
+    opacity: 0.6;
 }
 
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
-
 /* Optional: Hide the old full-screen splash loader if you want it gone */
 #loader-overlay { display: none !important; }
     </style>
