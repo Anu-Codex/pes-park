@@ -279,6 +279,7 @@
             const data = await res.json();
             const p = data.player;
             selectedAvatarUrl = p.image || "";
+            selectedBgUrl = p.backgroundImage || "";
             playerMatches = data.matches;
             myName = p.name;
 
