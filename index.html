@@ -827,6 +827,43 @@
 }
 .bar { flex: 1; height: 100%; background: #10b981; border-radius: 2px; opacity: 0.3; }
 .bar.active { opacity: 1; box-shadow: 0 0 5px #10b981; }
+        /* New Connection Graph Styling */
+.graph-container {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid #1e293b;
+    border-radius: 15px;
+    padding: 15px 10px 5px 10px;
+    margin-bottom: 20px;
+    position: relative;
+    height: 100px; /* Compact height for mobile */
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    overflow: hidden;
+}
+
+.conn-bar {
+    flex: 1;
+    min-width: 5px;
+    border-radius: 2px 2px 0 0;
+    transition: height 0.3s ease;
+}
+
+/* Color logic for graph bars */
+.bar-green { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+.bar-orange { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); }
+.bar-red { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.4); }
+
+.graph-label-tech {
+    position: absolute;
+    top: 5px;
+    left: 10px;
+    font-size: 0.6rem;
+    color: #475569;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
     </style>
 </head>
 <body>
@@ -1656,7 +1693,7 @@ function renderWeekendSeries(container) {
         <div class="stats-header">
             <div class="status-orb"><i class="fa-solid fa-server" style="color:white; font-size:1.5rem;"></i></div>
             <h2 style="margin:0; letter-spacing:2px;">OPERATIONAL</h2>
-            <p style="color:#10b981; font-size:0.7rem; font-weight:bold;">LIVE CONNECTION ESTABLISHED</p>
+            <p id="statusDesc" style="color:#10b981; font-size:0.7rem; font-weight:bold;">LIVE CONNECTION ESTABLISHED</p>
         </div>
 
         <div class="uptime-grid">
@@ -1675,59 +1712,105 @@ function renderWeekendSeries(container) {
             <div class="uptime-bar-container" id="uptimeBars"></div>
         </div>
 
+        <!-- NEW GRAPH SYSTEM ADDED HERE -->
+        <div class="section-title-row"><h3>REAL-TIME SIGNAL GRAPH</h3></div>
+        <div class="graph-container" id="connGraph">
+            <div class="graph-label-tech">Latency Monitor (ms)</div>
+        </div>
+
         <div class="section-title-row"><h3>LIVE RECENT EVENTS</h3></div>
         <div class="live-log-container" id="liveLog">
-        <div class="log-entry"><span>[${new Date().toLocaleTimeString()}]</span> System Initialized...</div>
+            <div class="log-entry"><span>[${new Date().toLocaleTimeString()}]</span> System Initialized...</div>
             <div class="log-entry"><span>[${new Date().toLocaleTimeString()}]</span> Monitoring Nexus Backend...</div>
         </div>
     `;
 
-    // 1. Generate Uptime Bars
-    const barContainer = document.getElementById('uptimeBars');
+    // 1. Generate Static Uptime Bars (Top section)
+    const uptimeBars = document.getElementById('uptimeBars');
     for(let i=0; i<40; i++){
         const bar = document.createElement('div');
         bar.className = 'bar active';
-        if(i < 5) bar.style.height = (Math.random() * 40 + 60) + "%"; // Random heights for tech look
-        barContainer.appendChild(bar);
+        bar.style.height = (Math.random() * 30 + 70) + "%"; 
+        uptimeBars.appendChild(bar);
     }
 
-    // 2. Real-time Ping Monitor
     const pingDisplay = document.getElementById('pingValue');
     const logContainer = document.getElementById('liveLog');
+    const graphContainer = document.getElementById('connGraph');
+    const statusDesc = document.getElementById('statusDesc');
 
+    // 2. Function to Update the Graph
+    const updateGraph = (ping) => {
+        const bar = document.createElement('div');
+        let statusClass = 'bar-green';
+        
+        // Color Logic
+        if (ping > 250) {
+            statusClass = 'bar-red';
+            statusDesc.style.color = '#ef4444';
+            statusDesc.innerText = 'LATENCY CRITICAL';
+        } else if (ping > 120) {
+            statusClass = 'bar-orange';
+            statusDesc.style.color = '#f59e0b';
+            statusDesc.innerText = 'MINOR SIGNAL DELAY';
+        } else {
+            statusDesc.style.color = '#10b981';
+            statusDesc.innerText = 'LIVE CONNECTION ESTABLISHED';
+        }
+
+        // Height Logic (Max 100px)
+        let h = (ping / 400) * 100;
+        if (h > 90) h = 90;
+        if (h < 15) h = 15;
+
+        bar.className = `conn-bar ${statusClass}`;
+        bar.style.height = `${h}%`;
+        graphContainer.appendChild(bar);
+
+        // Keep last 35 bars
+        if (graphContainer.querySelectorAll('.conn-bar').length > 35) {
+            graphContainer.querySelector('.conn-bar').remove();
+        }
+    };
+
+    // 3. Ping Loop
     const checkPing = async () => {
         const start = Date.now();
         try {
             const response = await fetch(`${API}/test`);
             const end = Date.now();
             const ping = end - start;
+
+            // Update Box
             pingDisplay.innerText = ping + " ms";
             
-            // Add to log
+            // Update Graph
+            updateGraph(ping);
+
+            // Update Log
             const entry = document.createElement('div');
             entry.className = 'log-entry';
-            entry.innerHTML = `<span>[${new Date().toLocaleTimeString()}]</span> Connection Stable: Response received in ${ping}ms`;
+            entry.innerHTML = `<span>[${new Date().toLocaleTimeString()}]</span> Connection Stable: Response in ${ping}ms`;
             logContainer.prepend(entry);
-            
-            // Keep log clean
-            if(logContainer.children.length > 10) logContainer.lastElementChild.remove();
+            if(logContainer.children.length > 8) logContainer.lastElementChild.remove();
 
         } catch (e) {
-            pingDisplay.innerText = "Error";
-            pingDisplay.style.color = "#ef4444";
+            pingDisplay.innerText = "LOST";
+            statusDesc.innerText = "CONNECTION INTERRUPTED";
+            statusDesc.style.color = "#ef4444";
         }
     };
 
-    // Run ping every 5 seconds while on this page
-    const pingInterval = setInterval(() => {
+    // Set interval for real-time monitoring (3 seconds)
+    const monitorInterval = setInterval(() => {
         if(document.getElementById('pingValue')) {
             checkPing();
         } else {
-            clearInterval(pingInterval);
+            clearInterval(monitorInterval);
         }
-    }, 5000);
+    }, 3000);
 
-    checkPing(); // Initial check
+    checkPing(); 
         }
 // THE MASTER UI GENERATOR (Used by all tours)
 async function createTourUI(container, type, themeColor) {
