@@ -447,22 +447,24 @@ function selectChar(el, url) {
     selectedAvatarUrl = (url === 'none') ? "" : url;
 }
         async function saveImages() {
+    const btn = document.getElementById('saveAvatarBtn');
+    btn.innerText = "Saving...";
+
     try {
         const response = await fetch(`${API}/api/players/${playerId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                image: selectedAvatarUrl,
-                backgroundImage: selectedBgUrl // Ensure your backend schema has this field
+                image: selectedAvatarUrl, // This now contains the ImgBB link or the selected character
+                backgroundImage: selectedBgUrl
             })
         });
-
         if (response.ok) {
-            alert("Profile Updated!");
-            location.reload();
+            closeModal();
+            location.reload(); // This triggers loadProfile() again to show the new image
         }
     } catch (err) {
-        console.error(err);
+        alert("Error saving profile");
     }
         }
     </script>
