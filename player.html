@@ -253,6 +253,95 @@
     .trophy-info b { font-size: 1.1rem; }
     .trophy-img-large { width: 35px; height: 35px; }
 }
+        /* Glass Theme Styles */
+.glass-card-themed {
+    position: relative;
+    width: 100%;
+    min-height: 350px;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #0f172a; /* Fallback */
+    background-size: cover;
+    background-position: center;
+}
+
+.card-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
+    z-index: 1;
+}
+
+.card-content-top {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.p-avatar-square {
+    width: 85px;
+    height: 85px;
+    border-radius: 18px;
+    background: #1e293b;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.p-avatar-square img { width: 100%; height: 100%; object-fit: cover; }
+
+.p-main-info h1 { margin: 0; font-size: 1.8rem; font-weight: 800; }
+
+.team-pill {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 4px 12px;
+    border: 1px solid rgba(16, 185, 129, 0.5);
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Recent Form Styles */
+.recent-form-section { position: relative; z-index: 2; margin: 25px 0; }
+.section-label-tiny { font-size: 0.65rem; color: #94a3b8; font-weight: 800; letter-spacing: 2px; }
+
+.form-dots-wrapper { display: flex; gap: 12px; margin-top: 10px; }
+.form-dot-item { text-align: center; }
+.form-circle { 
+    width: 22px; height: 22px; border-radius: 50%; margin-bottom: 5px;
+}
+.res-letter { font-size: 0.75rem; font-weight: 900; }
+
+/* Stats Grid Styles */
+.stats-grid-glass {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.stat-glass-box {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 15px 5px;
+    text-align: center;
+}
+
+.stat-glass-box span { display: block; font-size: 0.65rem; color: #94a3b8; margin-bottom: 8px; }
+.stat-glass-box b { font-size: 1.4rem; color: white; }
     </style>
 </head>
 <body>
@@ -264,13 +353,15 @@
     <div id="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading Profile...</div>
 
     <div id="playerContent" style="display: none;">
+        <div id="profileCard" class="glass-card-themed">
+    <div class="card-overlay"></div>
         
         <!-- HEADER STATS -->
-        <div class="glass-card">
-            <div class="profile-header">
-                <div id="avatar" class="p-avatar"></div>
-                <div class="p-name-area">
+        <div class="card-content-top">
+        <div id="avatar" class="p-avatar-square"></div>
+        <div class="p-main-info">
                     <h1 id="pName">Name</h1>
+            <div id="teamPill" class="team-pill">Loading...</div>
                     <p id="pNick">"Nickname"</p>
                 </div>
             </div>
@@ -279,12 +370,20 @@
         <i class="fa-solid fa-crown"></i> Team Captain
     </div>
             </div>
-            <div class="stats-grid">
-                <div class="stat-box"><span>Auction Price</span><b id="pAuction">0</b></div>
-                <div class="stat-box"><span>Market Value</span><b id="pMarket" style="color:var(--accent)">0</b></div>
-                <div class="stat-box"><span>BDR Points</span><b id="pBDR">0</b></div>
-            </div>
+            <div class="stats-grid-glass">
+        <div class="stat-glass-box">
+            <span>Auction Price</span>
+            <b id="pAuction">0</b>
         </div>
+        <div class="stat-glass-box">
+            <span>Market Value</span>
+            <b id="pMarket" style="color:#10b981;">0</b>
+        </div>
+        <div class="stat-glass-box">
+            <span>BDR Points</span>
+            <b id="pBDR">0</b>
+        </div>
+            </div>
         <!-- Recent Form Display -->
 <div class="glass-card">
     <span class="form-label">Recent Form</span>
@@ -423,6 +522,9 @@
             selectedBgUrl = p.backgroundImage || "";
             playerMatches = data.matches;
             myName = p.name;
+            const profileCard = document.getElementById('profileCard');
+const teamPill = document.getElementById('teamPill');
+            
 
             // 1. Info & Trophies
             document.getElementById('pName').innerText = p.name;
@@ -436,10 +538,12 @@
         }
 
         // --- BACKGROUND IMAGE ---
-        if (p.backgroundImage) {
-            document.body.style.backgroundImage = `linear-gradient(to bottom, rgba(6, 11, 19, 0.8), #060b13), url("${p.backgroundImage}")`;
-            document.body.style.backgroundSize = "cover";
-            document.body.style.backgroundAttachment = "fixed";
+        if (p.backgroundImage && profileCard) {
+                profileCard.style.backgroundImage = `url("${p.backgroundImage}")`;
+            }
+
+            if (teamPill) {
+                teamPill.innerText = p.teamName || "FREE AGENT";
         }
             
             // --- UPDATE THIS PART IN loadProfile() ---
