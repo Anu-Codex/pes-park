@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - NEXUS LEGENDS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --bg: #060b13; --card-bg: #101926; --border: #1e293b;
+            --accent: #10b981; --gold: #f59e0b; --danger: #ef4444; --text-dim: #94a3b8;
+        }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .dashboard-wrapper { width: 100%; max-width: 600px; }
+        h1 { text-align: center; font-size: 1.4rem; margin-bottom: 20px; letter-spacing: 2px;}
+
+        /* TAB MENU */
+        .admin-nav { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 15px; margin-bottom: 10px; width: 100%; scrollbar-width: none; }
+        .nav-tab { background: var(--card-bg); color: var(--text-dim); border: 1px solid var(--border); padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; white-space: nowrap; transition: 0.2s; }
+        .nav-tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+        .admin-section { display: none; animation: fadeIn 0.3s ease; }
+        .admin-section.active-section { display: block !important; }
+
+        .sub-box { background: var(--card-bg); padding: 20px; border-radius: 18px; border: 1px solid var(--border); margin-bottom: 20px; }
+        h4 { margin: 0 0 15px 0; font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        
+        input, select { width: 100%; padding: 12px; background: #060b13; border: 1px solid var(--border); color: white; border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--accent); }
+        
+        button { width: 100%; padding: 14px; border-radius: 10px; border: none; font-weight: 900; cursor: pointer; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-green { background: var(--accent); color: #000; }
+        .btn-gold { background: var(--gold); color: #000; }
+        .delete-btn { background: var(--danger); color: white; padding: 8px; border-radius: 8px; font-size: 0.75rem; }
+        
+        .list-container { max-height: 250px; overflow-y: auto; margin-top: 10px; border: 1px solid #1e293b; border-radius: 10px; padding: 5px; background: rgba(0,0,0,0.2); }
+        .row-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-wrapper">
+        <h1>NEXUS COMMAND</h1>
+
+        <div class="admin-nav">
+            <button class="nav-tab active" onclick="showSection('sec-league', this)">General</button>
+            <button class="nav-tab" onclick="showSection('sec-players', this)">Players</button>
+            <button class="nav-tab" onclick="showSection('sec-teams', this)">Teams</button>
+            <button class="nav-tab" onclick="showSection('sec-smart', this)">Smart Center</button>
+            <button class="nav-tab" onclick="showSection('sec-prestige', this)">HOF</button>
+            <button class="nav-tab" style="color: var(--danger);" onclick="showSection('sec-danger', this)">Danger</button>
+        </div>
+
+        <!-- 1. GENERAL (Global Dashboard Overview) -->
+        <div id="sec-league" class="admin-section active-section">
+            <div class="sub-box">
+                <h4><i class="fa-solid fa-chart-line"></i> Homepage Stats</h4>
+                <form id="statsForm">
+                    <p style="font-size:0.7rem; color:var(--accent)">Sets the top 4 boxes on index page manually.</p>
+                    <div class="grid-2">
+                        <input type="text" id="bdrLeader" placeholder="BDR Leader Name">
+                        <input type="number" id="bdrValue" placeholder="Points">
+                        <input type="text" id="highestMV" placeholder="MV Leader Name">
+                        <input type="number" id="mvValue" placeholder="MV Price (e.g. 500)">
+                    </div>
+                    <input type="number" id="teamsCount" placeholder="Total Teams Count">
+                    <button type="submit" class="btn-green">Apply to Homepage</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. PLAYERS (Add/Edit/Delete) -->
+        <div id="sec-players" class="admin-section">
+            <div class="sub-box">
+                <h4><i class="fa-solid fa-user-plus"></i> Register New Player</h4>
+                <form id="playerForm">
+                    <div class="grid-2">
+                        <input type="text" id="pName" placeholder="Full Name" required>
+                        <input type="text" id="pNick" placeholder="Nickname">
+                    </div>
+                    <input type="text" id="pImage" placeholder="ImgBB URL for Avatar">
+                    <button type="submit" class="btn-green">Add to League</button>
+                </form>
+            </div>
+            
+            <div class="sub-box" style="border-top: 2px solid var(--gold);">
+                <h4><i class="fa-solid fa-pen-to-square"></i> Edit Player Values</h4>
+                <select id="playerSelector" onchange="loadPlayerDataForEdit()">
+                    <option value="">Choose Player...</option>
+                </select>
+                <form id="updateStatsForm">
+                    <div class="grid-2">
+                        <div>
+                            <label style="font-size:0.6rem; color:var(--text-dim)">AUCTION PRICE</label>
+                            <input type="number" id="upAuction" placeholder="Fixed Price">
+                        </div>
+                        <div>
+                            <label style="font-size:0.6rem; color:var(--accent)">MARKET VALUE</label>
+                            <input type="number" id="upMarket" placeholder="Live Worth">
+                        </div>
+                        <input type="number" id="upBDR" placeholder="BDR Points">
+                        <input type="text" id="upNick" placeholder="Change Nickname">
+                    </div>
+                    <button type="submit" class="btn-gold">Update Database</button>
+                </form>
+            </div>
+
+            <div class="sub-box">
+                <h4>Player Registry (Delete)</h4>
+                <div id="adminPlayerList" class="list-container"></div>
+            </div>
+        </div>
+
+        <!-- 3. TEAMS (Creation & Management) -->
+        <div id="sec-teams" class="admin-section">
+            <div class="sub-box">
+                <h4><i class="fa-solid fa-shield-halved"></i> Create Official Club</h4>
+                <form id="createTeamForm">
+                    <input type="text" id="ntName" placeholder="Club Name (e.g. PP ROYALS)" required>
+                    <input type="text" id="ntLogo" placeholder="Logo URL (ImgBB)" required>
+                    <p style="font-size:0.75rem; color:var(--text-dim);">Assign Initial Members:</p>
+                    <div id="teamMemberList" class="list-container"></div>
+                    <button type="submit" class="btn-green">Initialize Club</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 4. SMART CENTER (Tournament Logic) -->
+        <div id="sec-smart" class="admin-section">
+            <div class="sub-box">
+                <h4>1. Create Tournament</h4>
+                <div class="grid-2">
+                    <select id="stType">
+                        <option value="auction">Auction Tour</option>
+                        <option value="solo">Solo Challenge</option>
+                    </select>
+                    <input type="text" id="stName" placeholder="Tour Name">
+                </div>
+                <div id="stParticipantList" class="list-container"></div>
+                <button onclick="createSmartTour()" class="btn-green">Create & Start Tour</button>
+            </div>
+
+            <div class="sub-box">
+                <h4>2. Add Match</h4>
+                <select id="sfTourSelect" onchange="loadTourParticipants()"><option>Loading...</option></select>
+                <div class="grid-2">
+                    <select id="sfPlayerA"></select>
+                    <select id="sfPlayerB"></select>
+                </div>
+                <button onclick="createSmartFixture()" class="btn-gold">Generate Fixture</button>
+            </div>
+
+            <div class="sub-box">
+                <h4>3. Record Result</h4>
+                <select id="srTourSelect" onchange="loadTourFixtures()"><option>Choose Tour...</option></select>
+                <div id="srFixtureList"></div>
+            </div>
+        </div>
+
+        <!-- 5. PRESTIGE (HOF & Captaincy) -->
+        <div id="sec-prestige" class="admin-section">
+            <div class="sub-box">
+                <h4><i class="fa-solid fa-crown"></i> Hall of Fame Manager</h4>
+                <input type="text" id="hofSeasonName" placeholder="Season Name (e.g. Season 1)">
+                <div id="highlightInputs" class="list-container" style="padding:10px">
+                    <div class="grid-2"><input type="text" placeholder="Label"><input type="text" placeholder="Value"></div>
+                </div>
+                <button onclick="addHofRow('highlightInputs', 'highlight')" style="background:#1e293b; font-size:0.7rem;">+ Add Highlight</button>
+                
+                <div id="trophyInputs" style="margin-top:15px">
+                    <div class="sub-box" style="background:rgba(255,255,255,0.05); margin-bottom:5px">
+                        <input type="text" placeholder="Trophy Name">
+                        <div class="grid-2"><input type="text" placeholder="Winner"><input type="text" placeholder="Runner"></div>
+                    </div>
+                </div>
+                <button onclick="addHofRow('trophyInputs', 'trophy')" style="background:#1e293b; font-size:0.7rem;">+ Add Trophy</button>
+                <button onclick="saveAdvancedHof()" class="btn-gold">Publish HOF</button>
+            </div>
+        </div>
+
+        <!-- 6. DANGER ZONE (Sync & Reset) -->
+        <div id="sec-danger" class="admin-section">
+            <div class="sub-box" style="border: 2px solid var(--danger);">
+                <h3 style="color:var(--danger)">Database Tools</h3>
+                <button onclick="syncMarketValues()" class="btn-green" style="margin-bottom:10px">Sync Prices from Auction Site</button>
+                <button onclick="syncAllSystemStats()" class="btn-gold">Full Recalculate (History -> Points/BDR/MV)</button>
+                <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+                <button onclick="nuclearReset('tours')" class="delete-btn">Wipe All Fixtures</button>
+                <button onclick="nuclearReset('stats')" class="delete-btn" style="margin-top:10px">Reset All Player Values to 0</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+    const API = "https://pes-park-backend.onrender.com";
+
+    // Security Check
+    if (localStorage.getItem('isAdmin') !== 'true') { window.location.href = 'login.html'; }
+
+    function showSection(id, btn) {
+        document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active-section'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).classList.add('active-section');
+        btn.classList.add('active');
+    }
+
+    async function loadAllDashboardData() {
+        try {
+            const [pRes, tRes, teamRes] = await Promise.all([
+                fetch(`${API}/api/players`),
+                fetch(`${API}/api/smart/tournaments`),
+                fetch(`${API}/api/teams/all`)
+            ]);
+
+            const players = await pRes.json();
+            const tours = await tRes.json();
+            const teams = await teamRes.json();
+
+            // Populate Player Selectors
+            const pOpts = players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+            document.getElementById('playerSelector').innerHTML = '<option value="">Choose Player...</option>' + pOpts;
+            
+            // Populate List Containers
+            document.getElementById('adminPlayerList').innerHTML = players.map(p => `
+                <div class="row-item"><span>${p.name}</span><button class="delete-btn" onclick="deletePlayer('${p._id}')">X</button></div>
+            `).join('');
+
+            document.getElementById('teamMemberList').innerHTML = players.map(p => `
+                <div style="display:flex; gap:10px; padding:5px"><input type="checkbox" class="nt-member-cb" value="${p.name}"> <label>${p.name}</label></div>
+            `).join('');
+
+            document.getElementById('stParticipantList').innerHTML = players.map(p => `
+                <div style="display:flex; gap:10px; padding:5px"><input type="checkbox" class="st-cb" value="${p.name}"> <label>${p.name}</label></div>
+            `).join('');
+
+            // Populate Tour Selectors
+            const tourOpts = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+            document.getElementById('sfTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
+            document.getElementById('srTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
+
+        } catch (e) { console.error("Sync Error", e); }
+    }
+
+    // Load Player Data for Edit
+    async function loadPlayerDataForEdit() {
+        const id = document.getElementById('playerSelector').value;
+        if(!id) return;
+        const res = await fetch(`${API}/api/players/${id}`);
+        const p = await res.json();
+        document.getElementById('upAuction').value = p.auctionPrice || 0;
+        document.getElementById('upMarket').value = p.marketValue || 0;
+        document.getElementById('upBDR').value = p.bdrPoints || 0;
+        document.getElementById('upNick').value = p.nickname || "";
+    }
+
+    // Generic Form Submission Logic
+    const setup = (id, url, method, dataFn) => {
+        const f = document.getElementById(id);
+        if(f) f.onsubmit = async (e) => {
+            e.preventDefault();
+            const res = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(dataFn()) });
+            if(res.ok) { alert("Database Updated!"); location.reload(); }
+        };
+    };
+
+    setup('statsForm', `${API}/api/stats`, 'PUT', () => ({ 
+        bdrLeader: document.getElementById('bdrLeader').value, 
+        bdrValue: document.getElementById('bdrValue').value,
+        highestMV: document.getElementById('highestMV').value,
+        mvValue: document.getElementById('mvValue').value,
+        teamsCount: document.getElementById('teamsCount').value 
+    }));
+
+    setup('playerForm', `${API}/api/players`, 'POST', () => ({ 
+        name: document.getElementById('pName').value, 
+        nickname: document.getElementById('pNick').value, 
+        image: document.getElementById('pImage').value 
+    }));
+
+    setup('updateStatsForm', `${API}/api/players/${document.getElementById('playerSelector').value}`, 'PUT', () => ({ 
+        auctionPrice: document.getElementById('upAuction').value,
+        marketValue: document.getElementById('upMarket').value,
+        bdrPoints: document.getElementById('upBDR').value,
+        nickname: document.getElementById('upNick').value
+    }));
+
+    setup('createTeamForm', `${API}/api/teams/create`, 'POST', () => ({
+        name: document.getElementById('ntName').value,
+        logo: document.getElementById('ntLogo').value,
+        members: Array.from(document.querySelectorAll('.nt-member-cb:checked')).map(cb => cb.value)
+    }));
+
+    // Smart Center Logic
+    async function createSmartTour() {
+        const data = {
+            name: document.getElementById('stName').value,
+            type: document.getElementById('stType').value,
+            participants: Array.from(document.querySelectorAll('.st-cb:checked')).map(cb => cb.value)
+        };
+        const res = await fetch(`${API}/api/smart/create-tour`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        if(res.ok) { alert("Tour Created!"); location.reload(); }
+    }
+
+    async function loadTourParticipants() {
+        const id = document.getElementById('sfTourSelect').value;
+        const res = await fetch(`${API}/api/smart/participants/${id}`);
+        const parts = await res.json();
+        const opts = parts.map(p => `<option value="${p}">${p}</option>`).join('');
+        document.getElementById('sfPlayerA').innerHTML = opts;
+        document.getElementById('sfPlayerB').innerHTML = opts;
+    }
+
+    async function createSmartFixture() {
+        const data = { tourId: document.getElementById('sfTourSelect').value, playerA: document.getElementById('sfPlayerA').value, playerB: document.getElementById('sfPlayerB').value };
+        const res = await fetch(`${API}/api/smart/create-fixture`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        if(res.ok) alert("Fixture Added!");
+    }
+
+    async function loadTourFixtures() {
+        const id = document.getElementById('srTourSelect').value;
+        const res = await fetch(`${API}/api/smart/fixtures/${id}`);
+        const matches = await res.json();
+        document.getElementById('srFixtureList').innerHTML = matches.map(m => `
+            <div class="row-item">
+                <span>${m.playerA} vs ${m.playerB}</span>
+                <div style="display:flex; gap:5px">
+                    <input type="number" id="scA-${m._id}" value="${m.scoreA}" style="width:40px; margin:0">
+                    <input type="number" id="scB-${m._id}" value="${m.scoreB}" style="width:40px; margin:0">
+                    <button onclick="submitSmartScore('${m._id}')" class="btn-green" style="padding:5px; width:30px; margin:0">✓</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function submitSmartScore(id) {
+        const data = { scoreA: document.getElementById(`scA-${id}`).value, scoreB: document.getElementById(`scB-${id}`).value };
+        await fetch(`${API}/api/smart/update-score/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+        alert("Score Saved!"); loadTourFixtures();
+    }
+
+    // Danger Zone
+    async function nuclearReset(type) {
+        if(!confirm("ARE YOU ABSOLUTELY SURE? THIS WIPES DATA PERMANENTLY.")) return;
+        const url = type === 'tours' ? '/api/danger/reset-tours' : '/api/danger/reset-player-stats';
+        const method = type === 'tours' ? 'DELETE' : 'PUT';
+        await fetch(`${API}${url}`, { method });
+        alert("Wipe Complete."); location.reload();
+    }
+
+    async function syncMarketValues() {
+        await fetch(`${API}/api/danger/import-auction-mv`);
+        alert("Synced from Auction Site!");
+    }
+
+    async function syncAllSystemStats() {
+        await fetch(`${API}/api/smart/sync-all-rewards`);
+        alert("System Sync Complete!");
+    }
+
+    window.onload = loadAllDashboardData;
+    </script>
+</body>
+</html>
