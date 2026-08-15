@@ -38,18 +38,36 @@
 
         /* HEADER SECTION */
         header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px; /* Ensures a small buffer */
         }
-        .logo h2 { margin: 0; color: white; font-size: 1.2rem; }
+        .logo h2 { 
+    margin: 0; 
+    color: white; 
+    font-size: 1.1rem; /* Reduced from 1.2rem */
+    white-space: nowrap; /* Forces text to stay on one line */
+        }
         .logo span { color: var(--accent); font-size: 0.7rem; display: block; font-weight: bold; }
         
-        .top-nav { display: flex; gap: 10px; }
-        .nav-item { 
-            color: var(--text-dim); text-decoration: none; width: 40px; height: 40px; 
-            display: flex; align-items: center; justify-content: center; border-radius: 10px; 
-        }
+        .top-nav { 
+    display: flex; 
+    gap: 5px; /* Reduced from 10px */
+}
+
+/* Shrink the individual icon buttons */
+.nav-item { 
+    color: var(--text-dim); 
+    text-decoration: none; 
+    width: 32px; /* Reduced from 40px */
+    height: 32px; /* Reduced from 40px */
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-radius: 8px; 
+    font-size: 0.9rem; /* Makes the icons inside slightly smaller */
+}
         .nav-item.active { background: rgba(16,185,129,0.1); color: var(--accent); border: 1px solid rgba(16,185,129,0.2); }
 
         /* FIRST SECTION: LEAGUE STATS */
@@ -287,8 +305,12 @@
 /* --- HAMBURGER MENU STYLES --- */
 .logo-group { display: flex; align-items: center; gap: 15px; }
 .hamburger-btn {
-    background: transparent; border: none; color: white;
-    font-size: 1.5rem; cursor: pointer; padding: 5px;
+    background: transparent; 
+    border: none; 
+    color: white;
+    font-size: 1.2rem; /* Reduced from 1.5rem */
+    cursor: pointer; 
+    padding: 2px;
 }
 
 /* --- FIXED SIDEBAR CSS --- */
