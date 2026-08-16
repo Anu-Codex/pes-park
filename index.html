@@ -935,6 +935,54 @@
 }
 /* Optional: Hide the old full-screen splash loader if you want it gone */
 #loader-overlay { display: none !important; }
+        /* Isolated UptimeRobot Card Styling */
+.audit-card {
+    background: linear-gradient(145deg, #0f172a 0%, #060b13 100%);
+    border: 1px solid #1e293b;
+    border-top: 3px solid #f59e0b; /* Golden Audit Accent */
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 25px;
+    position: relative;
+    overflow: hidden;
+}
+
+.audit-card::after {
+    content: 'EXTERNAL AUDIT';
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 0.5rem;
+    color: #f59e0b;
+    font-weight: 900;
+    letter-spacing: 2px;
+    opacity: 0.5;
+}
+
+.audit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.audit-item {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 10px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.audit-item label { display: block; font-size: 0.55rem; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+.audit-item span { font-size: 1rem; font-weight: 800; color: #f8fafc; }
+
+.audit-status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 10px;
+}
     </style>
 </head>
 <body>
@@ -1777,6 +1825,11 @@ function renderWeekendSeries(container) {
             <h2 style="margin:0; letter-spacing:2px;">OPERATIONAL</h2>
             <p id="statusDesc" style="color:#10b981; font-size:0.7rem; font-weight:bold;">LIVE CONNECTION ESTABLISHED</p>
         </div>
+        <div id="uptimeRobotModule">
+        <div class="audit-card">
+            <p style="text-align:center; color:#64748b;">Requesting External Audit...</p>
+        </div>
+    </div>
 
         <div class="uptime-grid">
             <div class="uptime-box">
@@ -1806,6 +1859,7 @@ function renderWeekendSeries(container) {
             <div class="log-entry"><span>[${new Date().toLocaleTimeString()}]</span> Monitoring Nexus Backend...</div>
         </div>
     `;
+            runExternalAudit();
 
     // 1. Generate Static Uptime Bars (Top section)
     const uptimeBars = document.getElementById('uptimeBars');
@@ -1893,6 +1947,50 @@ function renderWeekendSeries(container) {
     }, 3000);
 
     checkPing(); 
+        }
+        async function runExternalAudit() {
+    const module = document.getElementById('uptimeRobotModule');
+    
+    try {
+        const res = await fetch(`${API}/api/external/uptime-audit`);
+        const data = await res.json();
+
+        module.innerHTML = `
+            <div class="audit-card">
+                <div class="audit-status-bar">
+                    <div>
+                        <span style="font-size:0.6rem; color:#f59e0b; font-weight:bold;">SYSTEM VERDICT</span>
+                        <div style="font-size:1.2rem; font-weight:900; color:#fff;">${data.status}</div>
+                    </div>
+                    <div style="text-align:right">
+                        <span style="font-size:0.6rem; color:#64748b;">LAST CHECK</span>
+                        <div style="font-size:0.8rem; font-weight:bold;">${data.lastCheck}</div>
+                    </div>
+                </div>
+
+                <div class="audit-grid">
+                    <div class="audit-item">
+                        <label>24 Hours</label>
+                        <span>${data.ratios[0]}%</span>
+                    </div>
+                    <div class="audit-item">
+                        <label>7 Days</label>
+                        <span>${data.ratios[1]}%</span>
+                    </div>
+                    <div class="audit-item">
+                        <label>30 Days</label>
+                        <span>${data.ratios[2]}%</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top:15px; font-size:0.6rem; color:#475569; text-align:center; letter-spacing:1px;">
+                    <i class="fa-solid fa-circle-check" style="color:#10b981"></i> VERIFIED BY UPTIMEROBOT GLOBAL NODES
+                </div>
+            </div>
+        `;
+    } catch (e) {
+        module.innerHTML = `<div class="audit-card" style="border-color:#ef4444">Audit Failed to Synchronize</div>`;
+    }
         }
 // THE MASTER UI GENERATOR (Used by all tours)
 async function createTourUI(container, type, themeColor) {
