@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Support | NEXUS LEGENDS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --bg: #020617; --card: #0f172a; --accent: #10b981; 
+            --border: #1e293b; --text: #f8fafc;
+        }
+        body, html {
+            background-color: var(--bg); color: var(--text);
+            font-family: 'Inter', sans-serif; margin: 0; padding: 0;
+            height: 100%; overflow: hidden; display: flex; flex-direction: column;
+        }
+
+        /* High-Branding Header */
+        .support-header {
+            padding: 15px 20px; background: var(--card);
+            border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .status-tag {
+            font-size: 0.6rem; background: rgba(16, 185, 129, 0.1);
+            color: var(--accent); padding: 4px 10px; border-radius: 20px;
+            border: 1px solid var(--accent); font-weight: 800; letter-spacing: 1px;
+        }
+        .back-btn { color: white; text-decoration: none; font-size: 1.2rem; }
+
+        /* The Transmission Container */
+        .chat-container {
+            flex: 1; position: relative;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            padding: 10px;
+        }
+
+        /* Styling the WidgetBot Iframe to fit the eSports theme */
+        widgetbot-crate, iframe {
+            border: 1px solid var(--border) !important;
+            border-radius: 15px !important;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        .footer-info {
+            padding: 10px; text-align: center; font-size: 0.6rem;
+            color: #475569; letter-spacing: 2px; text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="support-header">
+        <div style="display:flex; align-items:center; gap:15px;">
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-chevron-left"></i></a>
+            <div>
+                <div style="font-weight: 900; font-size: 0.9rem; letter-spacing: 1px;">NEXUS TRANSMISSION</div>
+                <div style="font-size: 0.6rem; color: #64748b;">ENCRYPTED LIVE SUPPORT CHANNEL</div>
+            </div>
+        </div>
+        <div class="status-tag">ADMN ONLINE</div>
+    </div>
+
+    <div class="chat-container">
+        <!-- WIDGETBOT HTML EMBED -->
+        <!-- REPLACE 'YOUR_SERVER_ID' and 'YOUR_CHANNEL_ID' -->
+        <iframe
+            src="https://e.widgetbot.io/channels/1518205016887001128/1518492041586413629"
+            height="100%"
+            width="100%"
+            frameborder="0">
+        </iframe>
+    </div>
+
+    <div class="footer-info">
+        Transmission V.9.2 • End-to-End Encrypted • Official Nexus Support
+    </div>
+
+</body>
+</html>
