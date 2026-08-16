@@ -160,26 +160,58 @@
             </div>
         </div>
 
-        <!-- 5. PRESTIGE (HOF & Captaincy) -->
-        <div id="sec-prestige" class="admin-section">
-            <div class="sub-box">
-                <h4><i class="fa-solid fa-crown"></i> Hall of Fame Manager</h4>
-                <input type="text" id="hofSeasonName" placeholder="Season Name (e.g. Season 1)">
-                <div id="highlightInputs" class="list-container" style="padding:10px">
-                    <div class="grid-2"><input type="text" placeholder="Label"><input type="text" placeholder="Value"></div>
-                </div>
-                <button onclick="addHofRow('highlightInputs', 'highlight')" style="background:#1e293b; font-size:0.7rem;">+ Add Highlight</button>
-                
-                <div id="trophyInputs" style="margin-top:15px">
-                    <div class="sub-box" style="background:rgba(255,255,255,0.05); margin-bottom:5px">
-                        <input type="text" placeholder="Trophy Name">
-                        <div class="grid-2"><input type="text" placeholder="Winner"><input type="text" placeholder="Runner"></div>
-                    </div>
-                </div>
-                <button onclick="addHofRow('trophyInputs', 'trophy')" style="background:#1e293b; font-size:0.7rem;">+ Add Trophy</button>
-                <button onclick="saveAdvancedHof()" class="btn-gold">Publish HOF</button>
+        <!-- 5. PRESTIGE (SMART HOF) -->
+<div id="sec-prestige" class="admin-section">
+    
+    <!-- BLOCK 1: SEASON CONTEXT -->
+    <div class="sub-box" style="border-left: 4px solid var(--accent);">
+        <h4><i class="fa-solid fa-calendar-check"></i> 1. Set Active Season</h4>
+        <input type="text" id="hofSeasonName" placeholder="e.g. Season 7 • 2026" required>
+        <p style="font-size:0.6rem; color:var(--text-dim)">This name will be linked to the entries below.</p>
+    </div>
+
+    <!-- BLOCK 2: TOURNAMENT PODIUM -->
+    <div class="sub-box" style="border-left: 4px solid #3b82f6;">
+        <h4><i class="fa-solid fa-trophy"></i> 2. Tournament Standings</h4>
+        <select id="tourNameIn">
+            <option value="Auction Tour">Auction Tour</option>
+            <option value="Solo Challenge">Solo Challenge</option>
+            <option value="UCL">Champions League</option>
+        </select>
+        
+        <div class="grid-2">
+            <div>
+                <label style="font-size:0.6rem; color:var(--gold)">WINNER (1st)</label>
+                <select id="tourWinner" class="player-dd"></select>
+            </div>
+            <div>
+                <label style="font-size:0.6rem; color:var(--dim)">RUNNER UP (2nd)</label>
+                <select id="tourRunner" class="player-dd"></select>
             </div>
         </div>
+        <label style="font-size:0.6rem; color:var(--dim)">3RD POSITION (Optional)</label>
+        <select id="tourThird" class="player-dd"></select>
+        
+        <button onclick="saveTourPodium()" class="btn-green" style="background:#3b82f6; color:white;">Publish Standing</button>
+    </div>
+
+    <!-- BLOCK 3: INDIVIDUAL TROPHIES (AUTO-COUNT) -->
+    <div class="sub-box" style="border-left: 4px solid var(--gold);">
+        <h4><i class="fa-solid fa-medal"></i> 3. Individual Awards</h4>
+        <div class="grid-2">
+            <select id="awardType">
+                <option value="ballonDor">Ballon d'Or</option>
+                <option value="goldenBoot">Golden Boot</option>
+                <option value="ucl">UCL Best Player</option>
+                <option value="weekly">Weekly Star</option>
+                <option value="league">League MVP</option>
+            </select>
+            <select id="awardPlayer" class="player-dd"></select>
+        </div>
+        <button onclick="awardSmartTrophy()" class="btn-gold">Award & Increment Profile +1</button>
+    </div>
+
+</div>
 
         <!-- 6. DANGER ZONE (Sync & Reset) -->
         <div id="sec-danger" class="admin-section">
@@ -416,6 +448,66 @@ async function saveAdvancedHof() {
         alert("❌ Connection Error.");
     }
 }
+        // 1. Populate all dropdowns with the class 'player-dd'
+async function populateHofDropdowns() {
+    const res = await fetch(`${API}/api/players`);
+    const players = await res.json();
+    const options = '<option value="">Select Player...</option>' + 
+                    players.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    
+    document.querySelectorAll('.player-dd').forEach(select => {
+        select.innerHTML = options;
+    });
+}
+
+// 2. Logic for Block 2: Tournament Results
+async function saveTourPodium() {
+    const season = document.getElementById('hofSeasonName').value;
+    const tour = document.getElementById('tourNameIn').value;
+    const first = document.getElementById('tourWinner').value;
+    const second = document.getElementById('tourRunner').value;
+    const third = document.getElementById('tourThird').value;
+
+    if(!season || !first) return alert("Season and Winner are required!");
+
+    const payload = {
+        seasonName: season,
+        trophyWinners: [{ 
+            title: tour, 
+            winner: first, 
+            runner: second,
+            third: third // Ensure your HOF page shows this if you want
+        }]
+    };
+
+    const res = await fetch(`${API}/api/hof/save`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    });
+    if(res.ok) alert(`Tournament Podium Saved for ${tour}!`);
+}
+
+// 3. Logic for Block 3: Individual Trophies (The Auto-Counter)
+async function awardSmartTrophy() {
+    const season = document.getElementById('hofSeasonName').value;
+    const type = document.getElementById('awardType').value;
+    const player = document.getElementById('awardPlayer').value;
+
+    if(!season || !player) return alert("Select Season and Player!");
+
+    const res = await fetch(`${API}/api/hof/award-smart-trophy`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ seasonName: season, trophyType: type, playerName: player })
+    });
+
+    if(res.ok) {
+        alert(`SUCCESS: ${player} received the trophy. Profile count incremented!`);
+    }
+}
+
+// Call populateHofDropdowns when the HOF tab is opened
 
     // Danger Zone
     async function nuclearReset(type) {
@@ -437,6 +529,7 @@ async function saveAdvancedHof() {
     }
 
     window.onload = loadAllDashboardData;
+    window.onload = populateHofDropdowns;
     </script>
 </body>
 </html>
