@@ -341,6 +341,81 @@
         await fetch(`${API}/api/smart/update-score/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
         alert("Score Saved!"); loadTourFixtures();
     }
+        // 1. Function to add new rows dynamically in the UI
+function addHofRow(containerId, type) {
+    const container = document.getElementById(containerId);
+    
+    if (type === 'highlight') {
+        const div = document.createElement('div');
+        div.className = "grid-2";
+        div.style.marginBottom = "10px";
+        div.innerHTML = `
+            <input type="text" placeholder="Label (e.g. MVP)">
+            <input type="text" placeholder="Value (e.g. Indranil)">
+        `;
+        container.appendChild(div);
+    } else {
+        const div = document.createElement('div');
+        div.className = "sub-box";
+        div.style.background = "rgba(255,255,255,0.05)";
+        div.style.marginBottom = "10px";
+        div.innerHTML = `
+            <input type="text" placeholder="Trophy Name (e.g. UCL Season 1)">
+            <div class="grid-2">
+                <input type="text" placeholder="Winner Name">
+                <input type="text" placeholder="Runner Name">
+            </div>
+        `;
+        container.appendChild(div);
+    }
+}
+
+// 2. Function to collect all data and send to Backend
+async function saveAdvancedHof() {
+    const seasonName = document.getElementById('hofSeasonName').value;
+    if (!seasonName) return alert("Please enter a Season Name!");
+
+    // Gather Highlights
+    const highlights = Array.from(document.querySelectorAll('#highlightInputs .grid-2')).map(row => {
+        const inputs = row.querySelectorAll('input');
+        return { label: inputs[0].value, value: inputs[1].value };
+    }).filter(h => h.label.trim() !== "");
+
+    // Gather Trophy Winners
+    const trophies = Array.from(document.querySelectorAll('#trophyInputs .sub-box')).map(box => {
+        const mainInput = box.querySelector('input[type="text"]'); // The Trophy Name
+        const gridInputs = box.querySelectorAll('.grid-2 input'); // Winner and Runner
+        return { 
+            title: mainInput.value, 
+            winner: gridInputs[0].value, 
+            runner: gridInputs[1].value 
+        };
+    }).filter(t => t.title.trim() !== "");
+
+    const payload = {
+        seasonName: seasonName,
+        specialHighlights: highlights,
+        trophyWinners: trophies
+    };
+
+    try {
+        const res = await fetch(`${API}/api/hof/save`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            alert("✅ Hall of Fame Published Successfully!");
+            location.reload();
+        } else {
+            alert("❌ Failed to publish. Check console.");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("❌ Connection Error.");
+    }
+}
 
     // Danger Zone
     async function nuclearReset(type) {
