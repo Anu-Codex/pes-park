@@ -116,20 +116,30 @@
     const API = "https://pes-park-backend.onrender.com";
 
     async function submitApplication() {
-        const playerName = document.getElementById('regName').value;
-        const phoneNumber = document.getElementById('regPhone').value;
-        if(!playerName || !phoneNumber) return alert("Missing data");
+    const playerName = document.getElementById('regName').value;
+    const phoneNumber = document.getElementById('regPhone').value;
+    if(!playerName || !phoneNumber) return alert("Please fill both fields.");
 
+    try {
         const res = await fetch(`${API}/api/loyalty/apply`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ playerName, phoneNumber })
         });
         const data = await res.json();
+
         if(data.success) {
-            alert("APPLICATION SUCCESS!\nYour ID is: " + data.applicationId + "\nSave this ID to download your card later.");
+            if(data.alreadyExists) {
+                alert("RECOVERY SUCCESS!\nThis phone is already registered.\nID: " + data.applicationId);
+            } else {
+                alert("APPLICATION TRANSMITTED!\nYour ID is: " + data.applicationId + "\nSave this to download your card later.");
+            }
+            // Auto-fill the search box for them
             document.getElementById('searchId').value = data.applicationId;
-        } else { alert(data.error); }
+        } else {
+            alert("ERROR: " + data.error);
+        }
+    } catch (e) { alert("Server Connection Failed."); }
     }
 
     async function checkStatus() {
