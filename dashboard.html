@@ -222,6 +222,12 @@
     </div>
 
 </div>
+        <div id="sec-loyalty" class="admin-section">
+    <div class="sub-box">
+        <h4><i class="fa-solid fa-id-card"></i> Card Applications</h4>
+        <div id="applicationList" class="list-container"></div>
+    </div>
+        </div>
 
         <!-- 6. DANGER ZONE (Sync & Reset) -->
         <div id="sec-danger" class="admin-section">
@@ -588,6 +594,37 @@ async function awardSmartTrophy() {
         btn.innerHTML = originalText;
     }
         }
+        async function loadApplications() {
+    const res = await fetch(`${API}/api/loyalty/inbox`); // Create this GET route in backend
+    const apps = await res.json();
+    document.getElementById('applicationList').innerHTML = apps.map(a => `
+        <div class="sub-box" style="margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between;">
+                <b>${a.playerName}</b>
+                <span>${a.phoneNumber}</span>
+            </div>
+            <div class="grid-2" style="margin-top:10px;">
+                <select id="tier-${a._id}">
+                    <option value="VIP+">VIP+</option>
+                    <option value="ELITE">ELITE</option>
+                    <option value="ELITE++">ELITE++</option>
+                </select>
+                <button onclick="approveCard('${a._id}')" class="btn-green">Approve & Issue</button>
+            </div>
+        </div>
+    `).join('') || "No pending applications.";
+}
+
+async function approveCard(id) {
+    const tier = document.getElementById(`tier-${id}`).value;
+    await fetch(`${API}/api/loyalty/approve/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ tier })
+    });
+    alert("Card Issued!");
+    loadApplications();
+}
 
     window.onload = loadAllDashboardData;
     window.onload = populateHofDropdowns;
