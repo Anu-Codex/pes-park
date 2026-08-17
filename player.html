@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Player Profile | NEXUS LEGENDS</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg: #030712;
@@ -353,6 +354,27 @@
     border-radius: 20px;
     background: var(--card-bg);
 }
+        .tactical-analysis-card {
+    padding: 25px;
+    margin-top: 20px;
+    background: radial-gradient(circle at center, rgba(16, 185, 129, 0.03) 0%, transparent 100%);
+}
+
+.chart-container-radar {
+    width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.attribute-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.6rem;
+    color: #475569;
+    letter-spacing: 2px;
+    font-weight: 800;
+}
     </style>
 </head>
 <body>
@@ -408,6 +430,17 @@
         <div class="glass-card">
             <div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Match history</div>
             <div id="historyList"></div>
+        </div>
+        <div class="glass-card tactical-analysis-card">
+    <div class="section-title">
+        <i class="fa-solid fa-crosshairs"></i> Tactical Profile
+    </div>
+    <div class="chart-container-radar">
+        <canvas id="radarChart"></canvas>
+    </div>
+    <div class="attribute-footer">
+        <span>STATISTICS VERIFIED BY NEXUS ARCHIVES</span>
+    </div>
         </div>
 
         <!-- HEAD TO HEAD SECTION -->
@@ -537,6 +570,7 @@
             const profileCard = document.getElementById('profileCard');
 const teamPill = document.getElementById('teamPill');
             
+            
 
             // 1. Info & Trophies
             document.getElementById('pName').innerText = p.name;
@@ -557,6 +591,7 @@ const teamPill = document.getElementById('teamPill');
             if (teamPill) {
                 teamPill.innerText = p.teamName || "FREE AGENT";
         }
+            renderRadarChart(p.attributes || {});
             
             // --- UPDATE THIS PART IN loadProfile() ---
 const avatarBox = document.getElementById('avatar');
@@ -800,6 +835,55 @@ async function handleSquadUpload(input) {
         console.error(err);
     }
 }
+        function renderRadarChart(attr) {
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    
+    // Set global styles for Chart.js
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = 'Inter';
+
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['CONSISTENCY', 'BIG MATCH', 'SCORING', 'PLAYMAKING', 'DEFENSE', 'MENTAL'],
+            datasets: [{
+                data: [
+                    attr.consistency || 50, 
+                    attr.bigMatch || 50, 
+                    attr.scoring || 50, 
+                    attr.playmaking || 50, 
+                    attr.defense || 50, 
+                    attr.mental || 50
+                ],
+                backgroundColor: 'rgba(16, 185, 129, 0.2)', // Emerald tint
+                borderColor: '#10b981', // Emerald Line
+                borderWidth: 2,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#10b981'
+            }]
+        },
+        options: {
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    pointLabels: {
+                        font: { size: 10, weight: '900' },
+                        color: '#64748b'
+                    },
+                    ticks: { display: false, stepSize: 20 },
+                    suggestedMin: 0,
+                    suggestedMax: 100
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+        }
         window.onload = loadProfile;
 
 // Inside your loadProfile(), make sure to display the existing squad image:
