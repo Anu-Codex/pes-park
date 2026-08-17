@@ -233,6 +233,15 @@
                 <button onclick="nuclearReset('tours')" class="delete-btn">Wipe All Fixtures</button>
                 <button onclick="nuclearReset('stats')" class="delete-btn" style="margin-top:10px">Reset All Player Values to 0</button>
             </div>
+            <div class="sub-box" style="border: 1px solid var(--accent); background: rgba(16, 185, 129, 0.05);">
+    <h4 style="color: var(--accent);"><i class="fa-solid fa-sync"></i> Official Club Synchronization</h4>
+    <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 15px;">
+        Connects to the Auction Database to import Team Names and Club Logos for all registered players.
+    </p>
+    <button onclick="triggerTeamSync()" class="btn-green">
+        <i class="fa-solid fa-cloud-arrow-down"></i> Run Global Club Sync
+    </button>
+            </div>
         </div>
 
     </div>
@@ -552,6 +561,33 @@ async function awardSmartTrophy() {
         await fetch(`${API}/api/smart/sync-all-rewards`);
         alert("System Sync Complete!");
     }
+        async function triggerTeamSync() {
+    if (!confirm("This will overwrite current Team Names and Logos with data from the Auction Site. Proceed?")) return;
+
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    
+    // UI Feedback
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ACCESSING AUCTION DATABASE...`;
+
+    try {
+        const res = await fetch(`${API}/api/danger/import-team-data`);
+        const data = await res.json();
+
+        if (data.success) {
+            alert("COMMAND EXECUTED: " + data.message);
+            location.reload();
+        } else {
+            alert("SYNC ERROR: " + data.error);
+        }
+    } catch (e) {
+        alert("CRITICAL ERROR: Connection to Nexus Server interrupted.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+        }
 
     window.onload = loadAllDashboardData;
     window.onload = populateHofDropdowns;
