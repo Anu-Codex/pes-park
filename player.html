@@ -375,6 +375,9 @@
     letter-spacing: 2px;
     font-weight: 800;
 }
+        .scout-card { border-left: 4px solid var(--accent); position: relative; }
+.scout-content { font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; font-style: italic; }
+.dossier-line { width: 30px; height: 2px; background: var(--accent); margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -442,6 +445,16 @@
         <span>STATISTICS VERIFIED BY NEXUS ARCHIVES</span>
     </div>
         </div>
+        <!-- AI SCOUTING DOSSIER -->
+<div class="glass-card scout-card">
+    <div class="section-title">
+        <i class="fa-solid fa-user-secret"></i> AI Tactical Scout Report
+    </div>
+    <div id="aiScoutText" class="scout-content">
+        <i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing tactical data...
+    </div>
+    <div class="dossier-line"></div>
+</div>
 
         <!-- HEAD TO HEAD SECTION -->
 <div class="glass-card">
@@ -592,6 +605,7 @@ const teamPill = document.getElementById('teamPill');
                 teamPill.innerText = p.teamName || "FREE AGENT";
         }
             renderRadarChart(p.attributes || {});
+            generateScoutReport(p);
             
             // --- UPDATE THIS PART IN loadProfile() ---
 const avatarBox = document.getElementById('avatar');
@@ -884,6 +898,28 @@ async function handleSquadUpload(input) {
         }
     });
         }
+        // Inside loadProfile() after fetching data 'p'
+async function generateScoutReport(player) {
+    try {
+        const res = await fetch(`${API}/api/bot/scout-player`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: player.name,
+                attributes: player.attributes || {},
+                marketValue: player.marketValue,
+                bdrPoints: player.bdrPoints
+            })
+        });
+        const data = await res.json();
+        document.getElementById('aiScoutText').innerText = data.report;
+    } catch (e) {
+        document.getElementById('aiScoutText').innerText = "Tactical data link offline.";
+    }
+}
+
+// Call it
+
         window.onload = loadProfile;
 
 // Inside your loadProfile(), make sure to display the existing squad image:
