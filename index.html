@@ -983,6 +983,10 @@
     border-bottom: 1px solid rgba(255,255,255,0.05);
     padding-bottom: 10px;
 }
+        .nav-links li i.fa-code-compare {
+    color: var(--accent);
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -1012,6 +1016,9 @@
     <ul class="nav-links">
         <li onclick="switchView('total')"><i class="fa-solid fa-users"></i> Total Players</li>
         <li onclick="switchView('teams')"><i class="fa-solid fa-shield-halved"></i> Total Teams</li>
+        <li onclick="window.location.href='versus.html'">
+    <i class="fa-solid fa-code-compare"></i> Players Compare
+        </li>
         <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
         <li onclick="switchView('auction')"><i class="fa-solid fa-gavel"></i> Auction Tour</li>
     <li onclick="switchView('soloTour')"><i class="fa-solid fa-user"></i> Solo Tour</li>
