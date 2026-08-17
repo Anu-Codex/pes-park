@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS VERSUS | COMPARISON ENGINE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --bg: #020617; --card: #0f172a; --accent: #10b981; --blue: #0ea5e9; --pink: #ec4899; --border: #1e293b; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 15px; }
+        
+        .vs-header { text-align: center; padding: 40px 0; }
+        .vs-header h1 { font-family: 'Rajdhani', sans-serif; font-size: 2.5rem; letter-spacing: 8px; margin: 0; color: var(--accent); }
+        .vs-header p { font-size: 0.7rem; letter-spacing: 2px; color: #64748b; margin-top: 10px; }
+
+        /* Selectors */
+        .selection-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 30px; }
+        select { background: var(--card); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 10px; font-weight: bold; }
+
+        /* Comparison Table */
+        .vs-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .vs-column { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 20px; text-align: center; transition: 0.3s; }
+        .vs-column.active-0 { border-top: 4px solid var(--accent); }
+        .vs-column.active-1 { border-top: 4px solid var(--blue); }
+        .vs-column.active-2 { border-top: 4px solid var(--pink); }
+
+        .vs-avatar { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 15px; border: 2px solid var(--border); object-fit: cover; }
+        .vs-name { font-family: 'Rajdhani'; font-size: 1.2rem; font-weight: 800; margin-bottom: 5px; }
+        .vs-team { font-size: 0.6rem; color: var(--accent); font-weight: 800; text-transform: uppercase; }
+
+        .stat-row { margin-top: 20px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .stat-label { font-size: 0.6rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 1.1rem; font-weight: 900; margin-top: 5px; }
+
+        /* Radar Section */
+        .radar-box { grid-column: span 3; background: var(--card); border: 1px solid var(--border); border-radius: 25px; padding: 30px; margin-top: 20px; }
+        
+        @media (max-width: 600px) {
+            .vs-container, .selection-row { grid-template-columns: 1fr; }
+            .radar-box { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="vs-header">
+        <h1>NEXUS VERSUS</h1>
+        <p>CROSS-DATABASE PLAYER ANALYTICS</p>
+    </div>
+
+    <div class="selection-row">
+        <select id="sel0" onchange="loadPlayer(0, this.value)"><option value="">Select Player 1</option></select>
+        <select id="sel1" onchange="loadPlayer(1, this.value)"><option value="">Select Player 2</option></select>
+        <select id="sel2" onchange="loadPlayer(2, this.value)"><option value="">Select Player 3</option></select>
+    </div>
+
+    <div class="vs-container" id="vsContainer">
+        <!-- Columns will load here -->
+    </div>
+
+    <div class="radar-box">
+        <canvas id="vsRadarChart"></canvas>
+    </div>
+
+    <script>
+        const API = "https://pes-park-backend.onrender.com";
+        let playersData = [null, null, null];
+        let radarChart = null;
+
+        async function init() {
+            const res = await fetch(`${API}/api/players`);
+            const players = await res.json();
+            const options = players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+            document.querySelectorAll('select').forEach(s => s.innerHTML += options);
+            updateRadar();
+        }
+
+        async function loadPlayer(idx, id) {
+            if(!id) { playersData[idx] = null; render(); return; }
+            const res = await fetch(`${API}/api/players/${id}`);
+            playersData[idx] = await res.json();
+            render();
+            updateRadar();
+        }
+
+        function render() {
+            const container = document.getElementById('vsContainer');
+            container.innerHTML = playersData.map((p, i) => {
+                if(!p) return `<div class="vs-column" style="opacity:0.3; padding:60px 0;">SELECT SUBJECT</div>`;
+                return `
+                    <div class="vs-column active-${i}">
+                        <img src="${p.image || 'https://via.placeholder.com/80'}" class="vs-avatar">
+                        <div class="vs-name">${p.name}</div>
+                        <div class="vs-team">${p.teamName || 'FREE AGENT'}</div>
+                        
+                        <div class="stat-row">
+                            <div class="stat-label">Market Value</div>
+                            <div class="stat-value" style="color:var(--accent)">${p.marketValue}M</div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-label">BDR Points</div>
+                            <div class="stat-value">${p.bdrPoints}</div>
+                        </div>
+                        <div class="stat-row">
+                            <div class="stat-label">Auction Price</div>
+                            <div class="stat-value">${p.auctionPrice}M</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateRadar() {
+            const ctx = document.getElementById('vsRadarChart').getContext('2d');
+            const colors = ['#10b981', '#0ea5e9', '#ec4899'];
+            
+            const datasets = playersData.filter(p => p !== null).map((p, i) => ({
+                label: p.name,
+                data: [
+                    p.attributes?.consistency || 50,
+                    p.attributes?.bigMatch || 50,
+                    p.attributes?.scoring || 50,
+                    p.attributes?.playmaking || 50,
+                    p.attributes?.defense || 50,
+                    p.attributes?.mental || 50
+                ],
+                borderColor: colors[i],
+                backgroundColor: colors[i] + '22',
+                borderWidth: 3
+            }));
+
+            if(radarChart) radarChart.destroy();
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['CONSISTENCY', 'BIG MATCH', 'SCORING', 'PLAYMAKING', 'DEFENSE', 'MENTAL'],
+                    datasets: datasets
+                },
+                options: {
+                    scales: { r: { grid: { color: '#1e293b' }, angleLines: { color: '#1e293b' }, ticks: { display: false }, suggestedMin: 0, suggestedMax: 100 } },
+                    plugins: { legend: { labels: { color: 'white', font: { weight: 'bold' } } } }
+                }
+            });
+        }
+        init();
+    </script>
+</body>
+</html>
