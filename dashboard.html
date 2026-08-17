@@ -103,7 +103,17 @@
                         </div>
                         <input type="number" id="upBDR" placeholder="BDR Points">
                         <input type="text" id="upNick" placeholder="Change Nickname">
+                        
                     </div>
+                    <p style="font-size:0.7rem; color:var(--accent); margin-top:15px;">TACTICAL ATTRIBUTES (1-100)</p>
+<div class="grid-2">
+    <input type="number" id="attrCons" placeholder="Consistency">
+    <input type="number" id="attrBig" placeholder="Big Match Player">
+    <input type="number" id="attrScore" placeholder="Scoring">
+    <input type="number" id="attrPlay" placeholder="Playmaking">
+    <input type="number" id="attrDef" placeholder="Defense">
+    <input type="number" id="attrMent" placeholder="Mental Strength">
+</div>
                     <button type="submit" class="btn-gold">Update Database</button>
                 </form>
             </div>
@@ -287,6 +297,13 @@
         document.getElementById('upMarket').value = p.marketValue || 0;
         document.getElementById('upBDR').value = p.bdrPoints || 0;
         document.getElementById('upNick').value = p.nickname || "";
+        const attr = p.attributes || {};
+document.getElementById('attrCons').value = attr.consistency || 50;
+document.getElementById('attrBig').value = attr.bigMatch || 50;
+document.getElementById('attrScore').value = attr.scoring || 50;
+document.getElementById('attrPlay').value = attr.playmaking || 50;
+document.getElementById('attrDef').value = attr.defense || 50;
+document.getElementById('attrMent').value = attr.mental || 50;
     }
 
     // Generic Form Submission Logic
@@ -317,7 +334,15 @@
         auctionPrice: document.getElementById('upAuction').value,
         marketValue: document.getElementById('upMarket').value,
         bdrPoints: document.getElementById('upBDR').value,
-        nickname: document.getElementById('upNick').value
+        nickname: document.getElementById('upNick').value,
+        attributes: {
+        consistency: parseInt(document.getElementById('attrCons').value),
+        bigMatch: parseInt(document.getElementById('attrBig').value),
+        scoring: parseInt(document.getElementById('attrScore').value),
+        playmaking: parseInt(document.getElementById('attrPlay').value),
+        defense: parseInt(document.getElementById('attrDef').value),
+        mental: parseInt(document.getElementById('attrMent').value)
+        }
     }));
 
     setup('createTeamForm', `${API}/api/teams/create`, 'POST', () => ({
