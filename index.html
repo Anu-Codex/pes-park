@@ -113,6 +113,10 @@
             padding: 20px;
             border: 1px solid var(--border);
         }
+        .row-leader {
+    background: rgba(16, 185, 129, 0.1) !important; /* Emerald glow */
+    border-left: 4px solid var(--accent); /* Thick green bar on the left */
+        }
 
         .total-info { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .icon-sq { background: #1e293b; padding: 12px; border-radius: 10px; color: #6366f1; }
@@ -1505,10 +1509,10 @@ async function switchTourTab(type) {
                             <td>${s.draws || 0}</td>
                             <td>${s.losses || 0}</td>
                             <td style="color:var(--text-dim)">${s.gf || 0}</td>
-                                <td style="color:var(--text-dim)">${s.ga || 0}</td>
-                                <td style="font-weight:bold; color:${gdColor}">
-                                    ${gd > 0 ? '+' + gd : gd}
-                                </td>
+                            <td style="color:var(--text-dim)">${s.ga || 0}</td>
+                            <td style="font-weight:bold; color:${gdColor}">
+    ${gd > 0 ? '+' + gd : gd}
+</td>
                             <td class="col-pts-bold">${s.points || 0}</td>
                         </tr>`).join('')}
                     </tbody>
