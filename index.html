@@ -1517,27 +1517,24 @@ async function switchTourTab(type) {
             </div>`;
         }
         // --- 2. FIXTURES ---
-        else if (category === 'fixtures') {
+        } else if (category === 'fixtures') {
             const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
             const matches = await res.json();
-
-            if (!matches || matches.length === 0) {
-                content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);">No fixtures found.</p>';
-                return;
-            }
-
             content.innerHTML = matches.map(m => `
-                <div class="match-card" style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:15px; border-radius:15px; margin-bottom:10px; border:1px solid var(--border);">
-                    <div style="flex:1; font-weight:600; font-size:0.9rem;">${m.playerA}</div>
+                <div class="match-card">
+                    <div style="flex:1; font-weight:600;">${m.playerA}</div>
                     <div style="text-align:center; min-width:80px;">
                         <b style="background:var(--bg); padding:5px 10px; border-radius:8px; color:var(--accent);">
                             ${m.status === 'Completed' ? `${m.scoreA}-${m.scoreB}` : 'VS'}
                         </b>
-                    </div>
-                    <div style="flex:1; text-align:right; font-weight:600; font-size:0.9rem;">${m.playerB}</div>
-                </div>
-            `).join('');
+                        </div>
+                    <div style="flex:1; text-align:right; font-weight:600;">${m.playerB}</div>
+                </div>`).join('') || '<p style="text-align:center">No matches scheduled.</p>';
         }
+     catch (e) {
+        console.error(e);
+        content.innerHTML = '<p style="text-align:center; color:red; padding:20px;">CRITICAL: DATABASE LINK FAILED</p>';
+    }
         // --- 3. GOLDEN BOOT ---
         else if (category === 'boot') {
     // Fetches goals for specific tour type (passed as 'type' to the function)
