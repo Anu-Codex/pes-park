@@ -1515,7 +1515,6 @@ async function switchTourTab(type) {
                     </tbody>
                 </table>
             </div>`;
-        }
         // --- 2. FIXTURES ---
         } else if (category === 'fixtures') {
             const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
@@ -1531,10 +1530,7 @@ async function switchTourTab(type) {
                     <div style="flex:1; text-align:right; font-weight:600;">${m.playerB}</div>
                 </div>`).join('') || '<p style="text-align:center">No matches scheduled.</p>';
         }
-     catch (e) {
-        console.error(e);
-        content.innerHTML = '<p style="text-align:center; color:red; padding:20px;">CRITICAL: DATABASE LINK FAILED</p>';
-    }
+     
         // --- 3. GOLDEN BOOT ---
         else if (category === 'boot') {
     // Fetches goals for specific tour type (passed as 'type' to the function)
@@ -1607,8 +1603,8 @@ async function switchTourTab(type) {
             }
         }
     } catch (e) {
-        console.error("Switch Tab Error:", e);
-        content.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px; font-weight:bold;">ERROR: SECURE LINK INTERRUPTED. <br><span style="font-size:0.7rem; font-weight:normal; color:var(--text-dim)">Try refreshing the page.</span></p>';
+        console.error(e);
+        content.innerHTML = '<p style="text-align:center; color:red; padding:20px;">CRITICAL: DATABASE LINK FAILED</p>';
     }
 }
         function renderSoloTour(container) {
