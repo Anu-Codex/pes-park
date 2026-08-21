@@ -1020,8 +1020,8 @@
     <i class="fa-solid fa-code-compare"></i> Players Compare
         </li>
         <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
-        <li onclick="switchView('auction')"><i class="fa-solid fa-gavel"></i> Auction Tour</li>
-    <li onclick="switchView('soloTour')"><i class="fa-solid fa-user"></i> Solo Tour</li>
+        <li onclick="switchView('soloTour')"><i class="fa-solid fa-user"></i> Solo Challenge</li>
+<li onclick="switchView('auction')"><i class="fa-solid fa-gavel"></i> Auction Tournament</li>
         <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
         <li onclick="switchView('bdr')"><i class="fa-solid fa-trophy"></i> BDR Rankings</li>
         <li onclick="switchView('market')"><i class="fa-solid fa-chart-line"></i> Market Value</li>
@@ -1461,50 +1461,33 @@ async function switchTourTab(type) {
     try {
         // --- 1. POINTS TABLE ---
         if (category === 'table') {
-    const res = await fetch(`${API}/api/smart/standings/${tourId}`);
-    let data = await res.json();
+        // Label Logic: If type is auction, show 'CLUB', otherwise 'PLAYER'
+        const label = (type === 'auction') ? "OFFICIAL CLUB" : "PLAYER NAME";
 
-    // SORTING: Points > GD > GF
-    data.sort((a, b) => {
-        const gdA = (a.gf || 0) - (a.ga || 0);
-        const gdB = (b.gf || 0) - (b.ga || 0);
-        return (b.points - a.points) || (gdB - gdA) || (b.gf - a.gf);
-    });
-
-    content.innerHTML = `
-    <div class="table-responsive">
-        <table class="pts-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th style="text-align:left; padding-left:10px;">TEAM</th>
-                    <th>P</th><th>W</th><th>D</th><th>L</th>
-                    <th>GF</th><th>GA</th><th>GD</th>
-                    <th>PTS</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${data.map((s, i) => {
-                    const gd = (s.gf || 0) - (s.ga || 0);
-                    const gdClass = gd > 0 ? 'gd-positive' : (gd < 0 ? 'gd-negative' : '');
-                    return `
-                    <tr class="${i === 0 ? 'row-leader' : ''}">
-                        <td style="color:var(--accent); font-weight:bold;">${i + 1}</td>
-                        <td class="col-team-name">${s.participant}</td>
-                        <td>${s.played}</td>
-                        <td>${s.wins}</td>
-                        <td>${s.draws}</td>
-                        <td>${s.losses}</td>
-                        <td>${s.gf || 0}</td>
-                        <td>${s.ga || 0}</td>
-                        <td style="font-weight:bold; color:${gd > 0 ? '#10b981' : (gd < 0 ? '#ef4444' : '#94a3b8')}">
-                            ${gd > 0 ? '+' + gd : gd}
-                        </td>
-                        <td class="col-pts-bold">${s.points}</td>
-                    </tr>`;
-                }).join('')}
-            </tbody>
-        </table>
+        content.innerHTML = `
+        <div class="table-responsive">
+            <table class="pts-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th style="text-align:left; padding-left:10px;">${label}</th>
+                        <th>P</th><th>W</th><th>D</th><th>L</th>
+                        <th>PTS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                ${data.map((s, i) => `
+                        <tr>
+                            <td style="color:var(--accent); font-weight:bold;">${i + 1}</td>
+                            <td class="col-team-name">${s.participant}</td>
+                            <td>${s.played}</td>
+                            <td>${s.wins}</td>
+                            <td>${s.draws}</td>
+                            <td>${s.losses}</td>
+                            <td class="col-pts-bold">${s.points}</td>
+                        </tr>`).join('')}
+                </tbody>
+            </table>
     </div>`;
         }
         // --- 2. FIXTURES ---
