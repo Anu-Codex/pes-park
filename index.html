@@ -1533,6 +1533,17 @@ async function switchTourTab(type) {
      
         // --- 3. GOLDEN BOOT ---
         else if (category === 'boot') {
+            if (type === 'auction') {
+                content.innerHTML = `
+                    <div style="text-align:center; padding:60px 20px;">
+                        <i class="fa-solid fa-user-slash" style="font-size:2.5rem; color:var(--danger); opacity:0.3; margin-bottom:15px; display:block;"></i>
+                        <p style="color:var(--text-dim); font-size:0.85rem; font-weight:bold; letter-spacing:1px; line-height:1.5;">
+                            INDIVIDUAL GOLDEN BOOT <br> 
+                            NOT TRACKED FOR CLUB LEAGUES.
+                        </p>
+                    </div>`;
+                return;
+            }
     // Fetches goals for specific tour type (passed as 'type' to the function)
     const res = await fetch(`${API}/api/tour-ranks/${type}/boot`);
     const data = await res.json();
