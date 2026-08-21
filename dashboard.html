@@ -177,6 +177,23 @@
                 <select id="srTourSelect" onchange="loadTourFixtures()"><option>Choose Tour...</option></select>
                 <div id="srFixtureList"></div>
             </div>
+            <div class="sub-box" style="border-left: 4px solid var(--gold);">
+    <h4><i class="fa-solid fa-sitemap"></i> Smart Knockout Generator</h4>
+    
+    <!-- Select ANY Tournament -->
+    <select id="akTourSelect" onchange="loadAKParticipants()">
+        <option value="">Select Tournament...</option>
+    </select>
+    
+    <div class="grid-2">
+        <input type="text" id="akStage" placeholder="Stage (e.g. Semi-Final, Final)">
+        <div style="display:flex; gap:5px">
+            <select id="akPlayerA"></select>
+            <select id="akPlayerB"></select>
+        </div>
+    </div>
+    <button onclick="createAKFixture()" class="btn-gold">Generate Knockout Match</button>
+            </div>
         </div>
 
         <!-- 5. PRESTIGE (SMART HOF) -->
@@ -658,12 +675,56 @@ async function refreshParticipantList() {
         container.innerHTML = '<p style="color:red">Failed to load data.</p>';
     }
 }
+        
 
 // Add this to your stType dropdown in HTML
 // 
 
 // Call this inside loadAllDashboardData so it loads players by default
 // 
+        // Function to load participants (Teams or Players) into Knockout Selector
+async function loadAKParticipants() {
+    const tourId = document.getElementById('akTourSelect').value;
+    const playerASel = document.getElementById('akPlayerA');
+    const playerBSel = document.getElementById('akPlayerB');
+
+    if (!tourId) return;
+
+    try {
+        // This endpoint fetches the participants array specifically for that tourId
+        const res = await fetch(`${API}/api/smart/participants/${tourId}`);
+        const participants = await res.json();
+
+        const options = '<option value="">Select...</option>' + 
+                        participants.map(name => `<option value="${name}">${name}</option>`).join('');
+        
+        playerASel.innerHTML = options;
+        playerBSel.innerHTML = options;
+    } catch (err) { console.error("Error loading participants:", err); }
+}
+
+async function createAKFixture() {
+    const tourId = document.getElementById('akTourSelect').value;
+    const stage = document.getElementById('akStage').value;
+    const pA = document.getElementById('akPlayerA').value;
+    const pB = document.getElementById('akPlayerB').value;
+
+    if (!tourId || !stage || !pA || !pB) return alert("Fill all fields!");
+
+    const res = await fetch(`${API}/api/smart/create-fixture`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            tourId,
+            stage,
+            playerA: pA,
+            playerB: pB,
+            type: "Knockout" // Tag as knockout for the HOF/Index pages
+        })
+    });
+
+    if(res.ok) alert(`${stage} fixture created successfully!`);
+}
 
     // --- UNIFIED INITIALIZATION ---
 window.onload = async () => {
