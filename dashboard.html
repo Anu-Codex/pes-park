@@ -142,25 +142,24 @@
         <div id="sec-smart" class="admin-section">
             <!-- Update 1. Create Tournament box -->
 <div class="sub-box">
-    <h4>1. Create Tournament</h4>
-    <div class="grid-2">
-        <select id="stType">
-            <option value="auction">Auction Tour</option>
-            <option value="solo">Solo Challenge</option>
-        </select>
-        <!-- NEW SELECTOR -->
-        <select id="stParticipantType" onchange="refreshParticipantList()">
-            <option value="players">Individual Players</option>
-            <option value="teams">Official Clubs (Team vs Team)</option>
-        </select>
-    </div>
-    <input type="text" id="stName" placeholder="Tour Name (e.g. S1 Champions League)">
-    
-    <p style="font-size:0.75rem; color:var(--text-dim); margin-bottom: 5px;">Select participants for this tour:</p>
-    <div id="stParticipantList" class="list-container">
-        <!-- Will toggle between players and teams -->
-    </div>
-    <button onclick="createSmartTour()" class="btn-green">Create & Start Tour</button>
+        <h4>1. Create Tournament</h4>
+        <div class="grid-2">
+            <!-- ADD THE ONCHANGE ATTRIBUTE HERE -->
+            <select id="stType" onchange="refreshParticipantList()">
+                <option value="solo">Solo Challenge (Player vs Player)</option>
+                <option value="auction">Auction Tournament (Team vs Team)</option>
+            </select>
+            
+            <input type="text" id="stName" placeholder="Tour Name (e.g. Pro League S1)">
+        </div>
+
+        <p style="font-size:0.7rem; color:var(--accent); margin-bottom:5px;">Select Participants:</p>
+    <!-- This list will now automatically update when you change the dropdown above -->
+        <div id="stParticipantList" class="list-container">
+            <p style="text-align:center; font-size:0.8rem; color:var(--text-dim);">Loading initial player list...</p>
+        </div>
+        
+        <button onclick="createSmartTour()" class="btn-green">Create & Start Tour</button>
 </div>
 
             <div class="sub-box">
@@ -636,22 +635,32 @@ async function approveCard(id) {
     loadApplications();
 }
         // Function to switch between Player list and Team list in Smart Center
+// Function to switch between Player list and Team list based on Tour Type
 async function refreshParticipantList() {
-    const type = document.getElementById('stParticipantType').value;
+    const tourType = document.getElementById('stType').value; // 'solo' or 'auction'
     const container = document.getElementById('stParticipantList');
-    container.innerHTML = '<p style="text-align:center">Loading...</p>';
+    container.innerHTML = '<p style="text-align:center; font-size:0.8rem;">Accessing Archives...</p>';
 
-    const endpoint = type === 'players' ? '/api/players' : '/api/teams/all';
-    const res = await fetch(`${API}${endpoint}`);
-    const data = await res.json();
+    // Logic: Solo = Players | Auction = Teams
+    const endpoint = tourType === 'solo' ? '/api/players' : '/api/teams/all';
+    
+    try {
+        const res = await fetch(`${API}${endpoint}`);
+        const data = await res.json();
 
-    container.innerHTML = data.map(item => `
-        <div style="display:flex; gap:10px; padding:5px; border-bottom:1px solid rgba(255,255,255,0.05);">
-            <input type="checkbox" class="st-cb" value="${item.name}"> 
-            <label>${item.name} ${item.logo ? '<i class="fa-solid fa-shield"></i>' : ''}</label>
-        </div>
-    `).join('');
+        container.innerHTML = data.map(item => `
+            <div style="display:flex; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+                <input type="checkbox" class="st-cb" value="${item.name}" style="width:18px; height:18px; margin:0;"> 
+                <label style="font-size:0.9rem;">${item.name}</label>
+            </div>
+        `).join('');
+    } catch (e) {
+        container.innerHTML = '<p style="color:red">Failed to load data.</p>';
+    }
 }
+
+// Add this to your stType dropdown in HTML
+// 
 
 // Call this inside loadAllDashboardData so it loads players by default
 // 
