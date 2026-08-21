@@ -140,18 +140,28 @@
 
         <!-- 4. SMART CENTER (Tournament Logic) -->
         <div id="sec-smart" class="admin-section">
-            <div class="sub-box">
-                <h4>1. Create Tournament</h4>
-                <div class="grid-2">
-                    <select id="stType">
-                        <option value="auction">Auction Tour</option>
-                        <option value="solo">Solo Challenge</option>
-                    </select>
-                    <input type="text" id="stName" placeholder="Tour Name">
-                </div>
-                <div id="stParticipantList" class="list-container"></div>
-                <button onclick="createSmartTour()" class="btn-green">Create & Start Tour</button>
-            </div>
+            <!-- Update 1. Create Tournament box -->
+<div class="sub-box">
+    <h4>1. Create Tournament</h4>
+    <div class="grid-2">
+        <select id="stType">
+            <option value="auction">Auction Tour</option>
+            <option value="solo">Solo Challenge</option>
+        </select>
+        <!-- NEW SELECTOR -->
+        <select id="stParticipantType" onchange="refreshParticipantList()">
+            <option value="players">Individual Players</option>
+            <option value="teams">Official Clubs (Team vs Team)</option>
+        </select>
+    </div>
+    <input type="text" id="stName" placeholder="Tour Name (e.g. S1 Champions League)">
+    
+    <p style="font-size:0.75rem; color:var(--text-dim); margin-bottom: 5px;">Select participants for this tour:</p>
+    <div id="stParticipantList" class="list-container">
+        <!-- Will toggle between players and teams -->
+    </div>
+    <button onclick="createSmartTour()" class="btn-green">Create & Start Tour</button>
+</div>
 
             <div class="sub-box">
                 <h4>2. Add Match</h4>
@@ -625,9 +635,40 @@ async function approveCard(id) {
     alert("Card Issued!");
     loadApplications();
 }
+        // Function to switch between Player list and Team list in Smart Center
+async function refreshParticipantList() {
+    const type = document.getElementById('stParticipantType').value;
+    const container = document.getElementById('stParticipantList');
+    container.innerHTML = '<p style="text-align:center">Loading...</p>';
 
-    window.onload = loadAllDashboardData;
-    window.onload = populateHofDropdowns;
+    const endpoint = type === 'players' ? '/api/players' : '/api/teams/all';
+    const res = await fetch(`${API}${endpoint}`);
+    const data = await res.json();
+
+    container.innerHTML = data.map(item => `
+        <div style="display:flex; gap:10px; padding:5px; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <input type="checkbox" class="st-cb" value="${item.name}"> 
+            <label>${item.name} ${item.logo ? '<i class="fa-solid fa-shield"></i>' : ''}</label>
+        </div>
+    `).join('');
+}
+
+// Call this inside loadAllDashboardData so it loads players by default
+// 
+
+    // --- UNIFIED INITIALIZATION ---
+window.onload = async () => {
+    console.log("Nexus Command System Initializing...");
+    try {
+        await loadAllDashboardData();
+        await populateHofDropdowns();
+        await loadApplications();
+        await refreshParticipantList();
+        console.log("All systems online.");
+    } catch (err) {
+        console.error("Boot sequence failed:", err);
+    }
+};
     </script>
 </body>
 </html>
