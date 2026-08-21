@@ -1187,37 +1187,32 @@
 
     try {
         // Safe parallel fetch
-        const responses = await Promise.allSettled([
-            fetch(`${API}/api/stats`),
-            fetch(`${API}/api/players`)
+        const [statsRes, playerRes] = await Promise.all([
+            fetch(`${API}/api/stats`).catch(e => null),
+            fetch(`${API}/api/players`).catch(e => null)
         ]);
 
-        // Process Stats
-        if (responses[0].status === 'fulfilled') {
-            const stats = await responses[0].value.json();
-            if (stats) {
-                document.getElementById('bdrVal').innerText = (stats.bdrValue ?? 0) + "Pts";
-                document.getElementById('bdrName').innerText = stats.bdrName || "None";
-                document.getElementById('mvVal').innerText = (stats.mvValue ?? 0) + "M";
-                document.getElementById('mvName').innerText = stats.mvName || "None";
-                document.getElementById('teamCount').innerText = stats.teamsCount ?? 0;
-                document.getElementById('playerCount').innerText = stats.playersCount ?? 0;
-            }
+        if (statsRes && statsRes.ok) {
+            const stats = await statsRes.json();
+            document.getElementById('bdrVal').innerText = (stats.bdrValue ?? 0) + "Pts";
+            document.getElementById('bdrName').innerText = stats.bdrName || "None";
+            document.getElementById('mvVal').innerText = (stats.mvValue ?? 0) + "M";
+            document.getElementById('mvName').innerText = stats.mvName || "None";
+            document.getElementById('teamCount').innerText = stats.teamsCount ?? 0;
+            document.getElementById('playerCount').innerText = stats.playersCount ?? 0;
         }
 
-        // Process Players
-        if (responses[1].status === 'fulfilled') {
-            allPlayers = await responses[1].value.json();
+        if (playerRes && playerRes.ok) {
+            allPlayers = await playerRes.json();
         }
 
     } catch (error) {
         console.error("Critical Load Error:", error);
     } finally {
-        // FIX: This ensures the website ALWAYS shows up even if the database is slow/down
+        // FORCE HIDE LOADER - This ensures the site opens no matter what
         if(loader) loader.style.display = 'none';
         if(content) content.style.display = 'block';
         
-        // Default view
         switchView('total');
         updateLeagueLeader();
     }
