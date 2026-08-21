@@ -1484,11 +1484,14 @@ async function switchTourTab(type) {
                         <tr>
                         <th>#</th>
                             <th style="text-align:left; padding-left:10px;">${participantLabel}</th>
-                            <th>P</th><th>W</th><th>D</th><th>L</th><th>PTS</th>
+                            <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>PTS</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${data.map((s, i) => `
+                        ${data.map((s, i) => {
+                            const gd = (s.gf || 0) - (s.ga || 0);
+                            const gdColor = gd > 0 ? '#10b981' : (gd < 0 ? '#ef4444' : '#94a3b8');
+                            return `
                         <tr class="${i === 0 ? 'row-leader' : ''}">
                             <td style="color:var(--accent); font-weight:bold;">${i + 1}</td>
                             <td class="col-team-name">${s.participant}</td>
@@ -1496,6 +1499,11 @@ async function switchTourTab(type) {
                             <td>${s.wins || 0}</td>
                             <td>${s.draws || 0}</td>
                             <td>${s.losses || 0}</td>
+                            <td style="color:var(--text-dim)">${s.gf || 0}</td>
+                                <td style="color:var(--text-dim)">${s.ga || 0}</td>
+                                <td style="font-weight:bold; color:${gdColor}">
+                                    ${gd > 0 ? '+' + gd : gd}
+                                </td>
                             <td class="col-pts-bold">${s.points || 0}</td>
                         </tr>`).join('')}
                     </tbody>
