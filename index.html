@@ -1452,43 +1452,55 @@ async function switchTourTab(type) {
     const content = document.getElementById('tourContent');
 
     if (!tourId || tourId === "" || tourId === "undefined") {
-        content.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-dim);">Please select a Tournament Name first.</p>';
+        content.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-dim);">Please select a tournament from the list above.</p>';
         return;
     }
 
     content.innerHTML = '<p style="text-align:center; padding:30px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading Data...</p>';
 
     try {
-        // --- 1. POINTS TABLE ---
         if (category === 'table') {
-        // Label Logic: If type is auction, show 'CLUB', otherwise 'PLAYER'
-        const label = (type === 'auction') ? "OFFICIAL CLUB" : "PLAYER NAME";
+            const res = await fetch(`${API}/api/smart/standings/${tourId}`);
+            let data = await res.json();
 
-        content.innerHTML = `
-        <div class="table-responsive">
-            <table class="pts-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th style="text-align:left; padding-left:10px;">${label}</th>
-                        <th>P</th><th>W</th><th>D</th><th>L</th>
-                        <th>PTS</th>
-                    </tr>
-                </thead>
-                <tbody>
-                ${data.map((s, i) => `
+            // 2. Data Check: If no data returned
+            if (!data || data.length === 0) {
+                content.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-dim);">Point table not initialized for this tour.</p>';
+                return;
+            }
+                // Sorting: Points > GD > GF
+            data.sort((a, b) => {
+                const gdA = (a.gf || 0) - (a.ga || 0);
+                const gdB = (b.gf || 0) - (b.ga || 0);
+                return (b.points - a.points) || (gdB - gdA) || (b.gf - a.gf);
+            });
+
+            const participantLabel = (type === 'auction') ? "OFFICIAL CLUB" : "PLAYER NAME";
+
+            content.innerHTML = `
+            <div class="table-responsive">
+                <table class="pts-table">
+                    <thead>
                         <tr>
+                        <th>#</th>
+                            <th style="text-align:left; padding-left:10px;">${participantLabel}</th>
+                            <th>P</th><th>W</th><th>D</th><th>L</th><th>PTS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.map((s, i) => `
+                        <tr class="${i === 0 ? 'row-leader' : ''}">
                             <td style="color:var(--accent); font-weight:bold;">${i + 1}</td>
                             <td class="col-team-name">${s.participant}</td>
-                            <td>${s.played}</td>
-                            <td>${s.wins}</td>
-                            <td>${s.draws}</td>
-                            <td>${s.losses}</td>
-                            <td class="col-pts-bold">${s.points}</td>
+                            <td>${s.played || 0}</td>
+                            <td>${s.wins || 0}</td>
+                            <td>${s.draws || 0}</td>
+                            <td>${s.losses || 0}</td>
+                            <td class="col-pts-bold">${s.points || 0}</td>
                         </tr>`).join('')}
-                </tbody>
-            </table>
-    </div>`;
+                    </tbody>
+                </table>
+            </div>`;
         }
         // --- 2. FIXTURES ---
         else if (category === 'fixtures') {
@@ -1584,10 +1596,10 @@ async function switchTourTab(type) {
             }
         }
     } catch (e) {
-        console.error("Fetch Error:", e);
-        content.innerHTML = '<p style="text-align:center; color:red; padding:20px;">Database Error.</p>';
+        console.error("Switch Tab Error:", e);
+        content.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px; font-weight:bold;">ERROR: SECURE LINK INTERRUPTED. <br><span style="font-size:0.7rem; font-weight:normal; color:var(--text-dim)">Try refreshing the page.</span></p>';
     }
-        }
+}
         function renderSoloTour(container) {
     container.innerHTML = `
         <div class="solo-tour-card">
