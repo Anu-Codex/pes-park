@@ -1182,38 +1182,42 @@
     const content = document.getElementById('main-content-area');
 
     try {
-        // 1. Fetch Stats from Backend
-        const statsRes = await fetch(`${API}/api/stats`);
-        const stats = await statsRes.json();
+        // Safe parallel fetch
+        const responses = await Promise.allSettled([
+            fetch(`${API}/api/stats`),
+            fetch(`${API}/api/players`)
+        ]);
 
-        if (stats) {
-            document.getElementById('bdrVal').innerText = (stats.bdrValue ?? 0) + "Pts";
-            document.getElementById('bdrName').innerText = stats.bdrName || "None";
-            document.getElementById('mvVal').innerText = (stats.mvValue ?? 0) + "M";
-            document.getElementById('mvName').innerText = stats.mvName || "None";
-            document.getElementById('teamCount').innerText = stats.teamsCount ?? 0;
-            document.getElementById('playerCount').innerText = stats.playersCount ?? 0;
+        // Process Stats
+        if (responses[0].status === 'fulfilled') {
+            const stats = await responses[0].value.json();
+            if (stats) {
+                document.getElementById('bdrVal').innerText = (stats.bdrValue ?? 0) + "Pts";
+                document.getElementById('bdrName').innerText = stats.bdrName || "None";
+                document.getElementById('mvVal').innerText = (stats.mvValue ?? 0) + "M";
+                document.getElementById('mvName').innerText = stats.mvName || "None";
+                document.getElementById('teamCount').innerText = stats.teamsCount ?? 0;
+                document.getElementById('playerCount').innerText = stats.playersCount ?? 0;
+            }
         }
 
-        // 2. Fetch Players from Backend
-        const playerRes = await fetch(`${API}/api/players`);
-        allPlayers = await playerRes.json();
-
-        // 3. DATA LOADED: Hide loader and show content
-        loader.style.display = 'none';
-        content.style.display = 'block';
-
-        // Trigger initial view
-        switchView('total');
+        // Process Players
+        if (responses[1].status === 'fulfilled') {
+            allPlayers = await responses[1].value.json();
+        }
 
     } catch (error) {
-        console.error("Initialization Error:", error);
-        loader.innerHTML = '<p style="color:#ef4444;">Server Connection Failed</p>';
+        console.error("Critical Load Error:", error);
+    } finally {
+        // FIX: This ensures the website ALWAYS shows up even if the database is slow/down
+        if(loader) loader.style.display = 'none';
+        if(content) content.style.display = 'block';
+        
+        // Default view
+        switchView('total');
+        updateLeagueLeader();
     }
-}
-
-// Ensure you call initPage on load
-window.addEventListener('DOMContentLoaded', initPage);
+    }
 
     // 3. View Toggler (BDR vs Total Players)
     function toggleView() {
