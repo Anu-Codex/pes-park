@@ -275,6 +275,13 @@
     </button>
             </div>
         </div>
+        <div style="padding: 15px; border: 1px solid var(--danger); border-radius: 12px; margin-top: 15px;">
+    <h4 style="margin: 0; color: white;">Wipe Match History</h4>
+    <p style="font-size: 0.7rem; color: var(--text-dim);">Clears the "Match History" list and "Season Summary" for ALL players. This does NOT reset BDR or Market Value.</p>
+    <button onclick="wipeAllHistory()" class="delete-btn" style="width: 100%; margin-top: 10px; background: linear-gradient(90deg, #ef4444, #991b1b);">
+        <i class="fa-solid fa-eraser"></i> Clear Global Match History
+    </button>
+        </div>
 
     </div>
 
@@ -725,6 +732,28 @@ async function createAKFixture() {
 
     if(res.ok) alert(`${stage} fixture created successfully!`);
 }
+        async function wipeAllHistory() {
+    const check1 = confirm("WARNING: This will permanently delete the match history logs for every player.");
+    if (!check1) return;
+    
+    const check2 = confirm("FINAL WARNING: This cannot be undone. Are you sure you want to start a clean season history?");
+    if (!check2) return;
+
+    try {
+        const res = await fetch(`${API}/api/danger/wipe-match-history`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            alert("COMMAND EXECUTED: " + data.message);
+            location.reload();
+        }
+    } catch (e) {
+        alert("CRITICAL ERROR: Failed to reach Nexus Server.");
+    }
+        }
 
     // --- UNIFIED INITIALIZATION ---
 window.onload = async () => {
