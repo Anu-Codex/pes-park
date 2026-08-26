@@ -194,6 +194,19 @@
     </div>
     <button onclick="createAKFixture()" class="btn-gold">Generate Knockout Match</button>
             </div>
+            <!-- DELETE TOURNAMENT BOX -->
+<div class="sub-box" style="border: 1px solid var(--danger); background: rgba(239, 68, 68, 0.05);">
+    <h4 style="color: var(--danger);"><i class="fa-solid fa-trash-can"></i> 4. Delete Tournament</h4>
+    <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 10px;">
+        Warning: This will permanently delete the tournament, all its fixtures, and the points table.
+    </p>
+    <select id="dtTourSelect" style="border-color: var(--danger);">
+        <option value="">Select Tournament to Delete...</option>
+    </select>
+    <button onclick="deleteSpecificTour()" class="delete-btn" style="width: 100%; margin-top: 5px;">
+        Confirm Permanent Delete
+    </button>
+</div>
         </div>
 
         <!-- 5. PRESTIGE (SMART HOF) -->
@@ -335,6 +348,7 @@
             const tourOpts = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
             document.getElementById('sfTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             document.getElementById('srTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
+            document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Tour to Delete...</option>' + tourOpts;
 
         } catch (e) { console.error("Sync Error", e); }
     }
@@ -768,6 +782,27 @@ async function createAKFixture() {
         }
     } catch (e) {
         alert("CRITICAL ERROR: Failed to reach Nexus Server.");
+    }
+        }
+        async function deleteSpecificTour() {
+    const tourId = document.getElementById('dtTourSelect').value;
+    if (!tourId) return alert("Please select a tournament first!");
+
+    const confirmName = prompt("This action is PERMANENT. To confirm, type 'DELETE' in the box below:");
+    if (confirmName !== "DELETE") return alert("Deletion cancelled.");
+
+    try {
+        const res = await fetch(`${API}/api/smart/delete-tour/${tourId}`, {
+            method: 'DELETE'
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            alert("SUCCESS: Tournament wiped from archives.");
+            location.reload(); // Refresh to update all dropdowns
+        }
+    } catch (e) {
+        alert("CRITICAL ERROR: Failed to reach server.");
     }
         }
 
