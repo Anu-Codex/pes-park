@@ -1214,9 +1214,43 @@
         // FORCE HIDE LOADER - This ensures the site opens no matter what
         if(loader) loader.style.display = 'none';
         if(content) content.style.display = 'block';
+        // --- NEW: DEEP LINK CHECK ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const linkedTourId = urlParams.get('tourId');
+
+        if (linkedTourId) {
+            try {
+                const res = await fetch(`${API}/api/smart/tournament-details/${linkedTourId}`);
+                const tour = await res.json();
+
+                if (tour && !tour.error) {
+                    // 1. Switch to correct View (Solo or Auction)
+                    const viewName = (tour.type === 'solo') ? 'soloTour' : 'auction';
+                    switchView(viewName);
+
+                    // 2. Wait for UI to render, then select the tournament
+                    setTimeout(() => {
+                        const selector = document.getElementById('tourNameSelector');
+                        if (selector) {
+                            selector.value = linkedTourId;
+                            switchTourTab(tour.type);
+                        }
+                    }, 500);
+                } else {
+                    switchView('total'); // Fallback if tour not found
+                }
+            } catch (e) { 
+                console.error("Deep link failed", e); 
+                switchView('total'); // Fallback on error
+            }
+        } else {
+            // Default behavior if no link exists in the URL
+            switchView('total');
+            updateLeagueLeader();
+        }
         
-        switchView('total');
-        updateLeagueLeader();
+        
+        
     }
     }
 
@@ -1415,12 +1449,14 @@ async function renderAuctionTour(container) {
         <div class="tour-nav-row" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;">
             <h4 style="margin:0; font-size:0.8rem; color:var(--text-dim);" id="tourTabTitle">TOUR</h4>
             
-            <!-- NEW MIDDLE DROPDOWN: Tour Names -->
+            
             <select id="tourNameSelector" class="tour-name-select" onchange="switchTourTab('auction')">
                 <option value="">Loading Tours...</option>
             </select>
 
-            <!-- RIGHT DROPDOWN: Categories -->
+            <button onclick="shareTournament()" style="background:rgba(16,185,129,0.1); border:1px solid var(--accent); color:var(--accent); padding:5px 8px; border-radius:6px; cursor:pointer;">
+                <i class="fa-solid fa-share-nodes"></i>
+            </button>
             <select id="tourTabSelector" style="background:var(--bg); color:white; border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem;" onchange="switchTourTab('auction')">
                 <option value="table">Points table</option>
                 <option value="fixtures">Fixtures</option>
@@ -2071,6 +2107,17 @@ async function createTourUI(container, type, themeColor) {
 
 // Call this inside your window.onload or initPage
 updateTopStats();
+        function shareTournament() {
+    const tourId = document.getElementById('tourNameSelector').value;
+    if (!tourId || tourId === "undefined") return alert("Please select a tournament first!");
+
+    const shareUrl = `${window.location.origin}${window.location.pathname}?tourId=${tourId}`;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(shareUrl).then(() => {
+        alert("Tactical Link Copied! Share this with your squad.");
+    });
+        }
         
     </script>
 
