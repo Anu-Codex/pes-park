@@ -380,6 +380,66 @@
         .scout-card { border-left: 4px solid var(--accent); position: relative; }
 .scout-content { font-size: 0.85rem; line-height: 1.6; color: #cbd5e1; font-style: italic; }
 .dossier-line { width: 30px; height: 2px; background: var(--accent); margin-top: 15px; }
+        .synapse-card {
+    text-align: center;
+    padding: 30px 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.synapse-visual-wrapper {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin: 0 auto 25px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#synapseCanvas {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.4));
+}
+
+/* Moving scan effect */
+.scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.3;
+    animation: scanMove 4s linear infinite;
+}
+
+@keyframes scanMove {
+    0% { top: 0; }
+    100% { top: 100%; }
+}
+
+.signature-id-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border);
+    padding: 12px;
+    border-radius: 10px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.id-label { font-size: 0.55rem; color: #475569; display: block; letter-spacing: 2px; margin-bottom: 5px; }
+.id-value { font-size: 1rem; color: var(--accent); font-weight: 900; letter-spacing: 3px; }
+
+.biometric-footer {
+    margin-top: 15px;
+    font-size: 0.6rem;
+    color: #475569;
+    letter-spacing: 2px;
+    font-weight: bold;
+}
     </style>
 </head>
 <body>
@@ -436,27 +496,7 @@
             <div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> Match history</div>
             <div id="historyList"></div>
         </div>
-        <div class="glass-card tactical-analysis-card">
-    <div class="section-title">
-        <i class="fa-solid fa-crosshairs"></i> Tactical Profile
-    </div>
-    <div class="chart-container-radar">
-        <canvas id="radarChart"></canvas>
-    </div>
-    <div class="attribute-footer">
-        <span>STATISTICS VERIFIED BY NEXUS ARCHIVES</span>
-    </div>
-        </div>
-        <!-- AI SCOUTING DOSSIER -->
-<div class="glass-card scout-card">
-    <div class="section-title">
-        <i class="fa-solid fa-user-secret"></i> AI Tactical Scout Report
-    </div>
-    <div id="aiScoutText" class="scout-content">
-        <i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing tactical data...
-    </div>
-    <div class="dossier-line"></div>
-</div>
+        
 
         <!-- HEAD TO HEAD SECTION -->
 <div class="glass-card">
@@ -488,6 +528,26 @@
         
         <!-- List of matches against that specific opponent -->
         <div id="h2hMatchList"></div>
+    </div>
+</div>
+        <!-- SYNAPSE SIGNATURE: NEURAL DNA -->
+<div class="glass-card synapse-card">
+    <div class="section-title">
+        <i class="fa-solid fa-fingerprint"></i> Synapse Signature
+    </div>
+    
+    <div class="synapse-visual-wrapper">
+        <canvas id="synapseCanvas"></canvas>
+        <div class="scan-line"></div>
+    </div>
+
+    <div class="signature-id-box">
+        <span class="id-label">NEURAL DNA HASH</span>
+        <div id="nexusHash" class="id-value">NXS-00-00-00-00</div>
+    </div>
+    
+    <div class="biometric-footer">
+        BIOMETRIC SCAN STABLE • V.7.2
     </div>
 </div>
 
@@ -560,6 +620,27 @@
             </div>
         </div>
     </div>
+    <div class="glass-card tactical-analysis-card">
+    <div class="section-title">
+        <i class="fa-solid fa-crosshairs"></i> Tactical Profile
+    </div>
+    <div class="chart-container-radar">
+        <canvas id="radarChart"></canvas>
+    </div>
+    <div class="attribute-footer">
+        <span>STATISTICS VERIFIED BY NEXUS ARCHIVES</span>
+    </div>
+        </div>
+        <!-- AI SCOUTING DOSSIER -->
+<div class="glass-card scout-card">
+    <div class="section-title">
+        <i class="fa-solid fa-user-secret"></i> AI Tactical Scout Report
+    </div>
+    <div id="aiScoutText" class="scout-content">
+        <i class="fa-solid fa-circle-notch fa-spin"></i> Analyzing tactical data...
+    </div>
+    <div class="dossier-line"></div>
+</div>
 </div>
 
     <script>
@@ -584,6 +665,8 @@
             myName = p.name;
             const profileCard = document.getElementById('profileCard');
 const teamPill = document.getElementById('teamPill');
+            const attributes = p.attributes || { consistency: 50, bigMatch: 50, scoring: 50, playmaking: 50, defense: 50, mental: 50 };
+generateSynapse(attributes);
             
             
 
@@ -918,6 +1001,76 @@ async function generateScoutReport(player) {
     } catch (e) {
         document.getElementById('aiScoutText').innerText = "Tactical data link offline.";
     }
+}
+        // --- Inside loadProfile() ---
+
+
+// --- New Function to Generate Visual DNA ---
+function generateSynapse(attr) {
+    const canvas = document.getElementById('synapseCanvas');
+    const ctx = canvas.getContext('2d');
+    const hashEl = document.getElementById('nexusHash');
+
+    // 1. Generate Unique Hex Hash
+    const vals = Object.values(attr);
+    const hex = vals.map(v => v.toString(16).padStart(2, '0').toUpperCase());
+    hashEl.innerText = `NXS-${hex.slice(0, 2).join('-')}-${hex.slice(2, 4).join('-')}-${hex.slice(4, 6).join('')}`;
+
+    // 2. Setup Canvas
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = 220 * dpr;
+    canvas.height = 220 * dpr;
+    ctx.scale(dpr, dpr);
+
+    let rotation = 0;
+
+    function draw() {
+        ctx.clearRect(0, 0, 220, 220);
+        const centerX = 110;
+        const centerY = 110;
+        const radius = 60;
+
+        ctx.beginPath();
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 1.5;
+        
+        // This loop generates the unique shape based on stats
+        for (let i = 0; i <= 360; i += 1) {
+            const angle = (i + rotation) * Math.PI / 180;
+            
+            // MATH MAGIC: We use the player attributes to distort a circle
+            // Every attribute affects a different frequency of the wave
+            const noise = (
+                Math.sin(angle * 2) * (attr.scoring / 10) +
+                Math.cos(angle * 3) * (attr.defense / 12) +
+                Math.sin(angle * 5) * (attr.mental / 15) +
+                Math.cos(angle * 1) * (attr.consistency / 8)
+            );
+
+            const r = radius + noise + (Math.sin(Date.now() / 500) * 5); // Pulsation
+            const x = centerX + r * Math.cos(angle);
+            const y = centerY + r * Math.sin(angle);
+
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+
+        ctx.closePath();
+        ctx.stroke();
+
+        // Draw inner particles
+        for(let j = 0; j < 3; j++) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius - (j * 15) + (Math.sin(Date.now() / 300) * 2), 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(16, 185, 129, ${0.3 - (j * 0.1)})`;
+            ctx.stroke();
+        }
+
+        rotation += 0.2; // Slow rotation
+        requestAnimationFrame(draw);
+    }
+
+    draw();
 }
 
 // Call it
