@@ -368,6 +368,7 @@
             document.getElementById('sfTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             document.getElementById('srTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Tour to Delete...</option>' + tourOpts;
+            document.getElementById('subTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
 
         } catch (e) { console.error("Sync Error", e); }
     }
@@ -844,31 +845,66 @@ async function createAKFixture() {
         // Load main team-vs-team fixtures
 async function loadMainFixtures() {
     const tourId = document.getElementById('subTourSelect').value;
-    const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
-    const matches = await res.json();
-    // Only show main fixtures (not already sub-fixtures)
-    const filtered = matches.filter(m => !m.isSubFixture);
-    document.getElementById('subParentSelect').innerHTML = filtered.map(m => 
-        `<option value="${m._id}" data-ta="${m.playerA}" data-tb="${m.playerB}">${m.playerA} vs ${m.playerB}</option>`
-    ).join('');
-}
+    const parentSel = document.getElementById('subParentSelect');
+    
+    if (!tourId) return;
+
+    try {
+        const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
+        const matches = await res.json();
+        
+        // Filter: We only want main TEAM vs TEAM matches (not sub-fixtures)
+        const mainMatches = matches.filter(m => !m.isSubFixture);
+
+        if (mainMatches.length === 0) {
+            parentSel.innerHTML = '<option value="">No Team Matches Found</option>';
+            return;
+        }
+
+        // We store the Team Names in attributes so we can fetch their players later
+        parentSel.innerHTML = '<option value="">Select Team Match...</option>' + 
+            mainMatches.map(m => `
+                <option value="${m._id}" data-ta="${m.playerA}" data-tb="${m.playerB}">
+                    ${m.playerA} vs ${m.playerB}
+                </option>
+            `).join('');
+    } catch (e) {
+        console.error("Error loading parent fixtures", e);
+    }
+        }
 
 // Fetch players for the two teams in the selected fixture
 async function loadTeamPlayers() {
     const sel = document.getElementById('subParentSelect');
-    const teamA = sel.options[sel.selectedIndex].getAttribute('data-ta');
-    const teamB = sel.options[sel.selectedIndex].getAttribute('data-tb');
+    const selectedOption = sel.options[sel.selectedIndex];
     
-    const [resA, resB] = await Promise.all([
-        fetch(`${API}/api/teams/members/${teamA}`),
-        fetch(`${API}/api/teams/members/${teamB}`)
-    ]);
-    
-    const playersA = await resA.json();
-    const playersB = await resB.json();
-    
-    document.getElementById('subPlayerA').innerHTML = playersA.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-    document.getElementById('subPlayerB').innerHTML = playersB.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+    // Get the team names we stored in the attributes above
+    const teamA = selectedOption.getAttribute('data-ta');
+    const teamB = selectedOption.getAttribute('data-tb');
+
+    if (!teamA || !teamB) return;
+
+    try {
+        // Fetch players for both teams in parallel
+        const [resA, resB] = await Promise.all([
+            fetch(`${API}/api/teams/members/${encodeURIComponent(teamA)}`),
+            fetch(`${API}/api/teams/members/${encodeURIComponent(teamB)}`)
+        ]);
+
+        const playersA = await resA.json();
+        const playersB = await resB.json();
+
+        // Populate Player Selectors
+        document.getElementById('subPlayerA').innerHTML = playersA.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+        document.getElementById('subPlayerB').innerHTML = playersB.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+        
+        // Update Labels so you know which team you are picking for
+        document.getElementById('labelTeamA').innerText = `${teamA.toUpperCase()} PLAYER`;
+        document.getElementById('labelTeamB').innerText = `${teamB.toUpperCase()} PLAYER`;
+
+    } catch (e) {
+        console.error("Error loading team members", e);
+    }
 }
 
 async function createSubFixture() {
