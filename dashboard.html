@@ -273,15 +273,19 @@
     <button onclick="triggerTeamSync()" class="btn-green">
         <i class="fa-solid fa-cloud-arrow-down"></i> Run Global Club Sync
     </button>
+                <button onclick="rebuildPointsTable()" class="btn-gold" style="margin-top:10px; background:#3b82f6; color:white;">
+    <i class="fa-solid fa-sync"></i> Rebuild Points Table from Fixtures
+                </button>
             </div>
-        </div>
-        <div style="padding: 15px; border: 1px solid var(--danger); border-radius: 12px; margin-top: 15px;">
+             <div style="padding: 15px; border: 1px solid var(--danger); border-radius: 12px; margin-top: 15px;">
     <h4 style="margin: 0; color: white;">Wipe Match History</h4>
     <p style="font-size: 0.7rem; color: var(--text-dim);">Clears the "Match History" list and "Season Summary" for ALL players. This does NOT reset BDR or Market Value.</p>
     <button onclick="wipeAllHistory()" class="delete-btn" style="width: 100%; margin-top: 10px; background: linear-gradient(90deg, #ef4444, #991b1b);">
         <i class="fa-solid fa-eraser"></i> Clear Global Match History
     </button>
+             </div>
         </div>
+       
 
     </div>
 
@@ -732,6 +736,18 @@ async function createAKFixture() {
 
     if(res.ok) alert(`${stage} fixture created successfully!`);
 }
+        async function rebuildPointsTable() {
+    const tourId = document.getElementById('srTourSelect').value;
+    if (!tourId) return alert("Select a tournament first!");
+
+    if(!confirm("This will recalculate all points/GF/GA for this tour based on match history. Proceed?")) return;
+
+    try {
+        const res = await fetch(`${API}/api/smart/recalculate-table/${tourId}`);
+        const data = await res.json();
+        if(data.success) alert("Table Restored! Check index.html now.");
+    } catch (e) { alert("Server Error"); }
+        }
         async function wipeAllHistory() {
     const check1 = confirm("WARNING: This will permanently delete the match history logs for every player.");
     if (!check1) return;
