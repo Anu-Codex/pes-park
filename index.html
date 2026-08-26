@@ -1566,18 +1566,32 @@ async function switchTourTab(type) {
             </div>`;
         // --- 2. FIXTURES ---
         } else if (category === 'fixtures') {
-            const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
-            const matches = await res.json();
-            content.innerHTML = matches.map(m => `
-                <div class="match-card">
-                    <div style="flex:1; font-weight:600;">${m.playerA}</div>
-                    <div style="text-align:center; min-width:80px;">
-                        <b style="background:var(--bg); padding:5px 10px; border-radius:8px; color:var(--accent);">
-                            ${m.status === 'Completed' ? `${m.scoreA}-${m.scoreB}` : 'VS'}
-                        </b>
-                        </div>
-                    <div style="flex:1; text-align:right; font-weight:600;">${m.playerB}</div>
-                </div>`).join('') || '<p style="text-align:center">No matches scheduled.</p>';
+    const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
+    const matches = await res.json();
+    
+    // Filter only main fixtures
+    const mainMatches = matches.filter(m => !m.isSubFixture);
+
+    content.innerHTML = mainMatches.map(m => `
+        <div class="match-card-wrapper" style="margin-bottom:10px;">
+            <div class="match-card" style="margin-bottom:0; border-bottom:none; border-radius:15px 15px 0 0;">
+                <div class="m-team">${m.playerA}</div>
+                <div class="m-badge-area">
+                    <span class="m-score-badge">${m.status === 'Completed' ? m.scoreA + '-' + m.scoreB : 'VS'}</span>
+                </div>
+                <div class="m-team right">${m.playerB}</div>
+                
+                <i class="fa-solid fa-chevron-down" 
+                   onclick="toggleSubMatches('${m._id}', this)" 
+                   style="margin-left:15px; color:var(--accent); cursor:pointer; transition:0.3s;"></i>
+            </div>
+            
+            <div id="subs-${m._id}" style="display:none; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-top:none; border-radius:0 0 15px 15px; padding:10px;">
+                <p style="text-align:center; font-size:0.6rem; color:var(--text-dim); margin-bottom:10px;">TEAM MEMBER CLASH</p>
+                <div id="sub-list-${m._id}"></div>
+            </div>
+        </div>
+    `).join('');
         }
      
         // --- 3. GOLDEN BOOT ---
@@ -2130,6 +2144,34 @@ updateTopStats();
     navigator.clipboard.writeText(shareUrl).then(() => {
         alert("Tactical Link Copied! Share this with your squad.");
     });
+        }
+
+        async function toggleSubMatches(parentId, arrow) {
+    const container = document.getElementById(`subs-${parentId}`);
+    const list = document.getElementById(`sub-list-${parentId}`);
+    
+    if (container.style.display === 'block') {
+        container.style.display = 'none';
+        arrow.style.transform = 'rotate(0deg)';
+        return;
+    }
+
+    arrow.style.transform = 'rotate(180deg)';
+    list.innerHTML = '<p style="text-align:center; font-size:0.7rem;">Loading...</p>';
+    container.style.display = 'block';
+
+    const res = await fetch(`${API}/api/smart/sub-fixtures/${parentId}`);
+    const subs = await res.json();
+
+    list.innerHTML = subs.map(s => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid rgba(255,255,255,0.03);">
+            <span style="font-size:0.8rem; font-weight:bold; color:white;">${s.playerA}</span>
+            <span style="font-family:monospace; color:var(--accent); font-weight:800;">
+                ${s.status === 'Completed' ? s.scoreA + ' - ' + s.scoreB : 'VS'}
+            </span>
+            <span style="font-size:0.8rem; font-weight:bold; color:white; text-align:right;">${s.playerB}</span>
+        </div>
+    `).join('') || '<p style="text-align:center; font-size:0.7rem; color:var(--text-dim);">No member matches scheduled.</p>';
         }
         
     </script>
