@@ -7,6 +7,15 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script>
+    <script> (function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('debug') === 'true') {
+            var script = document.createElement('script');
+            script.src = "//cdn.jsdelivr.net/npm/eruda";
+            document.body.appendChild(script);
+            script.onload = function () { eruda.init() }
+        }
+    })(); </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <style>
@@ -1138,15 +1147,7 @@
     <script>
     const API = "https://pes-park-backend.onrender.com"; 
     let allPlayers = []; // Global store for players
-        (function () {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('debug') === 'true') {
-            var script = document.createElement('script');
-            script.src = "//cdn.jsdelivr.net/npm/eruda";
-            document.body.appendChild(script);
-            script.onload = function () { eruda.init() }
-        }
-    })();
+        
 
     // 1. Initial Loader & Data Fetching
     async function manageLoader() {
