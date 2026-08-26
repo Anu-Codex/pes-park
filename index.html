@@ -939,7 +939,86 @@
     100% { transform: rotate(360deg); }
 }
 /* Optional: Hide the old full-screen splash loader if you want it gone */
-#loader-overlay { display: none !important; }
+#loader-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: #001a33; /* Deep Blue eSports Background */
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s ease, visibility 0.8s;
+}
+
+.loader-container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* The White Rounded Box from the video */
+.ef-box {
+    width: 100px;
+    height: 100px;
+    background: #ffffff;
+    border-radius: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(250, 204, 21, 0.2);
+    margin-bottom: 30px;
+}
+
+/* The Logo with Rotation Animation */
+.ef-logo {
+    width: 60%;
+    height: 60%;
+    color: #003366; /* Blue Icon Color */
+    animation: ef-rotate 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+}
+
+@keyframes ef-rotate {
+    0% { transform: rotateY(0deg); }
+    100% { transform: rotateY(360deg); }
+}
+
+.nexus-title {
+    font-family: 'Rajdhani', sans-serif;
+    letter-spacing: 5px;
+    font-size: 1.5rem;
+    margin: 0;
+    color: white;
+}
+
+.nexus-title span { color: #facc15; } /* Yellow Accent */
+
+#status-text {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    margin-top: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+/* The Yellow Progress Bar */
+.progress-container {
+    width: 200px;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#progress-fill {
+    width: 0%;
+    height: 100%;
+    background: #facc15; /* Yellow Bar */
+    box-shadow: 0 0 10px #facc15;
+    transition: width 0.1s linear;
+}
         /* Isolated UptimeRobot Card Styling */
 .audit-card {
     background: linear-gradient(145deg, #0f172a 0%, #060b13 100%);
@@ -1104,11 +1183,31 @@
                 </div>
             </div>
         </section>
-        <div id="partial-loader">
-    <div class="processing-ring"></div>
-    <p>CONNECTING TO NEXUS LEGENDS OFFICIAL PLAYERS DATABASE</p>
+        <!-- NEXUS eFootball Style Loader -->
+<div id="loader-overlay">
+    <div class="loader-container">
+        <!-- The Animated Box -->
+        <div class="ef-box">
+            <svg class="ef-logo" viewBox="0 0 100 100">
+                <path d="M20,25 Q50,15 80,25 L80,35 Q50,25 20,35 Z" fill="currentColor"/>
+                <path d="M20,45 Q50,35 70,45 L70,55 Q50,45 20,55 Z" fill="currentColor"/>
+                <path d="M20,65 Q50,55 80,65 L80,75 Q50,65 20,75 Z" fill="currentColor"/>
+                <rect x="20" y="25" width="8" height="50" fill="currentColor"/>
+            </svg>
         </div>
-        <div id="main-content-area" style="display: none;">
+        
+        <!-- Status Text -->
+        <div class="loader-info">
+            <h2 class="nexus-title">NEXUS <span>LEGENDS</span></h2>
+            <p id="status-text">SYNCHRONIZING DATA...</p>
+        </div>
+
+        <!-- Progress Bar (Yellow) -->
+        <div class="progress-container">
+            <div id="progress-fill"></div>
+        </div>
+    </div>
+</div>
 
         <!-- 2nd DIV: DASHBOARD VIEW (NOW UNDERNEATH) -->
         <section class="dashboard-section">
@@ -1147,40 +1246,42 @@
     }
 
     function runSplashAnimation() {
-        const overlay = document.getElementById('loader-overlay');
-        const fill = document.getElementById('progress-fill');
-        const status = document.getElementById('status-text');
-        let progress = 0;
-        const duration = 5000; 
-        const intervalTime = 50; 
-        const step = 100 / (duration / intervalTime);
+    const overlay = document.getElementById('loader-overlay');
+    const fill = document.getElementById('progress-fill');
+    const status = document.getElementById('status-text');
+    let progress = 0;
+    const duration = 4000; 
+    const intervalTime = 50; 
+    const step = 100 / (duration / intervalTime);
 
-        const messages = [
-            { point: 0, text: "Connecting to Server..." },
-            { point: 25, text: "Establishing Secure Connection..." },
-            { point: 50, text: "Fetching PES PARK Database..." },
-            { point: 75, text: "Synchronizing Player Records..." },
-            { point: 90, text: "Server Connected Successfully!" }
-        ];
+    const messages = [
+        { point: 0, text: "ACCESSING DATABASE..." },
+        { point: 30, text: "CONNECTING TO NEURAL LINK..." },
+        { point: 60, text: "SYNCING PLAYER RECORDS..." },
+        { point: 90, text: "SYSTEMS OPERATIONAL" }
+    ];
 
-        const timer = setInterval(() => {
-            progress += step;
-            if (progress > 100) progress = 100;
-            fill.style.width = progress + "%";
-            messages.forEach(msg => { if (progress >= msg.point) status.innerText = msg.text; });
+    const timer = setInterval(() => {
+        progress += step;
+        if (progress > 100) progress = 100;
+        fill.style.width = progress + "%";
+        
+        messages.forEach(msg => { 
+            if (progress >= msg.point) status.innerText = msg.text; 
+        });
 
-            if (progress >= 100) {
-                clearInterval(timer);
-                setTimeout(() => {
-                    overlay.style.opacity = "0";
-                    setTimeout(() => { overlay.style.display = "none"; }, 800);
-                }, 500);
-            }
-        }, intervalTime);
-
-        initPage();
+        if (progress >= 100) {
+            clearInterval(timer);
+            setTimeout(() => {
+                overlay.style.opacity = "0";
+                setTimeout(() => { 
+                    overlay.style.display = "none"; 
+                    initPage(); // Trigger main content
+                }, 800);
+            }, 500);
+        }
+    }, intervalTime);
     }
-
     // 2. Fetch Data and Setup UI
     async function initPage() {
     const loader = document.getElementById('partial-loader');
