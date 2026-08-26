@@ -941,91 +941,8 @@
     100% { transform: rotate(360deg); }
 }
 /* Optional: Hide the old full-screen splash loader if you want it gone */
-#loader-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background-color: #001026; /* Darker eSports Blue */
-    z-index: 10000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: opacity 0.6s ease;
-}
+#loader-overlay { display: none !important; }
 
-.loader-scene {
-    perspective: 1000px; /* Enables 3D Space */
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-/* The White Box that flips in 3D */
-.ef-3d-box {
-    width: 90px;
-    height: 90px;
-    background: #ffffff;
-    border-radius: 22px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transform-style: preserve-3d;
-    animation: ef-3d-flip 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-    margin-bottom: 40px;
-}
-
-/* 3D Rotation Animation exactly like video proof */
-@keyframes ef-3d-flip {
-    0% { transform: rotateY(0deg); }
-    80%, 100% { transform: rotateY(360deg); }
-}
-
-.ef-icon {
-    width: 55%;
-    height: 55%;
-    color: #003366; /* Royal Blue Logo */
-}
-
-.loader-text h2 {
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 700;
-    font-size: 1.6rem;
-    letter-spacing: 6px;
-    margin: 0;
-    color: white;
-    text-transform: uppercase;
-}
-
-.loader-text h2 span { color: #facc15; } /* Yellow "LEGENDS" */
-
-#status-text {
-    font-size: 0.65rem;
-    color: #536e8b;
-    margin-top: 10px;
-    font-weight: 800;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-}
-
-/* Minimal Yellow Progress Bar */
-.ef-progress-track {
-    width: 180px;
-    height: 2px;
-    background: rgba(255,255,255,0.05);
-    margin-top: 30px;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-#progress-fill {
-    width: 0%;
-    height: 100%;
-    background: #facc15; /* eFootball Yellow */
-    box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
-    transition: width 0.1s linear;
-}
         /* Isolated UptimeRobot Card Styling */
 .audit-card {
     background: linear-gradient(145deg, #0f172a 0%, #060b13 100%);
@@ -1192,20 +1109,11 @@
         </section>
         <!-- NEXUS eFootball Style Loader -->
 <!-- ORIGINAL eFootball Style 3D Loader -->
-<div id="loader-overlay">
-    <div class="loader-scene">
-        <!-- The 3D Flipping Box -->
-        <div class="ef-3d-box">
-            <div class="box-face">
-                <!-- Stylized e-Logo -->
-                <svg viewBox="0 0 100 100" class="ef-icon">
-                    <path d="M25,30 L75,30 M25,50 L65,50 M25,70 L75,70" 
-                          stroke="currentColor" stroke-width="12" fill="none" stroke-linecap="round"/>
-                    <path d="M25,30 L25,70" 
-                          stroke="currentColor" stroke-width="12" fill="none" stroke-linecap="round"/>
-                </svg>
-            </div>
-        </div>
+<div id="partial-loader">
+    <div class="processing-ring"></div>
+    <p>CONNECTING TO NEXUS LEGENDS OFFICIAL PLAYERS DATABASE</p>
+</div>
+        <div id="main-content-area" style="display: none;">
         
         <!-- Premium Typography -->
         <div class="loader-text">
@@ -1241,6 +1149,15 @@
     <script>
     const API = "https://pes-park-backend.onrender.com"; 
     let allPlayers = []; // Global store for players
+        (function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('debug') === 'true') {
+            var script = document.createElement('script');
+            script.src = "//cdn.jsdelivr.net/npm/eruda";
+            document.body.appendChild(script);
+            script.onload = function () { eruda.init() }
+        }
+    })();
 
     // 1. Initial Loader & Data Fetching
     async function manageLoader() {
@@ -1257,31 +1174,38 @@
     }
 
     function runSplashAnimation() {
-    const fill = document.getElementById('progress-fill');
-    const status = document.getElementById('status-text');
-    let progress = 0;
-    
-    const timer = setInterval(() => {
-        progress += 1.5; // Slightly faster loading
-        if (progress > 100) progress = 100;
-        
-        if(fill) fill.style.width = progress + "%";
-        
-        if (progress < 40) status.innerText = "ACCESSING DATABASE...";
-        else if (progress < 80) status.innerText = "SYNCING PLAYER RECORDS...";
-        else status.innerText = "SYSTEMS READY";
+        const overlay = document.getElementById('loader-overlay');
+        const fill = document.getElementById('progress-fill');
+        const status = document.getElementById('status-text');
+        let progress = 0;
+        const duration = 5000; 
+        const intervalTime = 50; 
+        const step = 100 / (duration / intervalTime);
 
-        if (progress >= 100) {
-            clearInterval(timer);
-            setTimeout(() => {
-                document.getElementById('loader-overlay').style.opacity = "0";
+        const messages = [
+            { point: 0, text: "Connecting to Server..." },
+            { point: 25, text: "Establishing Secure Connection..." },
+            { point: 50, text: "Fetching PES PARK Database..." },
+            { point: 75, text: "Synchronizing Player Records..." },
+            { point: 90, text: "Server Connected Successfully!" }
+        ];
+
+        const timer = setInterval(() => {
+            progress += step;
+            if (progress > 100) progress = 100;
+            fill.style.width = progress + "%";
+            messages.forEach(msg => { if (progress >= msg.point) status.innerText = msg.text; });
+
+            if (progress >= 100) {
+                clearInterval(timer);
                 setTimeout(() => {
-                    document.getElementById('loader-overlay').style.display = "none";
-                    initPage();
-                }, 600);
-            }, 500);
-        }
-    }, 50);
+                    overlay.style.opacity = "0";
+                    setTimeout(() => { overlay.style.display = "none"; }, 800);
+                }, 500);
+            }
+        }, intervalTime);
+
+        initPage();
     }
     // 2. Fetch Data and Setup UI
     async function initPage() {
