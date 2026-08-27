@@ -1282,7 +1282,6 @@
     function renderTotalPlayers(container) {
     container.innerHTML = allPlayers.map(p => `
         <div class="player-row" style="cursor: default;">
-            <!-- 1. LEFT SIDE: CLICKABLE PLAYER INFO -->
             <div class="p-details" onclick="window.location.href='player.html?id=${p._id}'" style="cursor:pointer; flex: 1;">
                 <img src="${p.image || 'https://via.placeholder.com/40'}" class="p-img" onerror="this.src='https://via.placeholder.com/40'">
                 <div>
@@ -1290,14 +1289,12 @@
                     ${p.nickname ? '<span class="p-nick">"' + p.nickname + '"</span>' : ''}
                 </div>
             </div>
-
-            <!-- 2. RIGHT SIDE: CLICKABLE TEAM INFO -->
             <div class="t-details" 
                  onclick="${p.teamName ? "window.location.href='team.html?id=" + encodeURIComponent(p.teamName) + "'" : ""}" 
                  style="cursor:${p.teamName ? 'pointer' : 'default'}; display: flex; align-items: center; gap: 8px; justify-content: flex-end; min-width: 120px;">
                 
                 ${p.teamName ? `
-                    <img src="${p.teamLogo}" class="t-logo" onerror="this.style.display='none'">
+                    <img src="${p.teamLogo || ''}" class="t-logo" style="display: ${p.teamLogo ? 'block' : 'none'}" onerror="this.style.display='none'">
                     <span class="t-name" style="font-size: 0.65rem; color: var(--text-dim); font-weight: 800; text-transform: uppercase;">${p.teamName}</span>
                 ` : '<span style="color:rgba(255,255,255,0.1);">—</span>'}
                 
