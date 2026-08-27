@@ -51,6 +51,7 @@
             <button class="nav-tab" onclick="showSection('sec-teams', this)">Teams</button>
             <button class="nav-tab" onclick="showSection('sec-smart', this)">Smart Center</button>
             <button class="nav-tab" onclick="showSection('sec-prestige', this)">HOF</button>
+            <button class="nav-tab" onclick="showSection('sec-requests', this)">NMS Inbox</button>
             <button class="nav-tab" style="color: var(--danger);" onclick="showSection('sec-danger', this)">Danger</button>
         </div>
 
@@ -304,6 +305,18 @@
         <div id="applicationList" class="list-container"></div>
     </div>
         </div>
+        <!-- 7. NMS MANAGEMENT INBOX -->
+<div id="sec-requests" class="admin-section">
+    <div class="sub-box" style="border-left: 4px solid var(--accent);">
+        <h4><i class="fa-solid fa-envelope-open-text"></i> Tactical Requests Inbox</h4>
+        <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 15px;">Review and Approve/Reject Roster changes, Substitutions, and ID updates.</p>
+        
+        <div id="nmsRequestList" class="list-container" style="max-height: 500px;">
+            <!-- Requests will be injected here -->
+            <p style="text-align:center; padding:20px; color:var(--text-dim);">Syncing with Command Hub...</p>
+        </div>
+    </div>
+</div>
 
         <!-- 6. DANGER ZONE (Sync & Reset) -->
         <div id="sec-danger" class="admin-section">
@@ -1024,6 +1037,106 @@ async function deleteIndividualFixture(id) {
         }
     } catch (e) { alert("Delete failed."); }
 }
+        // 1. Function to Load and Render all Requests
+async function loadManagementRequests() {
+    const container = document.getElementById('nmsRequestList');
+    try {
+        const res = await fetch(`${API}/api/requests/all`);
+        const requests = await res.json();
+
+        if (requests.length === 0) {
+            container.innerHTML = '<p style="text-align:center; padding:20px;">No pending transmissions.</p>';
+            return;
+        }
+
+        container.innerHTML = requests.map(req => {
+            const date = new Date(req.timestamp).toLocaleString();
+            const statusColor = req.status === 'Approved' ? 'var(--accent)' : (req.status === 'Pending' ? 'var(--gold)' : 'var(--danger)');
+            
+            // Generate Type-Specific HTML based on your 4 formats
+            let detailsHtml = "";
+            const d = req.data;
+
+            switch(req.requestType) {
+                case 'ISSUE':
+                    detailsHtml = `
+                        <div style="color:#cbd5e1; font-size:0.8rem;">
+                            <b>PLAYER:</b> ${d.playerName} <br>
+                            <b>OPPO TEAM:</b> ${d.oppoTeamName} <br>
+                            <b>OPPO PLAYER:</b> ${d.oppoPlayerName} <br>
+                            <p style="background:rgba(0,0,0,0.3); padding:8px; border-radius:5px; margin-top:5px;">${d.issueDescription}</p>
+                        </div>`;
+                    break;
+                case 'SUBSTITUTION':
+                    detailsHtml = `
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div style="color:var(--accent)"><b>IN:</b> ${d.subIn}</div>
+                            <div style="color:var(--danger)"><b>OUT:</b> ${d.subOut}</div>
+                        </div>`;
+                    break;
+                case 'ID_CHANGE':
+                    detailsHtml = `
+                        <div style="font-size:0.8rem;">
+                            <b>TAG:</b> ${d.playerTag} | <b>NAME:</b> ${d.newIDName} <br>
+                            <span style="opacity:0.6">${d.oldID}</span> <i class="fa-solid fa-arrow-right" style="font-size:0.6rem"></i> <b style="color:var(--accent)">${d.newID}</b>
+                        </div>`;
+                    break;
+                case 'REPLACEMENT':
+                    detailsHtml = `
+                        <div style="font-size:0.75rem; display:grid; grid-template-columns:1fr 1fr; gap:10px; background:rgba(0,0,0,0.2); padding:10px; border-radius:10px;">
+                            <div><b style="color:var(--accent)">IN:</b> ${d.repIn.name}<br>DIV: ${d.repIn.div} | RANK: ${d.repIn.rank}<br>ID: ${d.repIn.id}</div>
+                            <div><b style="color:var(--danger)">OUT:</b> ${d.repOut.name}<br>DIV: ${d.repOut.div} | RANK: ${d.repOut.rank}<br>ID: ${d.repOut.id}</div>
+                        </div>`;
+                    break;
+            }
+
+            return `
+                <div class="sub-box" style="margin-bottom:15px; border:1px solid var(--border); border-left: 4px solid ${statusColor}">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-size:0.65rem; font-weight:900; background:${statusColor}; color:black; padding:2px 8px; border-radius:4px;">${req.requestType}</span>
+                        <span style="font-size:0.6rem; color:var(--text-dim)">ID: ${req.requestID} | ${date}</span>
+                    </div>
+                    
+                    <h5 style="margin:0 0 10px 0; color:white; text-transform:uppercase; letter-spacing:1px;">TEAM: ${req.teamName}</h5>
+                    
+                    ${detailsHtml}
+
+                    <div class="grid-2" style="margin-top:15px;">
+                        <button onclick="processRequest('${req._id}', 'Approved')" class="btn-green" style="padding:8px; font-size:0.7rem;">APPROVE</button>
+                        <button onclick="processRequest('${req._id}', 'Rejected')" class="delete-btn" style="padding:8px; font-size:0.7rem;">REJECT</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+    } catch (err) {
+        container.innerHTML = '<p style="color:red">Transmission Error: Check Server Logs</p>';
+    }
+}
+
+// 2. Action Function for Approve/Reject
+async function processRequest(id, status) {
+    if(!confirm(`Set status to ${status}?`)) return;
+
+    try {
+        const res = await fetch(`${API}/api/requests/status/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ status: status })
+        });
+
+        if(res.ok) {
+            alert(`TRANSMISSION PROCESSED: Request ${status}`);
+            loadManagementRequests(); // Refresh the list
+        }
+    } catch (e) {
+        alert("Command Link Failure");
+    }
+}
+
+// 3. Add to the unified window.onload
+// Inside your existing window.onload = async () => { ... }
+// Add: await loadManagementRequests();
 
 // Add to your window.onload
 
@@ -1036,6 +1149,7 @@ window.onload = async () => {
         await loadApplications();
         await refreshParticipantList();
         await loadCapTeams();
+        await loadManagementRequests();
         console.log("All systems online.");
     } catch (err) {
         console.error("Boot sequence failed:", err);
