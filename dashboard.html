@@ -1040,77 +1040,68 @@ async function deleteIndividualFixture(id) {
         // 1. Function to Load and Render all Requests
 async function loadManagementRequests() {
     const container = document.getElementById('nmsRequestList');
+    if (!container) return;
+
     try {
         const res = await fetch(`${API}/api/requests/all`);
         const requests = await res.json();
 
-        if (requests.length === 0) {
-            container.innerHTML = '<p style="text-align:center; padding:20px;">No pending transmissions.</p>';
+        if (!requests || requests.length === 0) {
+            container.innerHTML = '<p style="text-align:center; padding:20px;">No pending transmissions found.</p>';
             return;
         }
 
         container.innerHTML = requests.map(req => {
             const date = new Date(req.timestamp).toLocaleString();
-            const statusColor = req.status === 'Approved' ? 'var(--accent)' : (req.status === 'Pending' ? 'var(--gold)' : 'var(--danger)');
+            const statusColor = req.status === 'Approved' ? '#10b981' : (req.status === 'Pending' ? '#f59e0b' : '#ef4444');
             
-            // Generate Type-Specific HTML based on your 4 formats
+            // SAFETY: Fallback to empty object if 'data' is missing in DB
+            const d = req.data || {};
             let detailsHtml = "";
-            const d = req.data;
 
-            switch(req.requestType) {
-                case 'ISSUE':
-                    detailsHtml = `
-                        <div style="color:#cbd5e1; font-size:0.8rem;">
-                            <b>PLAYER:</b> ${d.playerName} <br>
-                            <b>OPPO TEAM:</b> ${d.oppoTeamName} <br>
-                            <b>OPPO PLAYER:</b> ${d.oppoPlayerName} <br>
-                            <p style="background:rgba(0,0,0,0.3); padding:8px; border-radius:5px; margin-top:5px;">${d.issueDescription}</p>
-                        </div>`;
-                    break;
-                case 'SUBSTITUTION':
-                    detailsHtml = `
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                            <div style="color:var(--accent)"><b>IN:</b> ${d.subIn}</div>
-                            <div style="color:var(--danger)"><b>OUT:</b> ${d.subOut}</div>
-                        </div>`;
-                    break;
-                case 'ID_CHANGE':
-                    detailsHtml = `
-                        <div style="font-size:0.8rem;">
-                            <b>TAG:</b> ${d.playerTag} | <b>NAME:</b> ${d.newIDName} <br>
-                            <span style="opacity:0.6">${d.oldID}</span> <i class="fa-solid fa-arrow-right" style="font-size:0.6rem"></i> <b style="color:var(--accent)">${d.newID}</b>
-                        </div>`;
-                    break;
-                case 'REPLACEMENT':
-                    detailsHtml = `
-                        <div style="font-size:0.75rem; display:grid; grid-template-columns:1fr 1fr; gap:10px; background:rgba(0,0,0,0.2); padding:10px; border-radius:10px;">
-                            <div><b style="color:var(--accent)">IN:</b> ${d.repIn.name}<br>DIV: ${d.repIn.div} | RANK: ${d.repIn.rank}<br>ID: ${d.repIn.id}</div>
-                            <div><b style="color:var(--danger)">OUT:</b> ${d.repOut.name}<br>DIV: ${d.repOut.div} | RANK: ${d.repOut.rank}<br>ID: ${d.repOut.id}</div>
-                        </div>`;
-                    break;
+            try {
+                if (req.requestType === 'ISSUE') {
+                    detailsHtml = `<div style="font-size:0.8rem; color:#94a3b8;">
+                        <b>PLAYER:</b> ${d.playerName ?? 'N/A'} <br>
+                        <b>VS:</b> ${d.oppoTeamName ?? 'N/A'} (${d.oppoPlayerName ?? 'N/A'}) <br>
+                        <p style="background:rgba(0,0,0,0.2); padding:5px; margin-top:5px;">${d.issueDescription ?? 'No description provided.'}</p>
+                    </div>`;
+                } else if (req.requestType === 'SUBSTITUTION') {
+                    detailsHtml = `<div style="font-size:0.8rem;">
+                        <b style="color:#10b981">IN:</b> ${d.subIn ?? 'N/A'} | <b style="color:#ef4444">OUT:</b> ${d.subOut ?? 'N/A'}
+                    </div>`;
+                } else if (req.requestType === 'ID_CHANGE') {
+                    detailsHtml = `<div style="font-size:0.8rem;">
+                        <b>TAG:</b> ${d.playerTag ?? 'N/A'} <br>
+                        <span style="opacity:0.6">${d.oldID ?? 'N/A'}</span> → <b style="color:#10b981">${d.newID ?? 'N/A'}</b>
+                    </div>`;
+                } else if (req.requestType === 'REPLACEMENT') {
+                    detailsHtml = `<div style="font-size:0.75rem; background:rgba(0,0,0,0.2); padding:8px; border-radius:8px;">
+                        <b style="color:#10b981">IN:</b> ${d.repIn?.name ?? 'N/A'} (${d.repIn?.id ?? 'N/A'}) <br>
+                        <b style="color:#ef4444">OUT:</b> ${d.repOut?.name ?? 'N/A'}
+                    </div>`;
+                }
+            } catch (err) {
+                detailsHtml = `<p style="color:red; font-size:0.7rem;">Data structure mismatch for this entry.</p>`;
             }
 
             return `
-                <div class="sub-box" style="margin-bottom:15px; border:1px solid var(--border); border-left: 4px solid ${statusColor}">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <span style="font-size:0.65rem; font-weight:900; background:${statusColor}; color:black; padding:2px 8px; border-radius:4px;">${req.requestType}</span>
-                        <span style="font-size:0.6rem; color:var(--text-dim)">ID: ${req.requestID} | ${date}</span>
+                <div class="sub-box" style="margin-bottom:15px; border-left: 4px solid ${statusColor}; padding:15px;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <span style="font-size:0.6rem; font-weight:900; color:${statusColor}; border:1px solid ${statusColor}; padding:2px 6px; border-radius:4px;">${req.requestType}</span>
+                        <span style="font-size:0.6rem; color:var(--text-dim)">${req.requestID}</span>
                     </div>
-                    
-                    <h5 style="margin:0 0 10px 0; color:white; text-transform:uppercase; letter-spacing:1px;">TEAM: ${req.teamName}</h5>
-                    
+                    <h5 style="margin:5px 0; font-size:0.9rem;">TEAM: ${req.teamName ?? 'UNKNOWN'}</h5>
                     ${detailsHtml}
-
-                    <div class="grid-2" style="margin-top:15px;">
-                        <button onclick="processRequest('${req._id}', 'Approved')" class="btn-green" style="padding:8px; font-size:0.7rem;">APPROVE</button>
-                        <button onclick="processRequest('${req._id}', 'Rejected')" class="delete-btn" style="padding:8px; font-size:0.7rem;">REJECT</button>
+                    <div class="grid-2" style="margin-top:12px;">
+                        <button onclick="processRequest('${req._id}', 'Approved')" class="btn-green" style="padding:6px; font-size:0.65rem;">APPROVE</button>
+                        <button onclick="processRequest('${req._id}', 'Rejected')" class="delete-btn" style="padding:6px; font-size:0.65rem;">REJECT</button>
                     </div>
-                </div>
-            `;
+                </div>`;
         }).join('');
-
     } catch (err) {
-        container.innerHTML = '<p style="color:red">Transmission Error: Check Server Logs</p>';
+        console.error("Dashboard Load Error:", err);
+        container.innerHTML = '<p style="color:red; text-align:center;">Failed to sync requests.</p>';
     }
 }
 
