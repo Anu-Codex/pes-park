@@ -947,15 +947,15 @@ async function createSubFixture() {
     const pA = document.getElementById('subPlayerA').value;
     const pB = document.getElementById('subPlayerB').value;
 
-    if (!tourId || !parentId || !pA || !pB) return alert("Select Tour, Team Match, and Players!");
+    if (!tourId || !parentId || !pA || !pB) return alert("Error: Missing Data");
 
     const data = {
-        tourId: tourId,
-        parentFixtureId: parentId, // Links to Team Match
+        tourId,
+        parentFixtureId: parentId, // This MUST be the MongoDB _id of the Team Match
         playerA: pA,
         playerB: pB,
-        isSubFixture: true, // Forces Boolean True
-        status: "Upcoming"
+        isSubFixture: true,
+        stage: "Member Clash"
     };
 
     const res = await fetch(`${API}/api/smart/create-fixture`, {
@@ -965,7 +965,7 @@ async function createSubFixture() {
     });
 
     if(res.ok) {
-        alert("✅ Member Match Linked Successfully!");
+        alert("PREMIUM LINK ESTABLISHED: Member Match added under Team Fixture.");
         location.reload();
     }
 }
