@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NMS TERMINAL | NEXUS LEGENDS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --bg: #020617; --card: #0f172a; --accent: #10b981; --border: #1e293b; --dim: #64748b; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: auto; }
+        
+        .terminal-header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+        .terminal-header h1 { font-family: 'Rajdhani'; letter-spacing: 5px; color: var(--accent); margin: 0; }
+
+        .glass-box { background: var(--card); border: 1px solid var(--border); padding: 25px; border-radius: 20px; margin-bottom: 20px; position: relative; }
+        .type-selector { margin-bottom: 20px; padding: 12px; background: var(--accent); color: black; font-weight: 900; border-radius: 10px; border: none; width: 100%; cursor: pointer; }
+
+        .field-group { display: none; animation: fadeIn 0.4s ease; }
+        .active-group { display: block; }
+        
+        label { font-size: 0.6rem; color: var(--dim); font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 1px; }
+        input, textarea { width: 100%; padding: 12px; background: #020617; border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; font-size: 0.85rem; }
+        
+        .sub-header { font-size: 0.75rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 5px; margin: 15px 0; font-weight: 900; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .btn-transmit { width: 100%; padding: 18px; background: var(--accent); color: black; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="terminal-header">
+        <h1>COMMAND HUB</h1>
+        <p style="font-size: 0.6rem; color: var(--dim); letter-spacing: 2px;">TACTICAL REQUEST FILING SYSTEM</p>
+    </div>
+
+    <select class="type-selector" id="formType" onchange="switchForm(this.value)">
+        <option value="ISSUE">1. ISSUE REPORTING</option>
+        <option value="SUBSTITUTION">2. SUBSTITUTION</option>
+        <option value="ID_CHANGE">3. ID CHANGE</option>
+        <option value="REPLACEMENT">4. PLAYER REPLACEMENT</option>
+    </select>
+
+    <div class="glass-box">
+        <label>TEAM NAME</label>
+        <input type="text" id="common_teamName" placeholder="Enter Official Team Name">
+
+        <!-- FORMAT 1: ISSUE REPORTING -->
+        <div id="form_ISSUE" class="field-group active-group">
+            <label>PLAYER NAME</label>
+            <input type="text" id="iss_pName">
+            <label>OPPO TEAM NAME</label>
+            <input type="text" id="iss_oppoTeam">
+            <label>PLAYER NAME (OPPONENT)</label>
+            <input type="text" id="iss_oppoPlayer">
+            <label>ISSUE DESCRIPTION</label>
+            <textarea id="iss_desc" rows="4"></textarea>
+        </div>
+
+        <!-- FORMAT 2: SUBSTITUTION -->
+        <div id="form_SUBSTITUTION" class="field-group">
+            <label>PLAYER IN - (NAME & NO.)</label>
+            <input type="text" id="sub_in">
+            <label>PLAYER OUT - (NAME & NO.)</label>
+            <input type="text" id="sub_out">
+        </div>
+
+        <!-- FORMAT 3: ID CHANGE -->
+        <div id="form_ID_CHANGE" class="field-group">
+            <label>PLAYER TAG</label>
+            <input type="text" id="id_tag">
+            <label>OLD ID</label>
+            <input type="text" id="id_old">
+            <label>NEW ID</label>
+            <input type="text" id="id_new">
+            <label>NEW ID NAME</label>
+            <input type="text" id="id_newName">
+        </div>
+
+        <!-- FORMAT 4: REPLACEMENT -->
+        <div id="form_REPLACEMENT" class="field-group">
+            <div class="sub-header">🔄 PLAYER IN</div>
+            <label>NAME</label><input type="text" id="rep_in_name">
+            <div class="grid-2">
+                <div><label>DIVISION</label><input type="text" id="rep_in_div"></div>
+                <div><label>RANK</label><input type="text" id="rep_in_rank"></div>
+            </div>
+            <div class="grid-2">
+                <div><label>ID</label><input type="text" id="rep_in_id"></div>
+                <div><label>TAG</label><input type="text" id="rep_in_tag"></div>
+            </div>
+
+            <div class="sub-header">🔽 PLAYER OUT</div>
+            <label>NAME</label><input type="text" id="rep_out_name">
+            <div class="grid-2">
+                <div><label>DIVISION</label><input type="text" id="rep_out_div"></div>
+                <div><label>RANK</label><input type="text" id="rep_out_rank"></div>
+            </div>
+            <div class="grid-2">
+                <div><label>ID</label><input type="text" id="rep_out_id"></div>
+                <div><label>TAG</label><input type="text" id="rep_out_tag"></div>
+            </div>
+        </div>
+
+        <button class="btn-transmit" onclick="submitRequest()">Transmit to Admin</button>
+    </div>
+</div>
+
+<script>
+    const API = "https://pes-park-backend.onrender.com";
+
+    function switchForm(type) {
+        document.querySelectorAll('.field-group').forEach(f => f.classList.remove('active-group'));
+        document.getElementById(`form_${type}`).classList.add('active-group');
+    }
+
+    async function submitRequest() {
+        const type = document.getElementById('formType').value;
+        const team = document.getElementById('common_teamName').value;
+        
+        let formData = {};
+        if(type === 'ISSUE') {
+            formData = { playerName: document.getElementById('iss_pName').value, oppoTeamName: document.getElementById('iss_oppoTeam').value, oppoPlayerName: document.getElementById('iss_oppoPlayer').value, issueDescription: document.getElementById('iss_desc').value };
+        } else if(type === 'SUBSTITUTION') {
+            formData = { subIn: document.getElementById('sub_in').value, subOut: document.getElementById('sub_out').value };
+        } else if(type === 'ID_CHANGE') {
+            formData = { playerTag: document.getElementById('id_tag').value, oldID: document.getElementById('id_old').value, newID: document.getElementById('id_new').value, newIDName: document.getElementById('id_newName').value };
+        } else if(type === 'REPLACEMENT') {
+            formData = { 
+                repIn: { name: document.getElementById('rep_in_name').value, div: document.getElementById('rep_in_div').value, rank: document.getElementById('rep_in_rank').value, id: document.getElementById('rep_in_id').value, tag: document.getElementById('rep_in_tag').value },
+                repOut: { name: document.getElementById('rep_out_name').value, div: document.getElementById('rep_out_div').value, rank: document.getElementById('rep_out_rank').value, id: document.getElementById('rep_out_id').value, tag: document.getElementById('rep_out_tag').value }
+            };
+        }
+
+        const res = await fetch(`${API}/api/requests/submit`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ requestType: type, teamName: team, data: formData })
+        });
+        const result = await res.json();
+        alert("TRANSMISSION SUCCESSFUL\nYour ID: " + result.requestID);
+    }
+  async function downloadDossier(reqID) {
+    const res = await fetch(`${API}/api/requests/track/${reqID}`);
+    const r = await res.json();
+    
+    document.getElementById('d-type').innerText = r.requestType;
+    let text = `TEAM: ${r.teamName}\n`;
+    // Add logic here to loop through r.data fields and add to text...
+    document.getElementById('d-content').innerText = text;
+
+    const template = document.getElementById('dossier-template');
+    html2canvas(template).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Nexus-Dossier-${reqID}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+  }
+</script>
+  <div id="dossier-template" style="width: 500px; padding: 40px; background: #020617; border: 5px solid #10b981; position: fixed; left: -9999px;">
+    <h1 style="color: #10b981; font-family: Rajdhani; text-transform: uppercase;">Nexus Legends Official</h1>
+    <h3 id="d-type" style="color: white; border-bottom: 2px solid #1e293b;">TYPE</h3>
+    <div id="d-content" style="color: #94a3b8; margin: 20px 0; font-family: monospace; white-space: pre-wrap;"></div>
+    <div style="margin-top: 30px; padding: 10px; border: 2px solid #10b981; color: #10b981; display: inline-block; transform: rotate(-5deg); font-weight: bold;">APPROVED BY NEXUS ADMIN</div>
+  </div>
+</body>
+</html>
