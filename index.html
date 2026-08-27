@@ -1566,32 +1566,46 @@ async function switchTourTab(type) {
             </div>`;
         // --- 2. FIXTURES ---
         } else if (category === 'fixtures') {
-    const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
-    const matches = await res.json();
-    
-    // Filter only main fixtures
-    const mainMatches = matches.filter(m => !m.isSubFixture);
+            const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
+            const matches = await res.json();
 
-    content.innerHTML = mainMatches.map(m => `
-        <div class="match-card-wrapper" style="margin-bottom:10px;">
-            <div class="match-card" style="margin-bottom:0; border-bottom:none; border-radius:15px 15px 0 0;">
-                <div class="m-team">${m.playerA}</div>
-                <div class="m-badge-area">
-                    <span class="m-score-badge">${m.status === 'Completed' ? m.scoreA + '-' + m.scoreB : 'VS'}</span>
+            // --- CRITICAL FILTER: ONLY SHOW TEAM VS TEAM (PARENTS) IN THE MAIN LIST ---
+            const mainTeamMatches = matches.filter(m => !m.isSubFixture);
+
+            if (!mainTeamMatches || mainTeamMatches.length === 0) {
+                content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);">No main team matches scheduled.</p>';
+                return;
+            }
+
+            content.innerHTML = mainTeamMatches.map(m => `
+                <div class="match-card-wrapper" style="margin-bottom:15px; border: 1px solid var(--border); border-radius:15px; overflow:hidden; background:rgba(255,255,255,0.02);">
+                    <!-- Main Team vs Team Row -->
+                    <div class="match-card" style="margin-bottom:0; border:none; display:flex; justify-content:space-between; align-items:center; padding:15px;">
+                        <div style="flex:1; font-weight:900; font-family:'Rajdhani'; letter-spacing:1px; font-style:italic;">${m.playerA.toUpperCase()}</div>
+                        <div style="text-align:center; min-width:80px;">
+                            <b style="background:var(--bg); padding:5px 12px; border-radius:8px; color:var(--accent); border: 1px solid var(--border);">
+                                ${m.status === 'Completed' ? `${m.scoreA} - ${m.scoreB}` : 'VS'}
+                            </b>
+                        </div>
+                        <div style="flex:1; text-align:right; font-weight:900; font-family:'Rajdhani'; letter-spacing:1px; font-style:italic;">${m.playerB.toUpperCase()}</div>
+                        
+                        <!-- Toggle Arrow -->
+                        <i class="fa-solid fa-chevron-down" 
+                           onclick="toggleSubMatches('${m._id}', this)" 
+                           style="margin-left:15px; color:var(--accent); cursor:pointer; font-size:1.1rem; transition:0.3s;"></i>
+                    </div>
+
+                    <!-- Hidden Member Match Container -->
+                    <div id="subs-${m._id}" style="display:none; background:rgba(0,0,0,0.3); border-top:1px solid var(--border); padding:15px;">
+                        <div style="text-align:center; font-size:0.6rem; color:var(--accent); font-weight:800; letter-spacing:2px; margin-bottom:12px;">
+                            <i class="fa-solid fa-users"></i> MEMBER CLASH (LIVE STATS IMPACT)
+                        </div>
+                        <div id="sub-list-${m._id}">
+                            <!-- Sub matches will load here -->
+                        </div>
+                    </div>
                 </div>
-                <div class="m-team right">${m.playerB}</div>
-                
-                <i class="fa-solid fa-chevron-down" 
-                   onclick="toggleSubMatches('${m._id}', this)" 
-                   style="margin-left:15px; color:var(--accent); cursor:pointer; transition:0.3s;"></i>
-            </div>
-            
-            <div id="subs-${m._id}" style="display:none; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-top:none; border-radius:0 0 15px 15px; padding:10px;">
-                <p style="text-align:center; font-size:0.6rem; color:var(--text-dim); margin-bottom:10px;">TEAM MEMBER CLASH</p>
-                <div id="sub-list-${m._id}"></div>
-            </div>
-        </div>
-    `).join('');
+            `).join('');
         }
      
         // --- 3. GOLDEN BOOT ---
