@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NEURAL LINK | NEXUS TELEMETRY</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root { --bg: #030712; --card: #0f172a; --accent: #10b981; --border: #1e293b; --dim: #94a3b8; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .dashboard { width: 100%; max-width: 500px; }
+
+        /* Tactical Header */
+        .tele-header { text-align: center; margin-bottom: 30px; border: 1px solid var(--border); padding: 20px; border-radius: 20px; background: linear-gradient(180deg, rgba(16, 185, 129, 0.1), transparent); }
+        .tele-header h1 { margin: 0; font-size: 1.2rem; letter-spacing: 5px; color: var(--accent); }
+        .tele-header p { font-size: 0.6rem; color: var(--dim); margin-top: 5px; letter-spacing: 2px; }
+
+        .glass-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden; }
+        
+        /* Storage Gauge */
+        .storage-flex { display: flex; align-items: center; gap: 20px; }
+        .gauge { width: 80px; height: 80px; border-radius: 50%; border: 4px solid #1e293b; display: flex; align-items: center; justify-content: center; position: relative; }
+        .gauge b { font-size: 1.2rem; color: var(--accent); }
+        
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 5px; }
+        .stat-row label { color: var(--dim); text-transform: uppercase; font-size: 0.6rem; font-weight: bold; }
+
+        /* Neural Pulse */
+        .pulse-container { display: flex; justify-content: space-around; text-align: center; }
+        .pulse-box i { font-size: 1.5rem; color: var(--accent); margin-bottom: 10px; display: block; animation: glow 2s infinite; }
+        
+        @keyframes glow { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; filter: drop-shadow(0 0 10px var(--accent)); } }
+
+        .progress-track { width: 100%; height: 4px; background: #020617; border-radius: 10px; margin: 10px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="tele-header">
+        <h1>NEXUS STORAGE LINK</h1>
+        <p>DATABASE MONITORING • LIVE FEED</p>
+    </div>
+
+    <!-- STORAGE BLOCK -->
+    <div class="glass-card">
+        <div class="storage-flex">
+            <div class="gauge"><b id="perc">--</b></div>
+            <div style="flex:1">
+                <div class="stat-row"><label>Capacity</label><span>512.00 MB</span></div>
+                <div class="stat-row"><label>Used</label><span id="used">-- MB</span></div>
+                <div class="progress-track"><div id="pFill" class="progress-fill"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NETWORK BLOCK -->
+    <div class="glass-card pulse-container">
+        <div class="pulse-box">
+            <i class="fa-solid fa-bolt"></i>
+            <label style="font-size:0.5rem; color:var(--dim)">LATENCY</label>
+            <div id="ping" style="font-weight:900">-- MS</div>
+        </div>
+        <div class="pulse-box">
+            <i class="fa-solid fa-satellite-dish"></i>
+            <label style="font-size:0.5rem; color:var(--dim)">STATUS</label>
+            <div id="status" style="font-weight:900; color:var(--accent)">ONLINE</div>
+        </div>
+        <div class="pulse-box">
+            <i class="fa-solid fa-microchip"></i>
+            <label style="font-size:0.5rem; color:var(--dim)">UPTIME</label>
+            <div id="uptime" style="font-weight:900">-- H</div>
+        </div>
+    </div>
+
+    <!-- INFRASTRUCTURE BLOCK -->
+    <div class="glass-card">
+        <div class="stat-row"><label>Cloud Service</label><span>AWS / Mumbai Region</span></div>
+        <div class="stat-row"><label>Node Location</label><span>ap-south-1</span></div>
+        <div class="stat-row"><label>Engine Version</label><span>MongoDB 7.0.12 (Atlas)</span></div>
+        <div class="stat-row"><label>Neural Records</label><span id="objects">--</span></div>
+    </div>
+</div>
+
+<script>
+    const API = "https://pes-park-backend.onrender.com"; // Your Render URL
+
+    async function syncTelemetry() {
+        try {
+            const res = await fetch(`${API}/api/admin/telemetry`);
+            const data = await res.json();
+
+            if (data.success) {
+                // Calculation
+                const usedMB = (data.storage.usedBytes / (1024 * 1024)).toFixed(2);
+                const perc = ((usedMB / 512) * 100).toFixed(1);
+
+                document.getElementById('used').innerText = usedMB + " MB";
+                document.getElementById('perc').innerText = Math.round(perc) + "%";
+                document.getElementById('pFill').style.width = perc + "%";
+                
+                document.getElementById('ping').innerText = data.network.latency + " MS";
+                document.getElementById('objects').innerText = data.storage.objects;
+                
+                // Uptime format
+                const hours = (data.network.uptime / 3600).toFixed(1);
+                document.getElementById('uptime').innerText = hours + " H";
+            }
+        } catch (e) {
+            document.getElementById('status').innerText = "LINK LOST";
+            document.getElementById('status').style.color = "#ef4444";
+        }
+    }
+
+    setInterval(syncTelemetry, 5000);
+    syncTelemetry();
+</script>
+
+</body>
+</html>
