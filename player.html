@@ -439,6 +439,22 @@
     letter-spacing: 2px;
     font-weight: bold;
 }
+        .captain-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(90deg, rgba(245, 158, 11, 0.2), transparent);
+    color: var(--gold);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    padding: 5px 15px;
+    border-radius: 50px;
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+.captain-badge i { font-size: 0.8rem; text-shadow: 0 0 10px var(--gold); }
     </style>
 </head>
 <body>
@@ -457,6 +473,9 @@
         <div class="card-content-top">
         <div id="avatar" class="p-avatar-square"></div>
         <div class="p-main-info">
+            <div id="captainBadge" class="captain-badge" style="display: none;">
+    <i class="fa-solid fa-crown"></i> OFFICIAL TEAM CAPTAIN
+            </div>
                     <h1 id="pName">Name</h1>
             <div id="teamPill" class="team-pill">Loading...</div>
                     <p id="pNick">"Nickname"</p>
@@ -667,6 +686,11 @@
 const teamPill = document.getElementById('teamPill');
             const attributes = p.attributes || { consistency: 50, bigMatch: 50, scoring: 50, playmaking: 50, defense: 50, mental: 50 };
 generateSynapse(attributes);
+            if (p.isCaptain) {
+    document.getElementById('captainBadge').style.display = 'inline-flex';
+} else {
+    document.getElementById('captainBadge').style.display = 'none';
+            }
             
             
 
