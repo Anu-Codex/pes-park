@@ -947,28 +947,27 @@ async function createSubFixture() {
     const pA = document.getElementById('subPlayerA').value;
     const pB = document.getElementById('subPlayerB').value;
 
-    if (!tourId || !parentId || !pA || !pB) return alert("Fill all fields!");
+    if (!tourId || !parentId || !pA || !pB) return alert("Select Tour, Team Match, and Players!");
 
     const data = {
-        tourId,
-        parentFixtureId: parentId, // Links it to the Team match
+        tourId: tourId,
+        parentFixtureId: parentId, // Links to Team Match
         playerA: pA,
         playerB: pB,
-        isSubFixture: true, // <--- EXPLICITLY SET TO TRUE
+        isSubFixture: true, // Forces Boolean True
         status: "Upcoming"
     };
 
-    try {
-        const res = await fetch(`${API}/api/smart/create-fixture`, { // Use the main create-fixture route
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
-        });
-        if(res.ok) {
-            alert("MEMBER MATCH LINKED SUCCESSFULLY!");
-            location.reload();
-        }
-    } catch (e) { alert("Server Error"); }
+    const res = await fetch(`${API}/api/smart/create-fixture`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+
+    if(res.ok) {
+        alert("✅ Member Match Linked Successfully!");
+        location.reload();
+    }
 }
         // Populate the team list for captaincy on load
 async function loadCapTeams() {
