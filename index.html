@@ -1566,49 +1566,62 @@ async function switchTourTab(type) {
             </div>`;
         // --- 2. FIXTURES ---
         } else if (category === 'fixtures') {
-            const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
-const allMatches = await res.json();
+    const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
+    const allMatches = await res.json();
 
-// This filter ensures ONLY main Team vs Team matches show in the main list
-const mainTeamMatches = allMatches.filter(m => {
-    return !m.parentFixtureId && m.isSubFixture !== true && m.isSubFixture !== "true";
-});
+    // 1. Separate the matches into two groups
+    // Main matches have NO parent ID. Sub matches HAVE a parent ID.
+    const mainMatches = allMatches.filter(m => !m.parentFixtureId && m.isSubFixture !== true);
+    const subMatches = allMatches.filter(m => m.parentFixtureId || m.isSubFixture === true);
 
-            if (!mainTeamMatches || mainTeamMatches.length === 0) {
-                content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);">No main team matches scheduled.</p>';
-                return;
-            }
+    if (mainMatches.length === 0) {
+        content.innerHTML = '<p style="text-align:center; padding:30px;">No matches scheduled.</p>';
+        return;
+    }
 
-            content.innerHTML = mainTeamMatches.map(m => `
-                <div class="match-card-wrapper" style="margin-bottom:15px; border: 1px solid var(--border); border-radius:15px; overflow:hidden; background:rgba(255,255,255,0.02);">
-                    <!-- Main Team vs Team Row -->
-                    <div class="match-card" style="margin-bottom:0; border:none; display:flex; justify-content:space-between; align-items:center; padding:15px;">
-                        <div style="flex:1; font-weight:900; font-family:'Rajdhani'; letter-spacing:1px; font-style:italic;">${m.playerA.toUpperCase()}</div>
-                        <div style="text-align:center; min-width:80px;">
-                            <b style="background:var(--bg); padding:5px 12px; border-radius:8px; color:var(--accent); border: 1px solid var(--border);">
-                                ${m.status === 'Completed' ? `${m.scoreA} - ${m.scoreB}` : 'VS'}
-                            </b>
-                        </div>
-                        <div style="flex:1; text-align:right; font-weight:900; font-family:'Rajdhani'; letter-spacing:1px; font-style:italic;">${m.playerB.toUpperCase()}</div>
-                        
-                        <!-- Toggle Arrow -->
+    content.innerHTML = mainMatches.map(m => {
+        // 2. Find if this specific Team Match has any Member Matches linked to it
+        const mySubs = subMatches.filter(sub => sub.parentFixtureId === m._id);
+        const hasSubs = mySubs.length > 0;
+
+        return `
+            <div class="match-card-wrapper" style="margin-bottom:12px; border:1px solid var(--border); border-radius:15px; overflow:hidden; background:rgba(255,255,255,0.02);">
+                <div class="match-card" style="margin-bottom:0; border:none; display:flex; justify-content:space-between; align-items:center; padding:15px;">
+                    <div style="flex:1; font-weight:900; font-family:'Rajdhani'; letter-spacing:1px;">${m.playerA.toUpperCase()}</div>
+                    <div style="text-align:center; min-width:80px;">
+                        <b style="background:var(--bg); padding:5px 12px; border-radius:8px; color:var(--accent); border: 1px solid var(--border);">
+                            ${m.status === 'Completed' ? `${m.scoreA} - ${m.scoreB}` : 'VS'}
+                        </b>
+                    </div>
+                    <div style="flex:1; text-align:right; font-weight:900; font-family:'Rajdhani'; letter-spacing:1px;">${m.playerB.toUpperCase()}</div>
+                    
+                    <!-- Arrow only shows if there are Member Matches -->
+                    ${hasSubs ? `
                         <i class="fa-solid fa-chevron-down" 
-                           onclick="toggleSubMatches('${m._id}', this)" 
-                           style="margin-left:15px; color:var(--accent); cursor:pointer; font-size:1.1rem; transition:0.3s;"></i>
-                    </div>
-
-                    <!-- Hidden Member Match Container -->
-                    <div id="subs-${m._id}" style="display:none; background:rgba(0,0,0,0.3); border-top:1px solid var(--border); padding:15px;">
-                        <div style="text-align:center; font-size:0.6rem; color:var(--accent); font-weight:800; letter-spacing:2px; margin-bottom:12px;">
-                            <i class="fa-solid fa-users"></i> MEMBER CLASH (LIVE STATS IMPACT)
-                        </div>
-                        <div id="sub-list-${m._id}">
-                            <!-- Sub matches will load here -->
-                        </div>
-                    </div>
+                           onclick="toggleLocalSubs('${m._id}', this)" 
+                           style="margin-left:15px; color:var(--accent); cursor:pointer; transition:0.3s;"></i>
+                    ` : '<i class="fa-solid fa-minus" style="margin-left:15px; opacity:0.1;"></i>'}
                 </div>
-            `).join('');
-        }
+
+                <!-- Nested Member Matches -->
+                <div id="local-subs-${m._id}" style="display:none; background:rgba(0,0,0,0.4); border-top:1px solid var(--border); padding:10px;">
+                    ${mySubs.map(s => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 15px; border-bottom:1px solid rgba(255,255,255,0.03);">
+                            <span style="font-size:0.8rem; font-weight:bold; color:#cbd5e1;">${s.playerA}</span>
+                            <span style="font-family:monospace; color:var(--accent); font-weight:900; font-size:0.85rem;">
+                                ${s.status === 'Completed' ? `${s.scoreA} - ${s.scoreB}` : 'VS'}
+                            </span>
+                            <span style="font-size:0.8rem; font-weight:bold; color:#cbd5e1; text-align:right;">${s.playerB}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Simple Toggle Function (No API call needed now!)
+
      
         // --- 3. GOLDEN BOOT ---
         else if (category === 'boot') {
@@ -2188,6 +2201,12 @@ updateTopStats();
             <span style="font-size:0.8rem; font-weight:bold; color:white; text-align:right;">${s.playerB}</span>
         </div>
     `).join('') || '<p style="text-align:center; font-size:0.7rem; color:var(--text-dim);">No member matches scheduled.</p>';
+        }
+        function toggleLocalSubs(id, arrow) {
+    const el = document.getElementById(`local-subs-${id}`);
+    const isHidden = el.style.display === 'none';
+    el.style.display = isHidden ? 'block' : 'none';
+    arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
         }
         
     </script>
