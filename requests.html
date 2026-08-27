@@ -141,30 +141,66 @@
     }
 
     async function submitRequest() {
-        const type = document.getElementById('formType').value;
-        const team = document.getElementById('common_teamName').value;
-        
-        let formData = {};
-        if(type === 'ISSUE') {
-            formData = { playerName: document.getElementById('iss_pName').value, oppoTeamName: document.getElementById('iss_oppoTeam').value, oppoPlayerName: document.getElementById('iss_oppoPlayer').value, issueDescription: document.getElementById('iss_desc').value };
-        } else if(type === 'SUBSTITUTION') {
-            formData = { subIn: document.getElementById('sub_in').value, subOut: document.getElementById('sub_out').value };
-        } else if(type === 'ID_CHANGE') {
-            formData = { playerTag: document.getElementById('id_tag').value, oldID: document.getElementById('id_old').value, newID: document.getElementById('id_new').value, newIDName: document.getElementById('id_newName').value };
-        } else if(type === 'REPLACEMENT') {
-            formData = { 
-                repIn: { name: document.getElementById('rep_in_name').value, div: document.getElementById('rep_in_div').value, rank: document.getElementById('rep_in_rank').value, id: document.getElementById('rep_in_id').value, tag: document.getElementById('rep_in_tag').value },
-                repOut: { name: document.getElementById('rep_out_name').value, div: document.getElementById('rep_out_div').value, rank: document.getElementById('rep_out_rank').value, id: document.getElementById('rep_out_id').value, tag: document.getElementById('rep_out_tag').value }
-            };
-        }
+    const type = document.getElementById('formType').value;
+    const team = document.getElementById('common_teamName').value.trim();
+    
+    if(!team) return alert("Please enter Team Name");
 
+    let formData = {};
+    if(type === 'ISSUE') {
+        formData = { 
+            playerName: document.getElementById('iss_pName').value, 
+            oppoTeamName: document.getElementById('iss_oppoTeam').value, 
+            oppoPlayerName: document.getElementById('iss_oppoPlayer').value, 
+            issueDescription: document.getElementById('iss_desc').value 
+        };
+    } else if(type === 'SUBSTITUTION') {
+        formData = { 
+            subIn: document.getElementById('sub_in').value, 
+            subOut: document.getElementById('sub_out').value 
+        };
+    } else if(type === 'ID_CHANGE') {
+        formData = { 
+            playerTag: document.getElementById('id_tag').value, 
+            oldID: document.getElementById('id_old').value, 
+            newID: document.getElementById('id_new').value, 
+            newIDName: document.getElementById('id_newName').value 
+        };
+    } else if(type === 'REPLACEMENT') {
+        formData = { 
+            repIn: { 
+                name: document.getElementById('rep_in_name').value, 
+                div: document.getElementById('rep_in_div').value, 
+                rank: document.getElementById('rep_in_rank').value, 
+                id: document.getElementById('rep_in_id').value, 
+                tag: document.getElementById('rep_in_tag').value 
+            },
+            repOut: { 
+                name: document.getElementById('rep_out_name').value, 
+                div: document.getElementById('rep_out_div').value, 
+                rank: document.getElementById('rep_out_rank').value, 
+                id: document.getElementById('rep_out_id').value, 
+                tag: document.getElementById('rep_out_tag').value 
+            }
+        };
+    }
+
+    try {
         const res = await fetch(`${API}/api/requests/submit`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ requestType: type, teamName: team, data: formData })
+            body: JSON.stringify({ 
+                requestType: type, 
+                teamName: team, 
+                data: formData // Ensure this is wrapped in 'data'
+            })
         });
         const result = await res.json();
-        alert("TRANSMISSION SUCCESSFUL\nYour ID: " + result.requestID);
+        if(result.success) {
+            alert("TRANSMISSION SUCCESSFUL\nYour ID: " + result.requestID);
+            location.reload();
+        }
+    } catch (e) { alert("Link Error."); }
     }
   async function downloadDossier(reqID) {
     const res = await fetch(`${API}/api/requests/track/${reqID}`);
