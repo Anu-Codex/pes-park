@@ -136,6 +136,21 @@
                     <button type="submit" class="btn-green">Initialize Club</button>
                 </form>
             </div>
+            <div class="sub-box" style="border-left: 4px solid var(--gold);">
+    <h4><i class="fa-solid fa-crown"></i> Assign Team Captain</h4>
+    
+    <label style="font-size:0.6rem; color:var(--text-dim)">1. SELECT CLUB</label>
+    <select id="capTeamSelect" onchange="loadCapMembers()">
+        <option value="">Choose Team...</option>
+    </select>
+
+    <label style="font-size:0.6rem; color:var(--text-dim)">2. SELECT NEW CAPTAIN</label>
+    <select id="capPlayerSelect">
+        <option value="">Select Member...</option>
+    </select>
+
+    <button onclick="assignCaptain()" class="btn-gold">Confirm Captaincy</button>
+            </div>
         </div>
 
         <!-- 4. SMART CENTER (Tournament Logic) -->
@@ -921,6 +936,44 @@ async function createSubFixture() {
     });
     alert("Member Match Added!");
 }
+        // Populate the team list for captaincy on load
+async function loadCapTeams() {
+    const res = await fetch(`${API}/api/teams/all`);
+    const teams = await res.json();
+    document.getElementById('capTeamSelect').innerHTML = '<option value="">Choose Team...</option>' + 
+        teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+}
+
+// Load players when a team is selected
+async function loadCapMembers() {
+    const teamName = document.getElementById('capTeamSelect').value;
+    if(!teamName) return;
+    
+    const res = await fetch(`${API}/api/teams/members/${encodeURIComponent(teamName)}`);
+    const players = await res.json();
+    document.getElementById('capPlayerSelect').innerHTML = players.map(p => 
+        `<option value="${p._id}">${p.name}</option>`).join('');
+}
+
+async function assignCaptain() {
+    const playerId = document.getElementById('capPlayerSelect').value;
+    const teamName = document.getElementById('capTeamSelect').value;
+
+    if(!playerId) return alert("Select a player!");
+
+    const res = await fetch(`${API}/api/teams/assign-captain`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ playerId, teamName })
+    });
+
+    if(res.ok) {
+        alert("COMMAND EXECUTED: New Captain Assigned.");
+        location.reload();
+    }
+}
+
+// Add to your window.onload
 
     // --- UNIFIED INITIALIZATION ---
 window.onload = async () => {
@@ -930,6 +983,7 @@ window.onload = async () => {
         await populateHofDropdowns();
         await loadApplications();
         await refreshParticipantList();
+        await loadCapTeams();
         console.log("All systems online.");
     } catch (err) {
         console.error("Boot sequence failed:", err);
