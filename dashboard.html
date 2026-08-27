@@ -367,15 +367,17 @@
 
     async function loadAllDashboardData() {
         try {
-            const [pRes, tRes, teamRes] = await Promise.all([
+            const [pRes, tRes, teamRes, rRes] = await Promise.all([
                 fetch(`${API}/api/players`),
                 fetch(`${API}/api/smart/tournaments`),
-                fetch(`${API}/api/teams/all`)
+                fetch(`${API}/api/teams/all`),
+                fetch(`${API}/api/requests/all`)
             ]);
 
             const players = await pRes.json();
             const tours = await tRes.json();
             const teams = await teamRes.json();
+            const requests = await rRes.json();
 
             // Populate Player Selectors
             const pOpts = players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
@@ -414,7 +416,11 @@
             
             
 
-        } catch (e) { console.error("Sync Error", e); }
+        if (requests) {
+            renderRequestList(requests); 
+        }
+
+    } catch (e) { console.error("Sync Error", e); }
     }
 
     // Load Player Data for Edit
@@ -1104,7 +1110,32 @@ async function loadManagementRequests() {
         container.innerHTML = '<p style="color:red; text-align:center;">Failed to sync requests.</p>';
     }
 }
+function renderRequestList(requests) {
+    const container = document.getElementById('nmsRequestList');
+    if (!container) return;
 
+    if (requests.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding:20px;">Archives Clear. No pending requests.</p>';
+        return;
+    }
+
+    container.innerHTML = requests.map(req => {
+        const statusColor = req.status === 'Approved' ? '#10b981' : (req.status === 'Pending' ? '#f59e0b' : '#ef4444');
+        return `
+            <div class="sub-box" style="border-left: 4px solid ${statusColor}; margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.6rem;">
+                    <b style="color:${statusColor}">${req.requestType}</b>
+                    <span>${req.requestID}</span>
+                </div>
+                <p style="font-size:0.85rem; margin:8px 0;">TEAM: ${req.teamName}</p>
+                <div class="grid-2">
+                    <button onclick="processRequest('${req._id}', 'Approved')" class="btn-green" style="padding:5px; font-size:0.7rem;">APPROVE</button>
+                    <button onclick="processRequest('${req._id}', 'Rejected')" class="delete-btn" style="padding:5px; font-size:0.7rem;">REJECT</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
 // 2. Action Function for Approve/Reject
 async function processRequest(id, status) {
     if(!confirm(`Set status to ${status}?`)) return;
