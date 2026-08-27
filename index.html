@@ -1567,10 +1567,12 @@ async function switchTourTab(type) {
         // --- 2. FIXTURES ---
         } else if (category === 'fixtures') {
             const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
-            const matches = await res.json();
+const allMatches = await res.json();
 
-            // --- CRITICAL FILTER: ONLY SHOW TEAM VS TEAM (PARENTS) IN THE MAIN LIST ---
-            const mainTeamMatches = matches.filter(m => !m.isSubFixture);
+// This filter ensures ONLY main Team vs Team matches show in the main list
+const mainTeamMatches = allMatches.filter(m => {
+    return !m.parentFixtureId && m.isSubFixture !== true && m.isSubFixture !== "true";
+});
 
             if (!mainTeamMatches || mainTeamMatches.length === 0) {
                 content.innerHTML = '<p style="text-align:center; padding:30px; color:var(--text-dim);">No main team matches scheduled.</p>';
