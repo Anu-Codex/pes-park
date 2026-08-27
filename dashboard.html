@@ -81,6 +81,9 @@
                         <input type="text" id="pName" placeholder="Full Name" required>
                         <input type="text" id="pNick" placeholder="Nickname">
                     </div>
+                    <select id="pTeamSelect">
+        <option value="">Loading Teams...</option>
+                    </select>
                     <input type="text" id="pImage" placeholder="ImgBB URL for Avatar">
                     <button type="submit" class="btn-green">Add to League</button>
                 </form>
@@ -383,7 +386,7 @@
 
             const teamOpts = teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
         
-        const teamSelectors = ['capTeamSelect'];
+        const teamSelectors = ['capTeamSelect', 'pTeamSelect'];
         teamSelectors.forEach(id => {
             const el = document.getElementById(id);
             if(el) el.innerHTML = '<option value="">Select Club...</option>' + teamOpts;
@@ -440,7 +443,8 @@ document.getElementById('attrMent').value = attr.mental || 50;
 
     setup('playerForm', `${API}/api/players`, 'POST', () => ({ 
         name: document.getElementById('pName').value, 
-        nickname: document.getElementById('pNick').value, 
+        nickname: document.getElementById('pNick').value,
+        teamName: document.getElementById('pTeamSelect').value,
         image: document.getElementById('pImage').value 
     }));
 
