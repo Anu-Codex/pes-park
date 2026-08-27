@@ -506,7 +506,13 @@ document.getElementById('attrMent').value = attr.mental || 50;
 
         return `
             <div class="sub-box" style="background: ${bgColor}; border: 1px solid ${isSub ? 'var(--accent)' : '#1e293b'}; margin-bottom: 10px; padding: 12px;">
-                ${label}
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+            ${label}
+            
+            <i class="fa-solid fa-trash-can" 
+               onclick="deleteIndividualFixture('${m._id}')" 
+               style="color:var(--danger); cursor:pointer; font-size:0.8rem; padding:5px;"></i>
+        </div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
                     <span style="font-weight:700; font-size:0.8rem;">${m.playerA}</span>
                     <span style="font-size:0.6rem; opacity:0.5;">VS</span>
@@ -936,18 +942,33 @@ async function loadTeamPlayers() {
 }
 
 async function createSubFixture() {
+    const tourId = document.getElementById('subTourSelect').value;
+    const parentId = document.getElementById('subParentSelect').value;
+    const pA = document.getElementById('subPlayerA').value;
+    const pB = document.getElementById('subPlayerB').value;
+
+    if (!tourId || !parentId || !pA || !pB) return alert("Fill all fields!");
+
     const data = {
-        tourId: document.getElementById('subTourSelect').value,
-        parentFixtureId: document.getElementById('subParentSelect').value,
-        playerA: document.getElementById('subPlayerA').value,
-        playerB: document.getElementById('subPlayerB').value
+        tourId,
+        parentFixtureId: parentId, // Links it to the Team match
+        playerA: pA,
+        playerB: pB,
+        isSubFixture: true, // <--- EXPLICITLY SET TO TRUE
+        status: "Upcoming"
     };
-    await fetch(`${API}/api/smart/create-sub-fixture`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)
-    });
-    alert("Member Match Added!");
+
+    try {
+        const res = await fetch(`${API}/api/smart/create-fixture`, { // Use the main create-fixture route
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        if(res.ok) {
+            alert("MEMBER MATCH LINKED SUCCESSFULLY!");
+            location.reload();
+        }
+    } catch (e) { alert("Server Error"); }
 }
         // Populate the team list for captaincy on load
 async function loadCapTeams() {
@@ -984,6 +1005,21 @@ async function assignCaptain() {
         alert("COMMAND EXECUTED: New Captain Assigned.");
         location.reload();
     }
+}
+        // 1. Delete an Entire Tournament
+
+
+// 2. Delete One Specific Match
+async function deleteIndividualFixture(id) {
+    if (!confirm("Remove this match from the database? This is permanent.")) return;
+
+    try {
+        const res = await fetch(`${API}/api/smart/delete-fixture/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            alert("Fixture Deleted.");
+            loadTourFixtures(); // Refresh the list immediately
+        }
+    } catch (e) { alert("Delete failed."); }
 }
 
 // Add to your window.onload
