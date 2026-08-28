@@ -336,9 +336,6 @@
     <button onclick="triggerTeamSync()" class="btn-green">
         <i class="fa-solid fa-cloud-arrow-down"></i> Run Global Club Sync
     </button>
-                <button onclick="rebuildPointsTable()" class="btn-gold" style="margin-top:10px; background:#3b82f6; color:white;">
-    <i class="fa-solid fa-sync"></i> Rebuild Points Table from Fixtures
-                </button>
             </div>
              <div style="padding: 15px; border: 1px solid var(--danger); border-radius: 12px; margin-top: 15px;">
     <h4 style="margin: 0; color: white;">Wipe Match History</h4>
@@ -354,6 +351,21 @@
     </p>
     <button onclick="triggerHistoricalSync()" class="btn-gold">
         <i class="fa-solid fa-database"></i> Rebuild Player Stats
+    </button>
+            </div>
+            <div class="sub-box" style="border: 1px solid #3b82f6; background: rgba(59, 130, 246, 0.05);">
+    <h4 style="color: #3b82f6;"><i class="fa-solid fa-table-list"></i> Table Recovery</h4>
+    
+    <!-- ADD THIS DROPDOWN HERE -->
+    <label style="font-size:0.6rem; color:var(--text-dim); display:block; margin-bottom:5px;">1. SELECT TOURNAMENT TO FIX:</label>
+    <select id="rebuildTourSelect" style="border-color: #3b82f6; margin-bottom:10px;">
+        <option value="">-- Loading Tournaments... --</option>
+    </select>
+
+    <p style="font-size: 0.65rem; color: var(--text-dim); margin-bottom:10px;">2. Click to recalculate all points from fixtures.</p>
+    
+    <button onclick="rebuildPointsTable()" class="btn-gold" style="background:#3b82f6; color:white;">
+        <i class="fa-solid fa-arrows-rotate"></i> REBUILD POINTS TABLE FROM FIXTURES
     </button>
             </div>
         </div>
@@ -422,6 +434,7 @@
             document.getElementById('srTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Tour to Delete...</option>' + tourOpts;
             document.getElementById('subTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
+            document.getElementById('rebuildTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             
             
 
@@ -854,44 +867,23 @@ async function createAKFixture() {
     if(res.ok) alert(`${stage} fixture created successfully!`);
 }
         async function rebuildPointsTable() {
-    // 1. Get the Tournament ID from the dropdown
-    // Note: Ensure your dropdown ID is 'srTourSelect'
-    const tourSelect = document.getElementById('srTourSelect');
-    const tourId = tourSelect.value;
+    // 1. Target the NEW dropdown ID
+    const tourId = document.getElementById('rebuildTourSelect').value;
 
-    // 2. SAFETY CHECK: Prevents the "Cast to ObjectId" error
-    if (!tourId || tourId === "" || tourId === "undefined" || tourId.includes("Select")) {
+    // 2. The safety check
+    if (!tourId || tourId === "" || tourId.includes("Select")) {
         alert("❌ ACTION DENIED: You must select a specific tournament from the dropdown first!");
         return;
     }
 
-    // 3. Confirmation
-    if (!confirm("This will delete the current points table and rebuild it from match history. Proceed?")) return;
+    if (!confirm("Rebuild this table from match history?")) return;
 
-    // 4. Execution
     try {
-        // Show loading state on the button
-        const btn = event.currentTarget;
-        const originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> SYNCING DATABASE...`;
-
         const res = await fetch(`${API}/api/smart/recalculate-table/${tourId}`);
         const data = await res.json();
-
-        if (data.success) {
-            alert("✅ SUCCESS: " + data.message);
-        } else {
-            alert("❌ ERROR: " + data.error);
-        }
+        if (data.success) alert("✅ SUCCESS: Table rebuilt!");
     } catch (e) {
-        console.error(e);
-        alert("❌ CRITICAL ERROR: Connection to Nexus Server failed.");
-    } finally {
-        // Reset button state
-        const btn = document.querySelector('button[onclick="rebuildPointsTable()"]');
-        btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> REBUILD POINTS TABLE FROM FIXTURES`;
+        alert("❌ Connection Error");
     }
         }
         async function deleteSpecificTour() {
