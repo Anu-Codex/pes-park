@@ -854,23 +854,44 @@ async function createAKFixture() {
     if(res.ok) alert(`${stage} fixture created successfully!`);
 }
         async function rebuildPointsTable() {
-    // Get tourId from the "Update Scores" dropdown
-    const tourId = document.getElementById('srTourSelect').value;
-    if (!tourId) return alert("Please select a tournament from the dropdown first!");
+    // 1. Get the Tournament ID from the dropdown
+    // Note: Ensure your dropdown ID is 'srTourSelect'
+    const tourSelect = document.getElementById('srTourSelect');
+    const tourId = tourSelect.value;
 
-    if(!confirm("This will clear the current table and rebuild it ONLY from Team vs Team match results. Continue?")) return;
+    // 2. SAFETY CHECK: Prevents the "Cast to ObjectId" error
+    if (!tourId || tourId === "" || tourId === "undefined" || tourId.includes("Select")) {
+        alert("❌ ACTION DENIED: You must select a specific tournament from the dropdown first!");
+        return;
+    }
 
+    // 3. Confirmation
+    if (!confirm("This will delete the current points table and rebuild it from match history. Proceed?")) return;
+
+    // 4. Execution
     try {
+        // Show loading state on the button
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> SYNCING DATABASE...`;
+
         const res = await fetch(`${API}/api/smart/recalculate-table/${tourId}`);
         const data = await res.json();
-        if(data.success) {
-            alert("SUCCESS: Table is now accurate!");
-            // No reload needed, just check index.html
+
+        if (data.success) {
+            alert("✅ SUCCESS: " + data.message);
         } else {
-            alert("Error: " + data.error);
+            alert("❌ ERROR: " + data.error);
         }
     } catch (e) {
-        alert("Connection to server failed.");
+        console.error(e);
+        alert("❌ CRITICAL ERROR: Connection to Nexus Server failed.");
+    } finally {
+        // Reset button state
+        const btn = document.querySelector('button[onclick="rebuildPointsTable()"]');
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> REBUILD POINTS TABLE FROM FIXTURES`;
     }
         }
         async function deleteSpecificTour() {
