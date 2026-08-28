@@ -1548,6 +1548,7 @@ async function switchTourTab(type) {
             const participantLabel = (type === 'auction') ? "OFFICIAL CLUB" : "PLAYER NAME";
 
             content.innerHTML = `
+            <div id="download-target-table" style="background:#060b13; padding:15px; border-radius:15px;">
             <div class="table-responsive">
                 <table class="pts-table">
                     <thead>
@@ -1578,6 +1579,7 @@ async function switchTourTab(type) {
                         </tr>`;}).join('')}
                     </tbody>
                 </table>
+                </div>
             </div>`;
         // --- 2. FIXTURES ---
         } else if (category === 'fixtures') {
@@ -1600,6 +1602,7 @@ async function switchTourTab(type) {
         const hasSubs = mySubs.length > 0;
 
         return `
+        <div id="download-target-fixtures" style="background:#060b13; padding:15px; border-radius:15px;">
             <div class="match-card-wrapper" style="margin-bottom:12px; border:1px solid var(--border); border-radius:15px; overflow:hidden; background:rgba(255,255,255,0.02);">
                 <div class="match-card" style="margin-bottom:0; border:none; display:flex; justify-content:space-between; align-items:center; padding:15px;">
                     <div style="flex:1; font-weight:900; font-family:'Rajdhani'; letter-spacing:1px;">${m.playerA.toUpperCase()}</div>
@@ -1610,7 +1613,7 @@ async function switchTourTab(type) {
                     </div>
                     <div style="flex:1; text-align:right; font-weight:900; font-family:'Rajdhani'; letter-spacing:1px;">${m.playerB.toUpperCase()}</div>
                     
-                    <!-- Arrow only shows if there are Member Matches -->
+                    
                     ${hasSubs ? `
                         <i class="fa-solid fa-chevron-down" 
                            onclick="toggleLocalSubs('${m._id}', this)" 
@@ -1618,7 +1621,7 @@ async function switchTourTab(type) {
                     ` : '<i class="fa-solid fa-minus" style="margin-left:15px; opacity:0.1;"></i>'}
                 </div>
 
-                <!-- Nested Member Matches -->
+                
                 <div id="local-subs-${m._id}" style="display:none; background:rgba(0,0,0,0.4); border-top:1px solid var(--border); padding:10px;">
                     ${mySubs.map(s => `
                         <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 15px; border-bottom:1px solid rgba(255,255,255,0.03);">
@@ -1629,6 +1632,7 @@ async function switchTourTab(type) {
                             <span style="font-size:0.8rem; font-weight:bold; color:#cbd5e1; text-align:right;">${s.playerB}</span>
                         </div>
                     `).join('')}
+                </div>
                 </div>
             </div>
         `;
