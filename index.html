@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEXUS LEGENDS EFOOTBALL COMMUNITY</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script> (function () {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('debug') === 'true') {
@@ -1002,6 +1003,19 @@
     color: var(--accent);
     text-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
         }
+        .btn-icon {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-icon:hover { background: rgba(16,185,129,0.1); transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -1468,6 +1482,9 @@ async function renderAuctionTour(container) {
             <button onclick="shareTournament()" style="background:rgba(16,185,129,0.1); border:1px solid var(--accent); color:var(--accent); padding:5px 8px; border-radius:6px; cursor:pointer;">
                 <i class="fa-solid fa-share-nodes"></i>
             </button>
+            <button onclick="downloadActiveTab()" class="btn-icon" style="border-color:var(--gold); color:var(--gold);" title="Download as Image">
+        <i class="fa-solid fa-file-image"></i>
+    </button>
             <select id="tourTabSelector" style="background:var(--bg); color:white; border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem;" onchange="switchTourTab('auction')">
                 <option value="table">Points table</option>
                 <option value="fixtures">Fixtures</option>
@@ -2205,6 +2222,48 @@ updateTopStats();
     const isHidden = el.style.display === 'none';
     el.style.display = isHidden ? 'block' : 'none';
     arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
+        async function downloadActiveTab() {
+    const tab = document.getElementById('tourTabSelector').value;
+    const tourName = document.getElementById('tourNameSelector').options[document.getElementById('tourNameSelector').selectedIndex].text;
+    
+    // Identify what to capture
+    let targetId = (tab === 'table') ? 'download-target-table' : 'download-target-fixtures';
+    let element = document.getElementById(targetId);
+
+    if (!element) {
+        alert("Please select a valid tournament and tab first!");
+        return;
+    }
+
+    // High-End eSports Branding Footer for the Image
+    const branding = document.createElement('div');
+    branding.innerHTML = `<div style="text-align:center; padding:15px; color:#94a3b8; font-size:10px; font-family:sans-serif; letter-spacing:2px;">
+        OFFICIAL NEXUS LEGENDS RECORD • VALIDATED ARCHIVE
+    </div>`;
+    element.appendChild(branding);
+
+    try {
+        const canvas = await html2canvas(element, {
+            backgroundColor: '#060b13', // Matches your site BG
+            scale: 2, // Higher quality
+            logging: false,
+            useCORS: true
+        });
+
+        // Remove the temporary branding from the live site
+        element.removeChild(branding);
+
+        // Process Download
+        const link = document.createElement('a');
+        link.download = `NEXUS-${tourName.replace(/\s+/g, '-')}-${tab.toUpperCase()}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+
+    } catch (err) {
+        console.error("Canvas Error:", err);
+        alert("Download failed. Ensure all data is loaded.");
+    }
         }
         
     </script>
