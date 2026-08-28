@@ -347,6 +347,15 @@
         <i class="fa-solid fa-eraser"></i> Clear Global Match History
     </button>
              </div>
+            <div class="sub-box" style="border: 1px solid var(--gold); background: rgba(245, 158, 11, 0.05);">
+    <h4 style="color: var(--gold);"><i class="fa-solid fa-arrows-rotate"></i> Historical Data Repair</h4>
+    <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 15px;">
+        This will recalculate every player's Market Value, BDR, and H2H list based on the actual match results stored in the archive.
+    </p>
+    <button onclick="triggerHistoricalSync()" class="btn-gold">
+        <i class="fa-solid fa-database"></i> Rebuild Player Stats
+    </button>
+            </div>
         </div>
        
 
@@ -1155,6 +1164,27 @@ async function processRequest(id, status) {
         alert("Command Link Failure");
     }
 }
+        async function triggerHistoricalSync() {
+    if (!confirm("This will recalculate ALL player profiles from scratch using match history. This may take a few seconds. Proceed?")) return;
+
+    const btn = event.currentTarget;
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> REPLAYING HISTORY...`;
+
+    try {
+        const res = await fetch(`${API}/api/danger/sync-player-stats-from-history`);
+        const data = await res.json();
+        if (data.success) {
+            alert("SUCCESS: " + data.message);
+            location.reload();
+        }
+    } catch (e) {
+        alert("Sync Failed. Check server logs.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-database"></i> Rebuild Player Stats`;
+    }
+        }
 
 // 3. Add to the unified window.onload
 // Inside your existing window.onload = async () => { ... }
