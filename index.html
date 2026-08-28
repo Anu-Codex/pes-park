@@ -1548,7 +1548,7 @@ async function switchTourTab(type) {
             const participantLabel = (type === 'auction') ? "OFFICIAL CLUB" : "PLAYER NAME";
 
             content.innerHTML = `
-            <div id="download-target-table" style="background:#060b13; padding:15px; border-radius:15px;">
+            <div id="download-target-table">
             <div class="table-responsive">
                 <table class="pts-table">
                     <thead>
@@ -1602,7 +1602,7 @@ async function switchTourTab(type) {
         const hasSubs = mySubs.length > 0;
 
         return `
-        <div id="download-target-fixtures" style="background:#060b13; padding:15px; border-radius:15px;">
+        <div id="download-target-fixtures">
             <div class="match-card-wrapper" style="margin-bottom:12px; border:1px solid var(--border); border-radius:15px; overflow:hidden; background:rgba(255,255,255,0.02);">
                 <div class="match-card" style="margin-bottom:0; border:none; display:flex; justify-content:space-between; align-items:center; padding:15px;">
                     <div style="flex:1; font-weight:900; font-family:'Rajdhani'; letter-spacing:1px;">${m.playerA.toUpperCase()}</div>
