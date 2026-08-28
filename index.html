@@ -1548,7 +1548,6 @@ async function switchTourTab(type) {
             const participantLabel = (type === 'auction') ? "OFFICIAL CLUB" : "PLAYER NAME";
 
             content.innerHTML = `
-            <div id="download-target-table">
             <div class="table-responsive">
                 <table class="pts-table">
                     <thead>
@@ -1579,7 +1578,7 @@ async function switchTourTab(type) {
                         </tr>`;}).join('')}
                     </tbody>
                 </table>
-                </div>
+                
             </div>`;
         // --- 2. FIXTURES ---
         } else if (category === 'fixtures') {
@@ -1602,7 +1601,7 @@ async function switchTourTab(type) {
         const hasSubs = mySubs.length > 0;
 
         return `
-        <div id="download-target-fixtures">
+        
             <div class="match-card-wrapper" style="margin-bottom:12px; border:1px solid var(--border); border-radius:15px; overflow:hidden; background:rgba(255,255,255,0.02);">
                 <div class="match-card" style="margin-bottom:0; border:none; display:flex; justify-content:space-between; align-items:center; padding:15px;">
                     <div style="flex:1; font-weight:900; font-family:'Rajdhani'; letter-spacing:1px;">${m.playerA.toUpperCase()}</div>
@@ -1633,7 +1632,7 @@ async function switchTourTab(type) {
                         </div>
                     `).join('')}
                 </div>
-                </div>
+                
             </div>
         `;
     }).join('');
