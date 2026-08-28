@@ -854,37 +854,23 @@ async function createAKFixture() {
     if(res.ok) alert(`${stage} fixture created successfully!`);
 }
         async function rebuildPointsTable() {
+    // Get tourId from the "Update Scores" dropdown
     const tourId = document.getElementById('srTourSelect').value;
-    if (!tourId) return alert("Select a tournament first!");
+    if (!tourId) return alert("Please select a tournament from the dropdown first!");
 
-    if(!confirm("This will recalculate all points/GF/GA for this tour based on match history. Proceed?")) return;
+    if(!confirm("This will clear the current table and rebuild it ONLY from Team vs Team match results. Continue?")) return;
 
     try {
         const res = await fetch(`${API}/api/smart/recalculate-table/${tourId}`);
         const data = await res.json();
-        if(data.success) alert("Table Restored! Check index.html now.");
-    } catch (e) { alert("Server Error"); }
-        }
-        async function wipeAllHistory() {
-    const check1 = confirm("WARNING: This will permanently delete the match history logs for every player.");
-    if (!check1) return;
-    
-    const check2 = confirm("FINAL WARNING: This cannot be undone. Are you sure you want to start a clean season history?");
-    if (!check2) return;
-
-    try {
-        const res = await fetch(`${API}/api/danger/wipe-match-history`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        const data = await res.json();
-
-        if (data.success) {
-            alert("COMMAND EXECUTED: " + data.message);
-            location.reload();
+        if(data.success) {
+            alert("SUCCESS: Table is now accurate!");
+            // No reload needed, just check index.html
+        } else {
+            alert("Error: " + data.error);
         }
     } catch (e) {
-        alert("CRITICAL ERROR: Failed to reach Nexus Server.");
+        alert("Connection to server failed.");
     }
         }
         async function deleteSpecificTour() {
