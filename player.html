@@ -596,10 +596,10 @@
         </div>
         <!-- Team League -->
         <div class="trophy-card">
-            <img src="https://i.ibb.co/0fM0Z4M/league-trophy.png" class="trophy-img-large">
+            <img src="https://i.postimg.cc/15phyzFD/259302-removebg-preview.png" class="trophy-img-large">
             <div class="trophy-info">
                 <b id="tLeague">0</b>
-                <span>Team League</span>
+                <span>QUICK TOUR CHAMPION</span>
             </div>
         </div>
         <!-- UCL -->
@@ -1009,21 +1009,36 @@ async function handleSquadUpload(input) {
         }
         // Inside loadProfile() after fetching data 'p'
 async function generateScoutReport(player) {
+    const scoutBox = document.getElementById('aiScoutText');
+    if (!scoutBox) return;
+
+    // Show professional scanning state
+    scoutBox.innerHTML = `<i class="fa-solid fa-dna fa-spin" style="color:var(--accent)"></i> Analyzing Neural DNA...`;
+
     try {
         const res = await fetch(`${API}/api/bot/scout-player`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 name: player.name,
-                attributes: player.attributes || {},
-                marketValue: player.marketValue,
-                bdrPoints: player.bdrPoints
+                marketValue: player.marketValue || 0,
+                bdrPoints: player.bdrPoints || 0,
+                attributes: player.attributes || { consistency: 50, bigMatch: 50, scoring: 50, playmaking: 50, defense: 50, mental: 50 }
             })
         });
+        
         const data = await res.json();
-        document.getElementById('aiScoutText').innerText = data.report;
+        
+        // Apply text with a slight fade-in effect
+        scoutBox.style.opacity = 0;
+        setTimeout(() => {
+            scoutBox.innerText = data.report || "Dossier unavailable.";
+            scoutBox.style.transition = "0.5s";
+            scoutBox.style.opacity = 1;
+        }, 100);
+
     } catch (e) {
-        document.getElementById('aiScoutText').innerText = "Tactical data link offline.";
+        scoutBox.innerText = "Connection to Nexus AI Link failed.";
     }
 }
         // --- Inside loadProfile() ---
