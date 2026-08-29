@@ -740,7 +740,7 @@ if (p.image && p.image !== "") {
     avatarBox.innerHTML = `<i class="fa-solid fa-user" style="font-size:2rem; color:#374151;"></i>`;
 }
             // --- 1. CORE TROPHY COUNTS (BALLON, BOOT, ETC) ---
-        const tr = p.trophies || {};
+        const t = p.trophies || {};
         
         // Maps database numbers to the IDs in your HTML grid
         if(document.getElementById('tBallon')) document.getElementById('tBallon').innerText = tr.ballonDor || 0;
