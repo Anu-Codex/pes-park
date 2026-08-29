@@ -1334,6 +1334,7 @@ window.onload = async () => {
         await refreshParticipantList();
         await loadCapTeams();
         await loadManagementRequests();
+        await loadTrophyList();
         console.log("All systems online.");
     } catch (err) {
         console.error("Boot sequence failed:", err);
