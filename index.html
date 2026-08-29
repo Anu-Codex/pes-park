@@ -334,15 +334,25 @@
 .side-nav {
     position: fixed;
     top: 0;
-    left: -300px; /* This hides it to the left */
+    left: -300px;
     width: 280px;
-    height: 100vh;
+    height: 100vh; /* Keeps it full height */
     background: #0f172a;
-    z-index: 99999; /* Ensure it is above EVERYTHING */
+    z-index: 99999;
     transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 10px 0 30px rgba(0,0,0,0.5);
     padding: 25px;
-    visibility: hidden; /* Extra safety to prevent flickering */
+    visibility: hidden;
+
+    /* --- ADD THESE 3 LINES TO FIX THE HIDING ISSUE --- */
+    overflow-y: auto; /* Enables scrolling */
+    padding-bottom: 80px; /* Adds space at the bottom so the last item isn't touching the edge */
+    scrollbar-width: none; /* Hides the ugly scrollbar on modern browsers */
+}
+
+/* Optional: Hides scrollbar for Chrome/Safari while keeping scroll functionality */
+.side-nav::-webkit-scrollbar {
+    display: none;
 }
 
 /* This class is added by JavaScript when you click the button */
