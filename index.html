@@ -1124,6 +1124,37 @@
     min-width: 140px;
     font-weight: 700;
 }
+        .search-box {
+    background: var(--item-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    transition: 0.3s;
+}
+
+.search-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+}
+
+.search-box input {
+    background: transparent;
+    border: none;
+    color: yellow;
+    width: 100%;
+    outline: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.search-box i {
+    color: var(--text-dim);
+    font-size: 1rem;
+}
     </style>
 </head>
 <body>
@@ -1265,6 +1296,11 @@
             </div>
 
             <div class="players-card">
+                <!-- SEARCH BOX -->
+<div class="search-box">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="searchInput" placeholder="Search players or nicknames..." oninput="filterPlayers()">
+</div>
                 <div id="dynamicContent">
                 
                 </div>
@@ -1402,6 +1438,13 @@
     const view = document.getElementById('viewSelector').value;
     const container = document.getElementById('dynamicContent');
     
+    // 1. Clear the search text
+    const searchBar = document.getElementById('searchInput');
+    if (searchBar) {
+        searchBar.value = "";
+    }
+
+    // 2. Render the correct list
     if (view === "teams") {
         renderTotalTeams(container);
     } else {
@@ -2317,6 +2360,29 @@ updateTopStats();
     // Copy to clipboard
     navigator.clipboard.writeText(shareUrl).then(() => {
         alert("Tactical Link Copied! Share this with your squad.");
+    });
+        }
+        function filterPlayers() {
+    // 1. Get the text from the search bar
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    
+    // 2. Get all the player rows currently showing in the dashboard
+    const rows = document.querySelectorAll('.player-row');
+
+    rows.forEach(row => {
+        // 3. Get the player name and nickname from inside the row
+        const playerName = row.querySelector('.p-name')?.innerText.toLowerCase() || "";
+        const playerNick = row.querySelector('.p-nick')?.innerText.toLowerCase() || "";
+
+        // 4. If the query matches either name or nickname, show it; otherwise hide it
+        if (playerName.includes(query) || playerNick.includes(query)) {
+            row.style.display = "flex";
+            // Optional: add a slight animation effect
+            row.style.opacity = "1";
+        } else {
+            row.style.display = "none";
+            row.style.opacity = "0";
+        }
     });
         }
 
