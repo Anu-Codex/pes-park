@@ -120,10 +120,11 @@
         .section-title-row h3 { font-size: 0.85rem; color: var(--text-dim); letter-spacing: 1px; margin: 0; }
 
         .players-card {
-            background: var(--card-bg);
-            border-radius: 24px;
-            padding: 20px;
-            border: 1px solid var(--border);
+    background: var(--card-bg);
+    border-radius: 24px;
+    padding: 20px 5px; /* Reduced side padding from 20px to 5px */
+    border: 1px solid var(--border);
+    overflow: hidden; /* Keeps everything inside the rounded corners */
         }
         .row-leader {
     background: rgba(16, 185, 129, 0.1) !important; /* Emerald glow */
@@ -390,6 +391,7 @@
         /* Image 1 Dark Style Table */
 .ranking-table {
     width: 100%;
+    min-width: 420px;
     border-collapse: collapse;
     background: transparent; /* No white background */
     margin-top: 10px;
@@ -420,9 +422,10 @@
 
 /* Specific Column Styling */
 .rank-col { 
-    width: 40px; 
+    width: 35px; 
     font-weight: 800; 
     color: var(--accent); /* Neon Green for rank */
+    text-align: center;
 }
 
 .player-col-name {
@@ -563,6 +566,8 @@
     margin-top: 10px;
     border-radius: 12px;
     background: rgba(0,0,0,0.2);
+    overflow-x: auto; /* Allows table to be swiped if it's too wide */
+    -webkit-overflow-scrolling: touch;
 }
 
 .pts-table {
@@ -1028,6 +1033,9 @@
     justify-content: center;
 }
 .btn-icon:hover { background: rgba(16,185,129,0.1); transform: scale(1.1); }
+        .boot-player-col { width: auto; }
+.boot-team-col { width: 120px; } /* Give team a fixed reasonable width */
+.boot-goals-col { width: 60px; text-align: right; padding-right: 15px !important; }
     </style>
 </head>
 <body>
