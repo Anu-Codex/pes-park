@@ -626,6 +626,9 @@ document.getElementById('attrMent').value = attr.mental || 50;
                onclick="deleteIndividualFixture('${m._id}')" 
                style="color:var(--danger); cursor:pointer; font-size:0.8rem; padding:5px;"></i>
         </div>
+        <input type="text" id="stg-${m._id}" value="${m.stage || ''}" 
+               placeholder="Edit Stage (e.g. Semi-Final)" 
+               style="font-size:0.6rem; padding:5px; margin: 5px 0; border-color:var(--gold);">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
                     <span style="font-weight:700; font-size:0.8rem;">${m.playerA}</span>
                     <span style="font-size:0.6rem; opacity:0.5;">VS</span>
@@ -644,9 +647,26 @@ document.getElementById('attrMent').value = attr.mental || 50;
         }
 
     async function submitSmartScore(id) {
-        const data = { scoreA: document.getElementById(`scA-${id}`).value, scoreB: document.getElementById(`scB-${id}`).value };
-        await fetch(`${API}/api/smart/update-score/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        alert("Score Saved!"); loadTourFixtures();
+    const sA = document.getElementById(`scA-${id}`).value;
+    const sB = document.getElementById(`scB-${id}`).value;
+    const stageName = document.getElementById(`stg-${id}`).value; // NEW
+
+    try {
+        const res = await fetch(`${API}/api/smart/update-score/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                scoreA: sA, 
+                scoreB: sB, 
+                stage: stageName // SENDING STAGE NAME TO BACKEND
+            })
+        });
+
+        if(res.ok) {
+            alert("Match Data Updated!");
+            loadTourFixtures();
+        }
+    } catch (e) { alert("Error"); }
     }
         // 1. Function to add new rows dynamically in the UI
 function addHofRow(containerId, type) {
