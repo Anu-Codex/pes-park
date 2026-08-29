@@ -368,6 +368,15 @@
         <i class="fa-solid fa-arrows-rotate"></i> REBUILD POINTS TABLE FROM FIXTURES
     </button>
             </div>
+            <div class="sub-box" style="border: 1px solid #8b5cf6; background: rgba(139, 92, 246, 0.05);">
+    <h4 style="color: #a78bfa;"><i class="fa-solid fa-file-import"></i> Squad Image Sync</h4>
+    <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 15px;">
+        Pull player squad images directly from the Auction Database and apply them to player profiles.
+    </p>
+    <button onclick="triggerSquadSync()" class="btn-green" style="background: #8b5cf6; color: white;">
+        <i class="fa-solid fa-cloud-arrow-down"></i> Sync Squads from Auction
+    </button>
+            </div>
         </div>
        
 
@@ -1182,6 +1191,32 @@ async function processRequest(id, status) {
     } finally {
         btn.disabled = false;
         btn.innerHTML = `<i class="fa-solid fa-database"></i> Rebuild Player Stats`;
+    }
+        }
+        async function triggerSquadSync() {
+    if (!confirm("This will overwrite existing squad images with those from the Auction site. Proceed?")) return;
+
+    const btn = event.currentTarget;
+    const originalText = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> SYNCING SQUADS...`;
+
+    try {
+        const res = await fetch(`${API}/api/danger/sync-squad-images`);
+        const data = await res.json();
+
+        if (data.success) {
+            alert("✅ " + data.message);
+            location.reload();
+        } else {
+            alert("❌ ERROR: " + data.error);
+        }
+    } catch (e) {
+        alert("CRITICAL ERROR: Connection to server lost.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
     }
         }
 
