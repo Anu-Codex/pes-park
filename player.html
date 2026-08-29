@@ -739,25 +739,34 @@ if (p.image && p.image !== "") {
     // Fallback if no image is set
     avatarBox.innerHTML = `<i class="fa-solid fa-user" style="font-size:2rem; color:#374151;"></i>`;
 }
-            const t = p.trophies || {};
-            document.getElementById('tBallon').innerText = t.ballonDor || 0;
-            document.getElementById('tLeague').innerText = t.league || 0;
-            document.getElementById('tUCL').innerText = t.ucl || 0;
-            document.getElementById('tWeekly').innerText = t.weekly || 0;
-            const customContainer = document.getElementById('customTrophyContainer');
-if (p.customTrophies && p.customTrophies.length > 0) {
-    customContainer.innerHTML = p.customTrophies.map(t => `
-        <div class="trophy-card">
-            <img src="${t.image}" class="trophy-img-large">
-            <div class="trophy-info">
-                <b>Awarded</b>
-                <span>${t.name}</span>
-            </div>
-        </div>
-    `).join('');
-} else {
-    customContainer.innerHTML = ""; // Hide if none
-}
+            // --- 1. CORE TROPHY COUNTS (BALLON, BOOT, ETC) ---
+        const tr = p.trophies || {};
+        
+        // Maps database numbers to the IDs in your HTML grid
+        if(document.getElementById('tBallon')) document.getElementById('tBallon').innerText = tr.ballonDor || 0;
+        if(document.getElementById('tLeague')) document.getElementById('tLeague').innerText = tr.quickTour || 0;
+        if(document.getElementById('tUCL')) document.getElementById('tUCL').innerText = tr.soloBoot || 0;
+        if(document.getElementById('tWeekly')) document.getElementById('tWeekly').innerText = tr.auctionBoot || 0;
+
+        // --- 2. CUSTOM TROPHIES (DYNAMIC LIST) ---
+        const customContainer = document.getElementById('customTrophyContainer');
+        
+        if (customContainer) {
+            if (p.customTrophies && p.customTrophies.length > 0) {
+                // Generates a new card for every extra trophy awarded via Dashboard
+                customContainer.innerHTML = p.customTrophies.map(t => `
+                    <div class="trophy-card">
+                        <img src="${t.image}" class="trophy-img-large" onerror="this.src='https://i.ibb.co/0fM0Z4M/league-trophy.png'">
+                        <div class="trophy-info">
+                            <b style="color:var(--accent)">Awarded</b>
+                            <span>${t.name}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                customContainer.innerHTML = ""; // Keep empty if no custom trophies
+            }
+        }
 
             // 2. Automated Season Summary
             let w = 0, d = 0, l = 0, g = 0;
