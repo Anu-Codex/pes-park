@@ -2227,23 +2227,42 @@ function renderWeekendSeries(container) {
         module.innerHTML = `<div class="audit-card" style="border-color:#ef4444">Audit Failed to Synchronize</div>`;
     }
         }
-// THE MASTER UI GENERATOR (Used by all tours)
+// THE MASTER UI GENERATOR (Optimized for Quick Tour Independence)
 async function createTourUI(container, type, themeColor) {
+    // 1. Dynamic Tab Logic: If it's a Quick Tour, hide Table and Boot options
+    const tabOptions = (type === 'quick') 
+        ? `<option value="fixtures">Fixtures Only</option>` 
+        : `
+            <option value="table">Points table</option>
+            <option value="fixtures">Fixtures</option>
+            <option value="boot">Golden Boot</option>
+        `;
+
     container.innerHTML = `
-        <div class="tour-nav-row" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px;">
+        <div class="tour-nav-row" style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:15px; overflow-x:auto; white-space:nowrap;">
             <h4 style="margin:0; font-size:0.8rem; color:${themeColor}; text-transform:uppercase;">${type} TOUR</h4>
             
-            <select id="tourNameSelector" class="tour-name-select" onchange="switchTourTab('${type}')">
-                <option value="">Loading Tours...</option>
-            </select>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <select id="tourNameSelector" class="tour-name-select" onchange="switchTourTab('${type}')">
+                    <option value="">Loading Tours...</option>
+                </select>
+                
+                <!-- Share Button -->
+                <button onclick="shareTournament()" class="btn-icon" title="Share Link">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </button>
 
-            <select id="tourTabSelector" style="background:var(--bg); color:white; border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem;" onchange="switchTourTab('${type}')">
-                <option value="table">Points table</option>
-                <option value="fixtures">Fixtures</option>
-                <option value="boot">Golden Boot</option>
+                <!-- Download Button -->
+                <button onclick="downloadActiveTab()" class="btn-icon" style="border-color:var(--gold); color:var(--gold);" title="Download Image">
+                    <i class="fa-solid fa-file-image"></i>
+                </button>
+            </div>
+
+            <select id="tourTabSelector" onchange="switchTourTab('${type}')" style="background:var(--bg); color:white; border:1px solid var(--border); padding:6px 10px; border-radius:8px; font-size:0.8rem;">
+                ${tabOptions}
             </select>
         </div>
-        <div id="tourContent"></div>
+        <div id="tourContent" style="min-height:200px;"></div>
     `;
 
     try {
@@ -2251,14 +2270,17 @@ async function createTourUI(container, type, themeColor) {
         const tours = await res.json();
         const nameSelector = document.getElementById('tourNameSelector');
         
-        if(tours.length > 0) {
+        if(tours && tours.length > 0) {
             nameSelector.innerHTML = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+            // Trigger initial load for the first tour found
             switchTourTab(type); 
         } else {
-            nameSelector.innerHTML = '<option value="">No Tours Found</option>';
-            document.getElementById('tourContent').innerHTML = `<p style="text-align:center; padding:40px; color:var(--text-dim);">No ${type} tournaments active.</p>`;
+            nameSelector.innerHTML = '<option value="">No Active Tours</option>';
+            document.getElementById('tourContent').innerHTML = `<p style="text-align:center; padding:40px; color:var(--text-dim);">No ${type} tournaments found.</p>`;
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error("Tour Sync Error", e); 
+    }
 }
         async function updateTopStats() {
     try {
