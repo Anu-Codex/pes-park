@@ -589,7 +589,7 @@
         <!-- UPDATED TROPHIES SECTION -->
 <div class="glass-card">
     <div class="section-title"><i class="fa-solid fa-trophy"></i> Trophies</div>
-    <div class="trophy-new-grid">
+        <div class="trophy-new-grid" id="coreTrophyGrid">
         <!-- Ballon d'Or -->
         <div class="trophy-card">
             <img src="https://i.postimg.cc/vH0Rd0Sj/232666-removebg-preview.png" class="trophy-img-large">
@@ -622,6 +622,9 @@
                 <span>Auction Golden Boot</span>
             </div>
         </div>
+        
+    </div>
+    <div id="customTrophyContainer" class="trophy-new-grid" style="margin-top:12px;">
     </div>
 </div>
         <!-- SYNAPSE SIGNATURE: NEURAL DNA -->
@@ -741,6 +744,20 @@ if (p.image && p.image !== "") {
             document.getElementById('tLeague').innerText = t.league || 0;
             document.getElementById('tUCL').innerText = t.ucl || 0;
             document.getElementById('tWeekly').innerText = t.weekly || 0;
+            const customContainer = document.getElementById('customTrophyContainer');
+if (p.customTrophies && p.customTrophies.length > 0) {
+    customContainer.innerHTML = p.customTrophies.map(t => `
+        <div class="trophy-card">
+            <img src="${t.image}" class="trophy-img-large">
+            <div class="trophy-info">
+                <b>Awarded</b>
+                <span>${t.name}</span>
+            </div>
+        </div>
+    `).join('');
+} else {
+    customContainer.innerHTML = ""; // Hide if none
+}
 
             // 2. Automated Season Summary
             let w = 0, d = 0, l = 0, g = 0;
