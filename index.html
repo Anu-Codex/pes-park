@@ -1077,6 +1077,53 @@
     font-weight: 900;
     color: var(--accent);
 }
+        /* --- ORANGE AREA FIX: Nav Row Horizontal Scroll --- */
+.tour-nav-row {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px;
+    overflow-x: auto !important; /* Forces scroll */
+    white-space: nowrap; /* Prevents items from jumping to next line */
+    padding: 5px 0 15px 0; /* Space at bottom for swipe clearance */
+    scrollbar-width: none; /* Hides scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hides scrollbar for IE */
+}
+.tour-nav-row::-webkit-scrollbar { display: none; } /* Hides scrollbar for Chrome/Safari */
+
+/* Ensure buttons inside nav don't shrink */
+.tour-nav-row > * {
+    flex-shrink: 0;
+}
+
+/* --- YELLOW AREA FIX: Points Table Scroll --- */
+.pts-table-wrapper {
+    width: 100%;
+    overflow-x: auto !important; /* Enable swipe */
+    -webkit-overflow-scrolling: touch;
+    margin-top: 10px;
+    border-radius: 12px;
+}
+
+/* Specific ID for the Points Table to separate it from the Golden Boot */
+#nexus-points-table {
+    width: 100%;
+    min-width: 600px; /* Force width so columns like GA, GD, PTS are visible */
+    border-collapse: collapse;
+    table-layout: auto !important; /* Allow columns to fit their content */
+}
+
+#nexus-points-table th, #nexus-points-table td {
+    padding: 12px 8px;
+    text-align: center;
+    white-space: nowrap; /* Keep names and numbers on one line */
+}
+
+/* Keep the Team Name column sticky or wide enough */
+.col-team-name {
+    text-align: left !important;
+    min-width: 140px;
+    font-weight: 700;
+}
     </style>
 </head>
 <body>
@@ -1612,39 +1659,37 @@ async function switchTourTab(type) {
 
             const participantLabel = (type === 'auction') ? "OFFICIAL CLUB" : "PLAYER NAME";
 
-            content.innerHTML = `
-            <div class="table-responsive">
-                <table class="pts-table">
-                    <thead>
-                        <tr>
-                        <th>#</th>
-                            <th style="text-align:left; padding-left:10px;">${participantLabel}</th>
-                            <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>PTS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${data.map((s, i) => {
-                            const gd = (s.gf || 0) - (s.ga || 0);
-                            const gdColor = gd > 0 ? '#10b981' : (gd < 0 ? '#ef4444' : '#94a3b8');
-                            return `
-                        <tr class="${i === 0 ? 'row-leader' : ''}">
-                            <td style="color:var(--accent); font-weight:bold;">${i + 1}</td>
-                            <td class="col-team-name">${s.participant}</td>
-                            <td>${s.played || 0}</td>
-                            <td>${s.wins || 0}</td>
-                            <td>${s.draws || 0}</td>
-                            <td>${s.losses || 0}</td>
-                            <td style="color:var(--text-dim)">${s.gf || 0}</td>
-                            <td style="color:var(--text-dim)">${s.ga || 0}</td>
-                            <td style="font-weight:bold; color:${gdColor}">
-    ${gd > 0 ? '+' + gd : gd}
-</td>
-                            <td class="col-pts-bold">${s.points || 0}</td>
-                        </tr>`;}).join('')}
-                    </tbody>
-                </table>
-                
-            </div>`;
+    content.innerHTML = `
+    <div class="pts-table-wrapper">
+        <table class="pts-table" id="nexus-points-table">
+            <thead>
+                <tr>
+                    <th style="width:30px">#</th>
+                    <th class="col-team-name">${participantLabel}</th>
+                    <th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>PTS</th>
+                </tr>
+            </thead>
+            <tbody>
+            ${data.map((s, i) => {
+                    const gd = (s.gf || 0) - (s.ga || 0);
+                    const gdColor = gd > 0 ? '#10b981' : (gd < 0 ? '#ef4444' : '#94a3b8');
+                    return `
+                    <tr class="${i === 0 ? 'row-leader' : ''}">
+                        <td style="color:var(--accent); font-weight:bold;">${i + 1}</td>
+                        <td class="col-team-name">${s.participant}</td>
+                        <td>${s.played || 0}</td>
+                        <td>${s.wins || 0}</td>
+                        <td>${s.draws || 0}</td>
+                        <td>${s.losses || 0}</td>
+                        <td>${s.gf || 0}</td>
+                        <td>${s.ga || 0}</td>
+                        <td style="font-weight:bold; color:${gdColor}">${gd > 0 ? '+' + gd : gd}</td>
+                        <td class="col-pts-bold">${s.points || 0}</td>
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>
+    </div>`;
         // --- 2. FIXTURES ---
         } else if (category === 'fixtures') {
     const res = await fetch(`${API}/api/smart/fixtures/${tourId}`);
