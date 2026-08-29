@@ -837,7 +837,7 @@ async function refreshParticipantList() {
     container.innerHTML = '<p style="text-align:center; font-size:0.8rem;">Accessing Archives...</p>';
 
     // Logic: Solo = Players | Auction = Teams
-    const endpoint = tourType === 'solo' ? '/api/players' : '/api/teams/all';
+    const endpoint = (tourType === 'auction') ? '/api/teams/all' : '/api/players';
     
     try {
         const res = await fetch(`${API}${endpoint}`);
