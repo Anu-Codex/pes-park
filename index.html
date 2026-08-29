@@ -1762,6 +1762,10 @@ async function switchTourTab(type) {
         return `
         
             <div class="match-card-wrapper" style="margin-bottom:12px; border:1px solid var(--border); border-radius:15px; overflow:hidden; background:rgba(255,255,255,0.02);">
+            <div style="background:rgba(16, 185, 129, 0.05); padding:6px 15px; font-size:0.65rem; color:var(--accent); font-weight:900; letter-spacing:2px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+                        <span>${m.stage ? m.stage.toUpperCase() : 'TOURNAMENT MATCH'}</span>
+                        <i class="fa-solid fa-crosshairs" style="opacity:0.3;"></i>
+                    </div>
                 <div class="match-card" style="margin-bottom:0; border:none; display:flex; justify-content:space-between; align-items:center; padding:15px;">
                     <div style="flex:1; font-weight:900; font-family:'Rajdhani'; letter-spacing:1px;">${m.playerA.toUpperCase()}</div>
                     <div style="text-align:center; min-width:80px;">
