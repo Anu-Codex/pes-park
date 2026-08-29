@@ -319,6 +319,34 @@
         </div>
     </div>
 </div>
+        <div id="sec-trophies" class="admin-section">
+    <!-- Block 1: Create New Trophy Type -->
+    <div class="sub-box" style="border-left: 4px solid var(--accent);">
+        <h4><i class="fa-solid fa-plus"></i> Define New Trophy</h4>
+        <input type="text" id="trName" placeholder="Trophy Name (e.g. UCL Winner)">
+        <input type="text" id="trImage" placeholder="ImgBB Image URL">
+        <button onclick="createTrophyType()" class="btn-green">Create Trophy globally</button>
+    </div>
+
+    <!-- Block 2: Award Trophies -->
+    <div class="sub-box" style="border-left: 4px solid var(--gold);">
+        <h4><i class="fa-solid fa-medal"></i> Award Trophy to Player</h4>
+        <select id="trPlayerSelect"><option>Select Player...</option></select>
+        
+        <label style="font-size:0.6rem; color:var(--text-dim)">CORE TROPHIES (Increments Count)</label>
+        <select id="trCoreType">
+            <option value="ballonDor">Ballon d'Or</option>
+            <option value="quickTour">Quick Tour Champion</option>
+            <option value="soloBoot">Solo Golden Boot</option>
+            <option value="auctionBoot">Auction Golden Boot</option>
+        </select>
+        <button onclick="awardCoreTrophy()" class="btn-gold" style="margin-bottom:15px;">Award Core Trophy</button>
+
+        <label style="font-size:0.6rem; color:var(--text-dim)">CUSTOM TROPHIES (Adds to Profile)</label>
+        <select id="trCustomSelect"><option>Loading Custom Trophies...</option></select>
+        <button onclick="awardCustomTrophy()" class="btn-green">Award Custom Trophy</button>
+    </div>
+        </div>
 
         <!-- 6. DANGER ZONE (Sync & Reset) -->
         <div id="sec-danger" class="admin-section">
@@ -1247,6 +1275,44 @@ async function processRequest(id, status) {
         btn.innerHTML = originalText;
     }
         }
+        async function createTrophyType() {
+    const name = document.getElementById('trName').value;
+    const image = document.getElementById('trImage').value;
+    await fetch(`${API}/api/trophies/define`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name, image })
+    });
+    alert("Trophy defined!"); loadTrophyList();
+}
+
+async function awardCoreTrophy() {
+    const playerId = document.getElementById('trPlayerSelect').value;
+    const type = document.getElementById('trCoreType').value;
+    await fetch(`${API}/api/trophies/award-core`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ playerId, type })
+    });
+    alert("Core Trophy Awarded!");
+}
+
+async function awardCustomTrophy() {
+    const playerId = document.getElementById('trPlayerSelect').value;
+    const trophyId = document.getElementById('trCustomSelect').value;
+    await fetch(`${API}/api/trophies/award-custom`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ playerId, trophyId })
+    });
+    alert("Custom Trophy Assigned!");
+}
+
+async function loadTrophyList() {
+    const res = await fetch(`${API}/api/trophies/list`);
+    const trophies = await res.json();
+    document.getElementById('trCustomSelect').innerHTML = trophies.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+}
 
 // 3. Add to the unified window.onload
 // Inside your existing window.onload = async () => { ... }
