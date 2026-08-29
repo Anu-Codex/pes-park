@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEURAL LINK | NEXUS TELEMETRY</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #030712; --card: #0f172a; --accent: #10b981; --border: #1e293b; --dim: #94a3b8; }
         body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
@@ -33,6 +34,39 @@
 
         .progress-track { width: 100%; height: 4px; background: #020617; border-radius: 10px; margin: 10px 0; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .container { width: 100%; max-width: 450px; }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-family: 'Rajdhani'; letter-spacing: 5px; color: var(--accent); margin: 0; text-transform: uppercase; }
+        
+        .glass-box { 
+            background: var(--card); border: 1px solid var(--border); 
+            border-radius: 20px; padding: 20px; margin-bottom: 15px; 
+            position: relative; overflow: hidden;
+        }
+
+        /* Hardware Monitor Section */
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 8px; }
+        .stat-row label { color: var(--dim); font-weight: 800; text-transform: uppercase; font-size: 0.6rem; letter-spacing: 1px; }
+        .stat-row span { font-family: monospace; font-weight: bold; }
+
+        /* Glowing RAM Bar */
+        .ram-container { margin: 20px 0; }
+        .bar-label { display: flex; justify-content: space-between; font-size: 0.7rem; margin-bottom: 8px; font-weight: bold; }
+        .progress-track { width: 100%; height: 8px; background: #020617; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0%; background: var(--accent); box-shadow: 0 0 15px var(--accent); transition: 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* Neural Latency Pulse */
+        .latency-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .mini-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 15px; border-radius: 15px; text-align: center; }
+        .mini-card i { font-size: 1.2rem; color: var(--accent); margin-bottom: 8px; display: block; }
+        .val { font-size: 1.2rem; font-weight: 900; font-family: 'Rajdhani'; }
+
+        .scanline {
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0;
+            background: linear-gradient(to bottom, transparent 50%, rgba(16,185,129,0.02) 50%);
+            background-size: 100% 4px; pointer-events: none;
+        }
 
     </style>
 </head>
@@ -84,6 +118,69 @@
     </div>
 </div>
 
+<div class="container">
+    <div class="header">
+        <h1>RENDER NODE-01</h1>
+        <p style="font-size:0.6rem; color:var(--dim); letter-spacing:2px;">CORE SYSTEMS TELEMETRY</p>
+    </div>
+
+    <!-- RAM MONITOR -->
+    <div class="glass-box">
+        <div class="scanline"></div>
+        <div class="bar-label">
+            <span>MEMORY CONSUMPTION</span>
+            <span id="ramPercent" style="color:var(--accent)">--%</span>
+        </div>
+        <div class="progress-track"><div id="ramFill" class="progress-fill"></div></div>
+        
+        <div style="margin-top:20px;">
+            <div class="stat-row"><label>Used Memory</label><span id="ramUsed">--</span></div>
+            <div class="stat-row"><label>Total Provisioned</label><span id="ramTotal">--</span></div>
+            <div class="stat-row"><label>Available Reserve</label><span id="ramFree" style="color:var(--accent)">--</span></div>
+        </div>
+        <!-- DISK MONITOR (Add below RAM bar) -->
+<div class="ram-container" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+    <div class="bar-label">
+        <span>DISK STORAGE (SSD)</span>
+        <span id="diskPercent" style="color:var(--accent)">--%</span>
+    </div>
+    <div class="progress-track"><div id="diskFill" class="progress-fill" style="background:#3b82f6; box-shadow: 0 0 15px #3b82f6;"></div></div>
+    
+    <div style="margin-top:20px;">
+        <div class="stat-row"><label>Filesystem Used</label><span id="diskUsed">--</span></div>
+        <div class="stat-row"><label>Storage Capacity</label><span id="diskTotal">--</span></div>
+        <div class="stat-row"><label>Available Sectors</label><span id="diskFree" style="color:#3b82f6">--</span></div>
+    </div>
+</div>
+    </div>
+
+    <!-- LATENCY & UPTIME -->
+    <div class="latency-grid">
+        <div class="mini-card">
+            <i class="fa-solid fa-gauge-high"></i>
+            <label style="font-size:0.5rem; color:var(--dim)">NEURAL LATENCY</label>
+            <div class="val" id="ping">-- ms</div>
+        </div>
+        <div class="mini-card">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+            <label style="font-size:0.5rem; color:var(--dim)">NODE UPTIME</label>
+            <div class="val" id="uptime">--</div>
+        </div>
+    </div>
+
+    <!-- SERVER DETAILS -->
+    <div class="glass-box" style="margin-top:15px;">
+        <h4 style="font-size:0.6rem; color:var(--accent); letter-spacing:2px; margin-top:0;">HARDWARE ARCHIVE</h4>
+        <div class="stat-row"><label>Cloud Provider</label><span>Render.com (Linux)</span></div>
+        <div class="stat-row"><label>Physical Region</label><span id="region">--</span></div>
+        <div class="stat-row"><label>Node Architecture</label><span id="arch">--</span></div>
+        <div class="stat-row"><label>Instance UID</label><span id="instance" style="color:var(--accent)">--</span></div>
+    </div>
+</div>
+
+</body>
+</html>
+
 <script>
     const API = "https://pes-park-backend.onrender.com"; // Your Render URL
 
@@ -113,6 +210,39 @@
             document.getElementById('status').style.color = "#ef4444";
         }
     }
+    async function fetchStats() {
+    const start = Date.now();
+    try {
+        const res = await fetch(`${API}/api/system/stats`);
+        const data = await res.json();
+        const latency = Date.now() - start;
+
+        if (data.success) {
+            // RAM Update
+            document.getElementById('ramUsed').innerText = data.ram.used;
+            document.getElementById('ramTotal').innerText = data.ram.total;
+            document.getElementById('ramFree').innerText = data.ram.free;
+            document.getElementById('ramPercent').innerText = data.ram.percent + "%";
+            document.getElementById('ramFill').style.width = data.ram.percent + "%";
+
+            // DISK Update (NEW)
+            document.getElementById('diskUsed').innerText = data.disk.used;
+            document.getElementById('diskTotal').innerText = data.disk.total;
+            document.getElementById('diskFree').innerText = data.disk.free;
+            document.getElementById('diskPercent').innerText = data.disk.percent + "%";
+            document.getElementById('diskFill').style.width = data.disk.percent + "%";
+
+            // Server Info
+            document.getElementById('ping').innerText = latency + " ms";
+            const hours = (data.server.uptime / 3600).toFixed(1);
+            document.getElementById('uptime').innerText = hours + " h";
+            document.getElementById('region').innerText = data.server.region;
+        }
+    } catch (e) { console.error("Telemetry link failed."); }
+    }
+
+    setInterval(fetchStats, 5000);
+    fetchStats();
 
     setInterval(syncTelemetry, 5000);
     syncTelemetry();
