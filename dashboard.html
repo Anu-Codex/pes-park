@@ -167,6 +167,7 @@
             <select id="stType" onchange="refreshParticipantList()">
                 <option value="solo">Solo Challenge (Player vs Player)</option>
                 <option value="auction">Auction Tournament (Team vs Team)</option>
+                <option value="quick">Quick Tour (Knockout Only)</option>
             </select>
             
             <input type="text" id="stName" placeholder="Tour Name (e.g. Pro League S1)">
@@ -187,6 +188,7 @@
                 <div class="grid-2">
                     <select id="sfPlayerA"></select>
                     <select id="sfPlayerB"></select>
+                    <input type="text" id="sfStage" placeholder="Stage (e.g. Final / R16)">
                 </div>
                 <button onclick="createSmartFixture()" class="btn-gold">Generate Fixture</button>
             </div>
@@ -540,9 +542,35 @@ document.getElementById('attrMent').value = attr.mental || 50;
     }
 
     async function createSmartFixture() {
-        const data = { tourId: document.getElementById('sfTourSelect').value, playerA: document.getElementById('sfPlayerA').value, playerB: document.getElementById('sfPlayerB').value };
-        const res = await fetch(`${API}/api/smart/create-fixture`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
-        if(res.ok) alert("Fixture Added!");
+    const data = {
+        tourId: document.getElementById('sfTourSelect').value,
+        playerA: document.getElementById('sfPlayerA').value,
+        playerB: document.getElementById('sfPlayerB').value,
+        // NEW: Grabs the stage (Final, R16, etc.) from the input
+        stage: document.getElementById('sfStage').value || "League", 
+        isSubFixture: false 
+    };
+
+    // Safety check: Don't send empty data
+    if (!data.tourId || !data.playerA || !data.playerB) {
+        alert("❌ Error: Select Tournament and BOTH participants!");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API}/api/smart/create-fixture`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            alert(`✅ Fixture [${data.stage}] Added Successfully!`);
+            document.getElementById('sfStage').value = ""; // Clear stage input
+        }
+    } catch (e) {
+        alert("❌ Link Error: Server Unreachable");
+    }
     }
 
     async function loadTourFixtures() {
