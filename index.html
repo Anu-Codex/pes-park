@@ -2005,10 +2005,11 @@ async function switchQuickTab() {
         const leader = await res.json();
         
         const display = document.getElementById('leaderDisplay');
-        if (leader) {
-            display.innerText = `${leader.name.toUpperCase()} • ${leader.points} pts`;
+        if (leader && leader.name !== "None") {
+            // Force Uppercase for premium branding
+            display.innerHTML = `${leader.name.toUpperCase()} <span style="color:var(--accent); font-weight:normal; margin:0 5px;">•</span> ${leader.points} pts`;
         } else {
-            display.innerText = "NO DATA • 0 pts";
+            display.innerText = "NO ACTIVE DATA • 0 pts";
         }
     } catch (err) {
         console.error("Leader fetch error:", err);
