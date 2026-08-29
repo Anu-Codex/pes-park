@@ -363,9 +363,13 @@
 
 .chart-container-radar {
     width: 100%;
-    max-width: 350px;
+    max-width: 320px; /* Perfect size for mobile */
     margin: 0 auto;
-    position: relative;
+    padding: 10px;
+}
+
+#radarChart {
+    filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.3));
 }
 
 .attribute-footer {
@@ -959,13 +963,20 @@ async function handleSquadUpload(input) {
     }
 }
         function renderRadarChart(attr) {
-    const ctx = document.getElementById('radarChart').getContext('2d');
+    const canvas = document.getElementById('radarChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
     
-    // Set global styles for Chart.js
-    Chart.defaults.color = '#94a3b8';
+    // Set global Chart.js styles to match Nexus Branding
+    Chart.defaults.color = '#94a3b8'; // Dim text color
     Chart.defaults.font.family = 'Inter';
 
-    new Chart(ctx, {
+    // If a chart already exists, destroy it before creating a new one (prevents flickering)
+    if (window.myRadarChart) {
+        window.myRadarChart.destroy();
+    }
+
+    window.myRadarChart = new Chart(ctx, {
         type: 'radar',
         data: {
             labels: ['CONSISTENCY', 'BIG MATCH', 'SCORING', 'PLAYMAKING', 'DEFENSE', 'MENTAL'],
@@ -978,22 +989,23 @@ async function handleSquadUpload(input) {
                     attr.defense || 50, 
                     attr.mental || 50
                 ],
-                backgroundColor: 'rgba(16, 185, 129, 0.2)', // Emerald tint
-                borderColor: '#10b981', // Emerald Line
+                backgroundColor: 'rgba(16, 185, 129, 0.2)', // Emerald glow fill
+                borderColor: '#10b981', // Solid Emerald line
                 borderWidth: 2,
                 pointBackgroundColor: '#10b981',
                 pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: '#10b981'
+                pointRadius: 3
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: true,
             scales: {
                 r: {
                     angleLines: { color: 'rgba(255, 255, 255, 0.05)' },
                     grid: { color: 'rgba(255, 255, 255, 0.05)' },
                     pointLabels: {
-                        font: { size: 10, weight: '900' },
+                        font: { size: 10, weight: '800' },
                         color: '#64748b'
                     },
                     ticks: { display: false, stepSize: 20 },
@@ -1002,7 +1014,7 @@ async function handleSquadUpload(input) {
                 }
             },
             plugins: {
-                legend: { display: false }
+                legend: { display: false } // We don't need a legend for a single player
             }
         }
     });
