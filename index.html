@@ -15,6 +15,8 @@
             script.onload = function () { eruda.init() }
         }
     })(); </script>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#10b981">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <style>
@@ -1065,6 +1067,10 @@
         <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
         <li onclick="switchView('uptime')"><i class="fa-solid fa-signal"></i> Uptime & Stats</li>
         <li onclick="window.location.href='storage.html'"><i class="fa-solid fa-database"></i> Database Storage</li>
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
+        <li id="installBtn" style="display:none; cursor:pointer; color:var(--accent); font-weight:bold;">
+    <i class="fa-solid fa-download"></i> Install App
+        </li>
     </ul>
 </div>
 <div id="menu-overlay" onclick="toggleMenu()"></div>
@@ -2268,6 +2274,45 @@ updateTopStats();
         alert("Download failed. Ensure all data is loaded.");
     }
         }
+        let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+// 1. Register the Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js');
+    });
+}
+
+// 2. Listen for the browser's "App Installable" event
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent Chrome 67 and earlier from automatically showing the prompt
+    e.preventDefault();
+    // Stash the event so it can be triggered later.
+    deferredPrompt = e;
+    // Show the "Install App" button in your menu
+    installBtn.style.display = 'flex';
+});
+
+// 3. Logic when the user clicks your "Install App" button
+installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log('User accepted the Nexus App install');
+        }
+        deferredPrompt = null;
+        installBtn.style.display = 'none';
+    }
+});
+
+// Hide button if app is already installed
+window.addEventListener('appinstalled', () => {
+    installBtn.style.display = 'none';
+});
         
     </script>
 
