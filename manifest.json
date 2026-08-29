@@ -1,0 +1,20 @@
+{
+  "name": "NEXUS LEGENDS COMMUNITY",
+  "short_name": "Nexus Legends",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#060b13",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/Yq9FSV0Z/file-00000000989482079d0d325365308169.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.postimg.cc/Yq9FSV0Z/file-00000000989482079d0d325365308169.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
