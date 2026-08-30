@@ -143,27 +143,27 @@
         <div class="scanline"></div>
         <div class="bar-label">
             <span>MEMORY CONSUMPTION</span>
-            <span id="ramPercent" style="color:var(--accent)">--%</span>
+            <span id="n1-ramPercent" style="color:var(--accent)">--%</span>
         </div>
-        <div class="progress-track"><div id="ramFill" class="progress-fill"></div></div>
+        <div class="progress-track"><div id="n1-ramFill" class="progress-fill"></div></div>
         
         <div style="margin-top:20px;">
-            <div class="stat-row"><label>Used Memory</label><span id="ramUsed">--</span></div>
-            <div class="stat-row"><label>Total Provisioned</label><span id="ramTotal">--</span></div>
-            <div class="stat-row"><label>Available Reserve</label><span id="ramFree" style="color:var(--accent)">--</span></div>
+            <div class="stat-row"><label>Used Memory</label><span id="n1-ramUsed">--</span></div>
+            <div class="stat-row"><label>Total Provisioned</label><span id="n1-ramTotal">--</span></div>
+            <div class="stat-row"><label>Available Reserve</label><span id="n1-ramFree" style="color:var(--accent)">--</span></div>
         </div>
         <!-- DISK MONITOR (Add below RAM bar) -->
 <div class="ram-container" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
     <div class="bar-label">
         <span>DISK STORAGE (SSD)</span>
-        <span id="diskPercent" style="color:var(--accent)">--%</span>
+        <span id="n1-diskPercent" style="color:var(--accent)">--%</span>
     </div>
     <div class="progress-track"><div id="diskFill" class="progress-fill" style="background:#3b82f6; box-shadow: 0 0 15px #3b82f6;"></div></div>
     
     <div style="margin-top:20px;">
-        <div class="stat-row"><label>Filesystem Used</label><span id="diskUsed">--</span></div>
-        <div class="stat-row"><label>Storage Capacity</label><span id="diskTotal">--</span></div>
-        <div class="stat-row"><label>Available Sectors</label><span id="diskFree" style="color:#3b82f6">--</span></div>
+        <div class="stat-row"><label>Filesystem Used</label><span id="n1-diskUsed">--</span></div>
+        <div class="stat-row"><label>Storage Capacity</label><span id="n1-diskTotal">--</span></div>
+        <div class="stat-row"><label>Available Sectors</label><span id="n1-diskFree" style="color:#3b82f6">--</span></div>
     </div>
 </div>
     </div>
@@ -173,12 +173,12 @@
         <div class="mini-card">
             <i class="fa-solid fa-gauge-high"></i>
             <label style="font-size:0.5rem; color:var(--dim)">NEURAL LATENCY</label>
-            <div class="val" id="ping">-- ms</div>
+            <div class="val" id="n1-ping">-- ms</div>
         </div>
         <div class="mini-card">
             <i class="fa-solid fa-clock-rotate-left"></i>
             <label style="font-size:0.5rem; color:var(--dim)">NODE UPTIME</label>
-            <div class="val" id="uptime">--</div>
+            <div class="val" id="n1-uptime">--</div>
         </div>
     </div>
 
@@ -234,82 +234,80 @@
     const API = "https://pes-park-backend.onrender.com"; 
     const API_V2 = "https://nexus-database-v2.onrender.com";
 
-    // 1. SYNC DATABASE TELEMETRY (Top Card)
+    // 1. SYNC DATABASE TELEMETRY (Top Card - Data from Node 01)
     async function syncTelemetry() {
         try {
             const res = await fetch(`${API}/api/admin/telemetry`);
             const data = await res.json();
-
             if (data.success) {
                 const usedMB = (data.storage.usedBytes / (1024 * 1024)).toFixed(2);
-                const perc = ((usedMB / 512) * 100).toFixed(1);
-
+                const perc = Math.min(Math.round((usedMB / 512) * 100), 100);
+                
                 document.getElementById('used').innerText = usedMB + " MB";
-                document.getElementById('perc').innerText = Math.round(perc) + "%";
+                document.getElementById('perc').innerText = perc + "%";
                 document.getElementById('pFill').style.width = perc + "%";
-                
-                // Updates the "Latency" inside the Database Monitoring card
-                const dbPing = document.getElementById('ping'); 
-                if(dbPing) dbPing.innerText = data.network.latency + " MS";
-                
+                document.getElementById('ping').innerText = data.network.latency + " MS";
                 document.getElementById('objects').innerText = data.storage.objects;
-                
-                const hours = (data.network.uptime / 3600).toFixed(1);
-                const dbUptime = document.getElementById('uptime');
-                if(dbUptime) dbUptime.innerText = hours + " H";
+                document.getElementById('uptime').innerText = (data.network.uptime / 3600).toFixed(1) + " H";
             }
-        } catch (e) {
-            const statusLabel = document.getElementById('status');
-            if(statusLabel) {
-                statusLabel.innerText = "LINK LOST";
-                statusLabel.style.color = "#ef4444";
-            }
+        } catch (e) { 
+            document.getElementById('status').innerText = "OFFLINE"; 
+            document.getElementById('status').style.color = "#ef4444";
         }
     }
 
-    // 2. FETCH SERVER HARDWARE STATS (Bottom Cards)
+    // 2. HARDWARE TELEMETRY HELPER (Handles RAM and DISK for both nodes)
     async function updateNodeUI(url, prefix) {
-    try {
-        const res = await fetch(`${url}/api/system/stats`);
-        const data = await res.json();
+        try {
+            const res = await fetch(`${url}/api/system/stats`);
+            const data = await res.json();
+            
+            if (data.success) {
+                // Update RAM UI elements for this node
+                document.getElementById(`${prefix}-ramUsed`).innerText = data.ram.used;
+                document.getElementById(`${prefix}-ramPercent`).innerText = data.ram.percent + "%";
+                document.getElementById(`${prefix}-ramFill`).style.width = data.ram.percent + "%";
 
-        if (data.success) {
-            // Update RAM
-            document.getElementById(`${prefix}-ramUsed`).innerText = data.ram.used;
-            document.getElementById(`${prefix}-ramPercent`).innerText = data.ram.percent + "%";
-            document.getElementById(`${prefix}-ramFill`).style.width = data.ram.percent + "%";
-
-            // Update DISK
-            document.getElementById(`${prefix}-diskUsed`).innerText = data.disk.used;
-            document.getElementById(`${prefix}-diskPercent`).innerText = data.disk.percent + "%";
-            document.getElementById(`${prefix}-diskFill`).style.width = data.disk.percent + "%";
+                // Update DISK UI elements for this node
+                document.getElementById(`${prefix}-diskUsed`).innerText = data.disk.used;
+                document.getElementById(`${prefix}-diskPercent`).innerText = data.disk.percent + "%";
+                document.getElementById(`${prefix}-diskFill`).style.width = data.disk.percent + "%";
+            }
+        } catch (e) { 
+            console.error(`Telemetry sync failed for ${prefix}:`, e); 
         }
-    } catch (e) {
-        console.error(`Failed to sync ${prefix}`);
     }
-}
 
-async function fetchStats() {
-    // 1. Check Grid Status (Online/Offline)
-    const n1Status = await fetch(`${API}/test`).then(r => r.ok).catch(e => false);
-    const n2Status = await fetch(`${API_V2}/test`).then(r => r.ok).catch(e => false);
+    // 3. MAIN ORCHESTRATOR (Grid status and triggering hardware stats)
+    async function fetchStats() {
+        // Grid Status (Pinging both /test routes)
+        try {
+            const [n1, n2] = await Promise.all([
+                fetch(`${API}/test`).then(r => r.ok).catch(() => false),
+                fetch(`${API_V2}/test`).then(r => r.ok).catch(() => false)
+            ]);
 
-    document.getElementById('node1Status').innerText = n1Status ? "OPERATIONAL" : "OVERLOADED";
-    document.getElementById('node1Status').style.color = n1Status ? "#10b981" : "#ef4444";
-    document.getElementById('node2Status').innerText = n2Status ? "OPERATIONAL" : "OVERLOADED";
-    document.getElementById('node2Status').style.color = n2Status ? "#10b981" : "#ef4444";
+            const n1Label = document.getElementById('node1Status');
+            n1Label.innerText = n1 ? "OPERATIONAL" : "OVERLOADED";
+            n1Label.style.color = n1 ? "#10b981" : "#ef4444";
 
-    // 2. Fetch Hardware Telemetry for both
-    updateNodeUI(API, 'n1');
-    updateNodeUI(API_V2, 'n2');
-}
+            const n2Label = document.getElementById('node2Status');
+            n2Label.innerText = n2 ? "OPERATIONAL" : "OVERLOADED";
+            n2Label.style.color = n2 ? "#10b981" : "#ef4444";
+        } catch (e) { console.error("Grid status check failed"); }
 
-// Keep your existing intervals
-setInterval(fetchStats, 5000);
-fetchStats();
+        // Fetch Hardware Telemetry for both nodes independently
+        updateNodeUI(API, 'n1');
+        updateNodeUI(API_V2, 'n2');
+    }
 
-    // Initialize Loops
-    
+    // Initialize Loops (Every 5 seconds)
+    setInterval(syncTelemetry, 5000);
+    setInterval(fetchStats, 5000);
+
+    // Initial load
+    syncTelemetry();
+    fetchStats();
 </script>
 </body>
 </html>
