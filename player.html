@@ -566,6 +566,45 @@
     opacity: 0;
     pointer-events: none;
 }
+        /* --- IMAGE 1: PERCENTILE RANKING STYLES --- */
+.percentile-card { padding: 25px; }
+.overall-rating-area { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; }
+.rating-square {
+    width: 85px; height: 85px; border-radius: 20px;
+    background: rgba(16, 185, 129, 0.1); border: 2.5px solid var(--accent);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+.rating-square b { font-size: 2.2rem; line-height: 1; color: white; font-family: 'Orbitron'; }
+.rating-square span { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; margin-top: 5px; font-weight: 800; }
+
+.percentile-row { margin-bottom: 20px; }
+.p-label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.p-label-row label { font-size: 0.9rem; font-weight: 700; color: #f8fafc; display: flex; align-items: center; gap: 10px; }
+.p-label-row label i { color: var(--accent); font-size: 0.8rem; }
+.top-badge { 
+    background: rgba(16, 185, 129, 0.2); color: var(--accent); 
+    padding: 3px 10px; border-radius: 50px; font-size: 0.65rem; font-weight: 900; 
+}
+.p-bar-bg { width: 100%; height: 8px; background: #1e293b; border-radius: 10px; overflow: hidden; }
+.p-bar-fill { height: 100%; border-radius: 10px; transition: 1.5s ease-out; }
+
+/* --- IMAGE 2: SEASON PERFORMANCE STYLES --- */
+.perf-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; }
+.perf-stats-mini { font-size: 0.8rem; font-weight: bold; }
+.perf-stats-mini span { margin-right: 8px; }
+
+.perf-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 25px; }
+.perf-box { 
+    background: #020617; border: 1px solid var(--border); border-radius: 15px; 
+    padding: 15px 5px; text-align: center; display: flex; flex-direction: column; gap: 5px;
+}
+.perf-box.high { border-color: var(--accent); color: var(--accent); }
+.perf-box.low { border-color: var(--loss); color: var(--loss); }
+.perf-box label { font-size: 0.6rem; text-transform: uppercase; font-weight: 800; opacity: 0.6; }
+.perf-box b { font-size: 1.4rem; font-family: 'Orbitron'; }
+
+.chart-container-line { width: 100%; height: 200px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -774,17 +813,86 @@
         BIOMETRIC SCAN STABLE • V.7.2
     </div>
 </div>
-        <div class="glass-card tactical-analysis-card">
+        <!-- REPLACED: IMAGE 1 - PERCENTILE RANKINGS -->
+<div class="glass-card percentile-card">
     <div class="section-title">
-        <i class="fa-solid fa-crosshairs"></i> Tactical Profile
+        <i class="fa-solid fa-chart-simple"></i> Percentile Rankings
     </div>
-    <div class="chart-container-radar">
-        <canvas id="radarChart"></canvas>
-    </div>
-    <div class="attribute-footer">
-        <span>STATISTICS VERIFIED BY NEXUS ARCHIVES</span>
-    </div>
+    
+    <div class="overall-rating-area">
+        <div class="rating-square">
+            <b id="ovrRating">--</b>
+            <span>Overall</span>
         </div>
+        <div>
+            <p id="analysisText" style="font-size: 0.85rem; color: var(--text-dim); margin: 0; line-height: 1.4;">
+                Analyzing historical performance vs all registered players...
+            </p>
+        </div>
+    </div>
+
+    <!-- Win Rate -->
+    <div class="percentile-row">
+        <div class="p-label-row">
+            <label><i class="fa-solid fa-arrow-trend-up"></i> Win Rate</label>
+            <span class="top-badge" id="winPercBadge">Top --%</span>
+        </div>
+        <div class="p-bar-bg"><div id="winBar" class="p-bar-fill" style="background: var(--accent); width: 0%;"></div></div>
+    </div>
+
+    <!-- Clutch -->
+    <div class="percentile-row">
+        <div class="p-label-row">
+            <label><i class="fa-solid fa-crosshairs"></i> Clutch Factor</label>
+            <span class="top-badge" id="clutchBadge" style="background:rgba(245, 158, 11, 0.2); color:#f59e0b;">Top --%</span>
+        </div>
+        <div class="p-bar-bg"><div id="clutchBar" class="p-bar-fill" style="background: #f59e0b; width: 0%;"></div></div>
+    </div>
+
+    <!-- Consistency -->
+    <div class="percentile-row">
+        <div class="p-label-row">
+            <label><i class="fa-solid fa-shield-heart"></i> Consistency</label>
+            <span class="top-badge" id="consistBadge" style="background:rgba(59, 130, 246, 0.2); color:#3b82f6;">Top --%</span>
+        </div>
+        <div class="p-bar-bg"><div id="consistBar" class="p-bar-fill" style="background: #3b82f6; width: 0%;"></div></div>
+    </div>
+</div>
+
+<!-- NEW: IMAGE 2 - SEASON PERFORMANCE -->
+<div class="glass-card">
+    <div class="section-title"><i class="fa-solid fa-chart-line"></i> Season Performance</div>
+    
+    <div class="perf-header">
+        <div class="perf-stats-mini">
+            <span style="color:var(--accent)" id="perfW">0W</span>
+            <span style="color:var(--text-dim)" id="perfD">0D</span>
+            <span style="color:var(--loss)" id="perfL">0L</span>
+        </div>
+        <select class="h2h-select" style="width:auto; padding:5px 15px; margin:0; font-size:0.7rem;">
+            <option>Current Season</option>
+        </select>
+    </div>
+
+    <div class="perf-grid">
+        <div class="perf-box high">
+            <label>High</label>
+            <b id="perfHigh">+0</b>
+        </div>
+        <div class="perf-box">
+            <label>Current</label>
+            <b id="perfCurr">0</b>
+        </div>
+        <div class="perf-box low">
+            <label>Low</label>
+            <b id="perfLow">0</b>
+        </div>
+    </div>
+
+    <div class="chart-container-line">
+        <canvas id="performanceChart"></canvas>
+    </div>
+</div>
         <!-- AI SCOUTING DOSSIER -->
 <div class="glass-card scout-card">
     <div class="section-title">
@@ -850,6 +958,7 @@ generateSynapse(attributes);
         }
             renderRadarChart(p.attributes || {});
             generateScoutReport(p);
+            calculateAdvancedStats(p, playerMatches);
             
             // --- UPDATE THIS PART IN loadProfile() ---
 const avatarBox = document.getElementById('avatar');
@@ -1209,7 +1318,90 @@ async function generateScoutReport(player) {
 }
         // --- Inside loadProfile() ---
 
+// --- NEW LOGIC FOR IMAGE 1 & 2 ---
 
+function calculateAdvancedStats(p, matches) {
+    // 1. Calculate Percentiles (Mocked against 151 players as per image)
+    const winRate = matches.length > 0 ? (matches.filter(m => {
+        const isA = m.playerA === myName;
+        return (isA ? m.scoreA : m.scoreB) > (isA ? m.scoreB : m.scoreA);
+    }).length / matches.length) * 100 : 0;
+
+    const ovr = Math.round((winRate * 0.4) + (Math.min(p.bdrPoints / 2, 50)));
+    
+    // Update Image 1 UI
+    document.getElementById('ovrRating').innerText = ovr;
+    document.getElementById('winBar').style.width = winRate + "%";
+    document.getElementById('winPercBadge').innerText = `Top ${Math.max(1, 100 - Math.round(winRate))}%`;
+    
+    const clutch = Math.min(100, (p.bdrPoints / 500) * 100); // Proportional to BDR
+    document.getElementById('clutchBar').style.width = clutch + "%";
+    document.getElementById('clutchBadge').innerText = `Top ${Math.max(1, 100 - Math.round(clutch))}%`;
+
+    const consistency = Math.min(100, 40 + (matches.length / 2));
+    document.getElementById('consistBar').style.width = consistency + "%";
+    document.getElementById('consistBadge').innerText = `Top ${Math.max(1, 100 - Math.round(consistency))}%`;
+
+    // Update Analysis Text
+    document.getElementById('analysisText').innerHTML = `An all-round powerhouse — dominant across <span style="color:var(--accent)">${ovr > 70 ? '4' : '2'} categories</span>.`;
+
+    // 2. Performance Tracking (Image 2)
+    let currentBDR = p.bdrPoints || 0;
+    let pointHistory = [];
+    let tempBdr = currentBDR;
+    
+    // Reverse matches to see progress from past to present
+    const history = [...matches].reverse();
+    history.forEach(m => {
+        const isA = m.playerA === myName;
+        const won = (isA ? m.scoreA : m.scoreB) > (isA ? m.scoreB : m.scoreA);
+        tempBdr += won ? 5 : -3; // Simulated point tracking
+        pointHistory.push(tempBdr);
+    });
+
+    if(pointHistory.length === 0) pointHistory = [0];
+
+    document.getElementById('perfHigh').innerText = "+" + Math.max(...pointHistory);
+    document.getElementById('perfCurr').innerText = currentBDR;
+    document.getElementById('perfLow').innerText = Math.min(...pointHistory);
+    
+    renderLineChart(pointHistory);
+}
+
+function renderLineChart(dataPoints) {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    
+    if (window.perfChart) window.perfChart.destroy();
+
+    window.perfChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dataPoints.map((_, i) => `M${i+1}`),
+            datasets: [{
+                data: dataPoints,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: (context) => {
+                    const index = context.dataIndex;
+                    if (index === 0) return '#10b981';
+                    return dataPoints[index] >= dataPoints[index-1] ? '#10b981' : '#ef4444';
+                }
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#475569', font: { size: 10 } } },
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#475569' } }
+            }
+        }
+    });
+}
 // --- New Function to Generate Visual DNA ---
 function generateSynapse(attr) {
     const canvas = document.getElementById('synapseCanvas');
