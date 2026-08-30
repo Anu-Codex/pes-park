@@ -190,6 +190,21 @@
         <div class="stat-row"><label>Node Architecture</label><span id="arch">--</span></div>
         <div class="stat-row"><label>Instance UID</label><span id="instance" style="color:var(--accent)">--</span></div>
     </div>
+    <div class="glass-card">
+    <div class="section-title"><i class="fa-solid fa-network-wired"></i> Neural Grid Status</div>
+    
+    <!-- Node 01 Info -->
+    <div class="stat-row">
+        <label>Primary Node (Stats)</label>
+        <span id="node1Status" style="color:var(--accent)">ONLINE</span>
+    </div>
+
+    <!-- Node 02 Info -->
+    <div class="stat-row">
+        <label>Auxiliary Node (AI)</label>
+        <span id="node2Status" style="color:var(--accent)">ONLINE</span>
+    </div>
+    </div>
 </div>
 
 </body>
@@ -197,6 +212,7 @@
 
 <script>
     const API = "https://pes-park-backend.onrender.com"; // Your Render URL
+    const API_V2 = "https://nexus-database-v2.onrender.com";
 
     async function syncTelemetry() {
         try {
@@ -227,7 +243,8 @@
     async function fetchStats() {
     const start = Date.now();
     try {
-        const res = await fetch(`${API}/api/system/stats`);
+        const n1 = await fetch(`${API}/test`).then(r => r.ok).catch(e => false);
+    const n2 = await fetch(`${API_V2}/test`).then(r => r.ok).catch(e => false);
         const data = await res.json();
         const latency = Date.now() - start;
 
@@ -238,6 +255,11 @@
             document.getElementById('ramFree').innerText = data.ram.free;
             document.getElementById('ramPercent').innerText = data.ram.percent + "%";
             document.getElementById('ramFill').style.width = data.ram.percent + "%";
+            document.getElementById('node1Status').innerText = n1 ? "OPERATIONAL" : "OVERLOADED";
+    document.getElementById('node1Status').style.color = n1 ? "#10b981" : "#ef4444";
+
+    document.getElementById('node2Status').innerText = n2 ? "OPERATIONAL" : "OVERLOADED";
+    document.getElementById('node2Status').style.color = n2 ? "#10b981" : "#ef4444";
 
             // DISK Update (NEW)
             document.getElementById('diskUsed').innerText = data.disk.used;
