@@ -67,6 +67,21 @@
             background: linear-gradient(to bottom, transparent 50%, rgba(16,185,129,0.02) 50%);
             background-size: 100% 4px; pointer-events: none;
         }
+        .glass-card, .glass-box {
+    width: 100% !important;
+    box-sizing: border-box;
+        }
+        .container {
+    width: 100%;
+    max-width: 500px; /* Limits width to look like a mobile app */
+    margin: auto;
+    
+    /* ADD THESE LINES */
+    display: flex;
+    flex-direction: column; /* Forces vertical stacking */
+    gap: 20px; /* Adds space between the two cards */
+    padding-bottom: 50px;
+        }
 
     </style>
 </head>
