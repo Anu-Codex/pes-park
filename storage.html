@@ -171,15 +171,17 @@
     <!-- LATENCY & UPTIME -->
     <div class="latency-grid">
         <div class="mini-card">
-            <i class="fa-solid fa-gauge-high"></i>
-            <label style="font-size:0.5rem; color:var(--dim)">NEURAL LATENCY</label>
-            <div class="val" id="n1-ping">-- ms</div>
-        </div>
-        <div class="mini-card">
-            <i class="fa-solid fa-clock-rotate-left"></i>
-            <label style="font-size:0.5rem; color:var(--dim)">NODE UPTIME</label>
-            <div class="val" id="n1-uptime">--</div>
-        </div>
+    <i class="fa-solid fa-gauge-high"></i>
+    <label>NEURAL LATENCY</label>
+    <!-- ID MUST BE n1-ping -->
+    <div class="val" id="n1-ping">-- ms</div> 
+</div>
+<div class="mini-card">
+    <i class="fa-solid fa-clock-rotate-left"></i>
+    <label>NODE UPTIME</label>
+    <!-- ID MUST BE n1-uptime -->
+    <div class="val" id="n1-uptime">--</div>
+</div>
     </div>
 
     <!-- SERVER DETAILS -->
@@ -258,52 +260,51 @@
     // 2. UNIVERSAL NODE UPDATER
     // This function handles n1 and n2 dynamically
     async function updateNodeUI(url, prefix) {
-        try {
-            const res = await fetch(`${url}/api/system/stats`);
-            const data = await res.json();
-            
-            if (data.success) {
-                // --- RAM UPDATES ---
-                safeUpdate(`${prefix}-ramUsed`, data.ram.used);
-                safeUpdate(`${prefix}-ramPercent`, data.ram.percent + "%");
-                const ramBar = document.getElementById(`${prefix}-ramFill`);
-                if(ramBar) ramBar.style.width = data.ram.percent + "%";
-                
-                // Fields only in Node 1 (Provisioned/Reserve)
-                if(prefix === 'n1') {
-                    safeUpdate(`n1-ramTotal`, data.ram.total);
-                    safeUpdate(`n1-ramFree`, data.ram.free);
-                }
+    const startTime = Date.now(); // Start timer for Latency
 
-                // --- DISK UPDATES ---
-                safeUpdate(`${prefix}-diskUsed`, data.disk.used);
-                safeUpdate(`${prefix}-diskPercent`, data.disk.percent + "%");
-                const diskBar = document.getElementById(`${prefix}-diskFill`); // Make sure ID is n1-diskFill or n2-diskFill
-                if(!diskBar && prefix === 'n1') { // Fallback for your specific HTML
-                     const oldDiskBar = document.getElementById('diskFill');
-                     if(oldDiskBar) oldDiskBar.style.width = data.disk.percent + "%";
-                }
-                if(diskBar) diskBar.style.width = data.disk.percent + "%";
+    try {
+        const res = await fetch(`${url}/api/system/stats`);
+        const data = await res.json();
+        
+        // Calculate Latency (Ping)
+        const latency = Date.now() - startTime;
 
-                if(prefix === 'n1') {
-                    safeUpdate(`n1-diskTotal`, data.disk.total);
-                    safeUpdate(`n1-diskFree`, data.disk.free);
-                }
+        if (data.success) {
+            // Update Latency Box
+            safeUpdate(`${prefix}-ping`, latency + " ms");
 
-                // --- LATENCY & UPTIME ---
-                safeUpdate(`${prefix}-ping`, (data.latency || "--") + " ms");
-                safeUpdate(`${prefix}-uptime`, data.uptime || "--");
+            // Update Uptime Box (Using the formatter)
+            // Ensure your backend sends 'uptimeSeconds' or 'uptime'
+            const uptimeValue = data.uptimeSeconds || data.ram.uptime || 0; 
+            safeUpdate(`${prefix}-uptime`, formatUptime(uptimeValue));
 
-                // --- HARDWARE ARCHIVE (Only from Node 1) ---
-                if(prefix === 'n1' && data.system) {
-                    safeUpdate('region', data.system.region || "Oregon, USA");
-                    safeUpdate('arch', data.system.arch || "x64 / Linux");
-                    safeUpdate('instance', data.system.instanceId || "RENDER-PROD-01");
+            // Update RAM
+            safeUpdate(`${prefix}-ramUsed`, data.ram.used);
+            safeUpdate(`${prefix}-ramPercent`, data.ram.percent + "%");
+            const ramBar = document.getElementById(`${prefix}-ramFill`);
+            if(ramBar) ramBar.style.width = data.ram.percent + "%";
+
+            // Update DISK
+            safeUpdate(`${prefix}-diskUsed`, data.disk.used);
+            safeUpdate(`${prefix}-diskPercent`, data.disk.percent + "%");
+            const diskBar = document.getElementById(`${prefix}-diskFill`);
+            if(diskBar) diskBar.style.width = data.disk.percent + "%";
+
+            // Update Node-specific fields
+            if(prefix === 'n1') {
+                safeUpdate(`n1-ramTotal`, data.ram.total);
+                safeUpdate(`n1-ramFree`, data.ram.free);
+                if(data.system) {
+                    safeUpdate('region', data.system.region);
+                    safeUpdate('arch', data.system.arch);
+                    safeUpdate('instance', data.system.instanceId);
                 }
             }
-        } catch (e) { 
-            console.error(`Offline: ${prefix}`); 
         }
+    } catch (e) { 
+        safeUpdate(`${prefix}-ping`, "LOST");
+        safeUpdate(`${prefix}-uptime`, "OFFLINE");
+    }
     }
 
     // Helper to prevent script crashes if an ID is missing
@@ -332,6 +333,13 @@
         updateNodeUI(API, 'n1');
         updateNodeUI(API_V2, 'n2');
     }
+    // Function to convert seconds to readable H:M:S format
+function formatUptime(seconds) {
+    if (!seconds || isNaN(seconds)) return "--";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return `${h}H ${m}M`;
+}
 
     // Initialize
     window.onload = () => {
