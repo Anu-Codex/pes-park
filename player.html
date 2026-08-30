@@ -605,6 +605,9 @@
 .perf-box b { font-size: 1.4rem; font-family: 'Orbitron'; }
 
 .chart-container-line { width: 100%; height: 200px; margin-top: 10px; }
+        .badge-gold { background: rgba(245, 158, 11, 0.2) !important; color: #f59e0b !important; }
+.badge-blue { background: rgba(59, 130, 246, 0.2) !important; color: #3b82f6 !important; }
+.badge-red { background: rgba(239, 68, 68, 0.2) !important; color: #ef4444 !important; }
     </style>
 </head>
 <body>
@@ -813,7 +816,7 @@
         BIOMETRIC SCAN STABLE • V.7.2
     </div>
 </div>
-        <!-- REPLACED: IMAGE 1 - PERCENTILE RANKINGS -->
+        <!-- IMAGE 1: FULL PERCENTILE RANKINGS (8 FACTORS) -->
 <div class="glass-card percentile-card">
     <div class="section-title">
         <i class="fa-solid fa-chart-simple"></i> Percentile Rankings
@@ -826,12 +829,12 @@
         </div>
         <div>
             <p id="analysisText" style="font-size: 0.85rem; color: var(--text-dim); margin: 0; line-height: 1.4;">
-                Analyzing historical performance vs all registered players...
+                Calculating neural performance data...
             </p>
         </div>
     </div>
 
-    <!-- Win Rate -->
+    <!-- 1. Win Rate -->
     <div class="percentile-row">
         <div class="p-label-row">
             <label><i class="fa-solid fa-arrow-trend-up"></i> Win Rate</label>
@@ -840,22 +843,67 @@
         <div class="p-bar-bg"><div id="winBar" class="p-bar-fill" style="background: var(--accent); width: 0%;"></div></div>
     </div>
 
-    <!-- Clutch -->
+    <!-- 2. Current Form -->
     <div class="percentile-row">
         <div class="p-label-row">
-            <label><i class="fa-solid fa-crosshairs"></i> Clutch Factor</label>
-            <span class="top-badge" id="clutchBadge" style="background:rgba(245, 158, 11, 0.2); color:#f59e0b;">Top --%</span>
+            <label><i class="fa-solid fa-bolt"></i> Current Form</label>
+            <span class="top-badge badge-blue" id="formBadge">Top --%</span>
+        </div>
+        <div class="p-bar-bg"><div id="formBar" class="p-bar-fill" style="background: #3b82f6; width: 0%;"></div></div>
+    </div>
+
+    <!-- 3. Clutch -->
+    <div class="percentile-row">
+        <div class="p-label-row">
+            <label><i class="fa-solid fa-crosshairs"></i> Clutch</label>
+            <span class="top-badge badge-gold" id="clutchBadge">Top --%</span>
         </div>
         <div class="p-bar-bg"><div id="clutchBar" class="p-bar-fill" style="background: #f59e0b; width: 0%;"></div></div>
     </div>
 
-    <!-- Consistency -->
+    <!-- 4. Giant Killing -->
+    <div class="percentile-row">
+        <div class="p-label-row">
+            <label><i class="fa-solid fa-fire"></i> Giant Killing</label>
+            <span class="top-badge badge-gold" id="gkBadge">Top --%</span>
+        </div>
+        <div class="p-bar-bg"><div id="gkBar" class="p-bar-fill" style="background: #f59e0b; width: 0%;"></div></div>
+    </div>
+
+    <!-- 5. Consistency -->
     <div class="percentile-row">
         <div class="p-label-row">
             <label><i class="fa-solid fa-shield-heart"></i> Consistency</label>
-            <span class="top-badge" id="consistBadge" style="background:rgba(59, 130, 246, 0.2); color:#3b82f6;">Top --%</span>
+            <span class="top-badge badge-red" id="consistBadge">Top --%</span>
         </div>
-        <div class="p-bar-bg"><div id="consistBar" class="p-bar-fill" style="background: #3b82f6; width: 0%;"></div></div>
+        <div class="p-bar-bg"><div id="consistBar" class="p-bar-fill" style="background: #ef4444; width: 0%;"></div></div>
+    </div>
+
+    <!-- 6. Loss Avoidance -->
+    <div class="percentile-row">
+        <div class="p-label-row">
+            <label><i class="fa-solid fa-shield"></i> Loss Avoidance</label>
+            <span class="top-badge badge-blue" id="laBadge">Top --%</span>
+        </div>
+        <div class="p-bar-bg"><div id="laBar" class="p-bar-fill" style="background: #3b82f6; width: 0%;"></div></div>
+    </div>
+
+    <!-- 7. Trophy Haul -->
+    <div class="percentile-row">
+        <div class="p-label-row">
+            <label><i class="fa-solid fa-trophy"></i> Trophy Haul</label>
+            <span class="top-badge badge-blue" id="trophyBadge">Top --%</span>
+        </div>
+        <div class="p-bar-bg"><div id="trophyBar" class="p-bar-fill" style="background: #3b82f6; width: 0%;"></div></div>
+    </div>
+
+    <!-- 8. Value Growth -->
+    <div class="percentile-row">
+        <div class="p-label-row">
+            <label><i class="fa-solid fa-chart-line"></i> Value Growth</label>
+            <span class="top-badge badge-gold" id="growthBadge">Top --%</span>
+        </div>
+        <div class="p-bar-bg"><div id="growthBar" class="p-bar-fill" style="background: #f59e0b; width: 0%;"></div></div>
     </div>
 </div>
 
@@ -1321,41 +1369,87 @@ async function generateScoutReport(player) {
 // --- NEW LOGIC FOR IMAGE 1 & 2 ---
 
 function calculateAdvancedStats(p, matches) {
-    // 1. Calculate Percentiles (Mocked against 151 players as per image)
-    const winRate = matches.length > 0 ? (matches.filter(m => {
+    const totalMatches = matches.length;
+    if (totalMatches === 0) return;
+
+    // 1. Win Rate
+    const wins = matches.filter(m => (m.playerA === myName ? m.scoreA : m.scoreB) > (m.playerA === myName ? m.scoreB : m.scoreA)).length;
+    const winRate = (wins / totalMatches) * 100;
+
+    // 2. Current Form (Last 5 matches weighted)
+    const last5 = matches.slice(0, 5);
+    let formScore = 0;
+    last5.forEach(m => {
         const isA = m.playerA === myName;
-        return (isA ? m.scoreA : m.scoreB) > (isA ? m.scoreB : m.scoreA);
-    }).length / matches.length) * 100 : 0;
+        if ((isA ? m.scoreA : m.scoreB) > (isA ? m.scoreB : m.scoreA)) formScore += 20;
+        else if (m.scoreA === m.scoreB) formScore += 10;
+    });
 
-    const ovr = Math.round((winRate * 0.4) + (Math.min(p.bdrPoints / 2, 50)));
-    
-    // Update Image 1 UI
+    // 3. Clutch (Performance in Close Games)
+    const clutchMatches = matches.filter(m => Math.abs(m.scoreA - m.scoreB) <= 1);
+    const clutchWins = clutchMatches.filter(m => (m.playerA === myName ? m.scoreA : m.scoreB) > (m.playerA === myName ? m.scoreB : m.scoreA)).length;
+    const clutchScore = clutchMatches.length > 0 ? (clutchWins / clutchMatches.length) * 100 : 50;
+
+    // 4. Giant Killing (Wins against players with high scores - Simulated logic)
+    const gkScore = Math.min(100, (wins * 5) + (p.bdrPoints / 20));
+
+    // 5. Consistency (How many matches are not losses)
+    const consistency = 100 - ((matches.filter(m => (m.playerA === myName ? m.scoreA : m.scoreB) < (m.playerA === myName ? m.scoreB : m.scoreA)).length / totalMatches) * 100);
+
+    // 6. Loss Avoidance
+    const laScore = Math.min(100, winRate + 10);
+
+    // 7. Trophy Haul
+    const t = p.trophies || {};
+    const totalTrophies = (t.ballonDor || 0) + (t.ucl || 0) + (t.league || 0) + (t.weekly || 0) + (t.goldenBoot || 0);
+    const trophyScore = Math.min(100, totalTrophies * 20);
+
+    // 8. Value Growth
+    const buyPrice = p.auctionPrice || 1;
+    const currentVal = p.marketValue || 0;
+    const growth = ((currentVal - buyPrice) / buyPrice) * 100;
+    const growthScore = Math.min(100, Math.max(0, growth / 2));
+
+    // Update UI Function
+    const updateFactor = (id, score) => {
+        const bar = document.getElementById(id + 'Bar');
+        const badge = document.getElementById(id + 'Badge');
+        if(bar) bar.style.width = score + "%";
+        if(badge) badge.innerText = `Top ${Math.max(1, 100 - Math.round(score))}%`;
+    };
+
+    updateFactor('win', winRate);
+    updateFactor('form', formScore);
+    updateFactor('clutch', clutchScore);
+    updateFactor('gk', gkScore);
+    updateFactor('consist', consistency);
+    updateFactor('la', laScore);
+    updateFactor('trophy', trophyScore);
+    updateFactor('growth', growthScore);
+
+    // Overall Rating (Average of all 8)
+    const ovr = Math.round((winRate + formScore + clutchScore + gkScore + consistency + laScore + trophyScore + growthScore) / 8);
     document.getElementById('ovrRating').innerText = ovr;
-    document.getElementById('winBar').style.width = winRate + "%";
-    document.getElementById('winPercBadge').innerText = `Top ${Math.max(1, 100 - Math.round(winRate))}%`;
     
-    const clutch = Math.min(100, (p.bdrPoints / 500) * 100); // Proportional to BDR
-    document.getElementById('clutchBar').style.width = clutch + "%";
-    document.getElementById('clutchBadge').innerText = `Top ${Math.max(1, 100 - Math.round(clutch))}%`;
+    document.getElementById('analysisText').innerHTML = 
+        ovr > 80 ? `A legendary force — dominant across <span style="color:var(--accent)">all 8 categories</span>.` :
+        ovr > 60 ? `An all-round powerhouse — dominant across <span style="color:var(--accent)">5 categories</span>.` :
+        `Developing talent — showing strength in <span style="color:var(--accent)">3 categories</span>.`;
 
-    const consistency = Math.min(100, 40 + (matches.length / 2));
-    document.getElementById('consistBar').style.width = consistency + "%";
-    document.getElementById('consistBadge').innerText = `Top ${Math.max(1, 100 - Math.round(consistency))}%`;
+    // Trigger Season Performance (Image 2 Logic)
+    renderSeasonAnalytics(p, matches);
+}
 
-    // Update Analysis Text
-    document.getElementById('analysisText').innerHTML = `An all-round powerhouse — dominant across <span style="color:var(--accent)">${ovr > 70 ? '4' : '2'} categories</span>.`;
-
-    // 2. Performance Tracking (Image 2)
+function renderSeasonAnalytics(p, matches) {
     let currentBDR = p.bdrPoints || 0;
     let pointHistory = [];
     let tempBdr = currentBDR;
     
-    // Reverse matches to see progress from past to present
     const history = [...matches].reverse();
     history.forEach(m => {
         const isA = m.playerA === myName;
         const won = (isA ? m.scoreA : m.scoreB) > (isA ? m.scoreB : m.scoreA);
-        tempBdr += won ? 5 : -3; // Simulated point tracking
+        tempBdr += won ? 5 : -3; 
         pointHistory.push(tempBdr);
     });
 
@@ -1367,7 +1461,6 @@ function calculateAdvancedStats(p, matches) {
     
     renderLineChart(pointHistory);
 }
-
 function renderLineChart(dataPoints) {
     const ctx = document.getElementById('performanceChart').getContext('2d');
     
