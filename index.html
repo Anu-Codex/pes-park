@@ -6,15 +6,21 @@
     <title>NEXUS LEGENDS EFOOTBALL COMMUNITY</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script> (function () {
+    <script>
+    (function () {
         const urlParams = new URLSearchParams(window.location.search);
+        // Only load Eruda if ?debug=true is in the URL
         if (urlParams.get('debug') === 'true') {
-            var script = document.createElement('script');
-            script.src = "//cdn.jsdelivr.net/npm/eruda";
-            document.body.appendChild(script);
-            script.onload = function () { eruda.init() }
+            const script = document.createElement('script');
+            script.src = "https://cdn.jsdelivr.net/npm/eruda";
+            document.head.appendChild(script);
+            script.onload = function () {
+                eruda.init();
+                console.log("Eruda initialized for Nexus Legends Debugging");
+            };
         }
-    })(); </script>
+    })();
+    </script>
     <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#10b981">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
