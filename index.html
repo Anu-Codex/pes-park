@@ -1612,6 +1612,11 @@ function switchView(viewName) {
     const title = document.querySelector('.section-title-row h3');
     const selector = document.getElementById('viewSelector');
 
+    toggleMenu();
+    if (window.pingInterval) clearInterval(window.pingInterval);
+    const newUrl = window.location.pathname + \"?view=\" + viewName;
+        window.history.pushState({ path: newUrl }, '', newUrl);
+
     // Close Menu
     menu.classList.remove('active');
     overlay.style.display = 'none';
