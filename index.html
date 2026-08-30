@@ -2259,7 +2259,7 @@ function renderWeekendSeries(container) {
     };
 
     // Set interval for real-time monitoring (3 seconds)
-    const monitorInterval = setInterval(() => {
+    window.pingInterval = setInterval(() => {
         if(document.getElementById('pingValue')) {
             checkPing();
         } else {
