@@ -416,6 +416,21 @@
     </button>
             </div>
         </div>
+        <div id="sec-calendar" class="admin-section">
+    <div class="sub-box">
+        <h4>Add Event to Calendar</h4>
+        <input type="text" id="evTitle" placeholder="Event Title">
+        <input type="date" id="evDate">
+        <select id="evType">
+            <option value="league">Team League (Gold)</option>
+            <option value="weekly">Weekly (Blue)</option>
+            <option value="ucl">UCL (Purple)</option>
+            <option value="playoff">Playoff (Orange)</option>
+            <option value="auction">Auction (Green)</option>
+        </select>
+        <button onclick="saveEvent()" class="btn-green">Post to Calendar</button>
+    </div>
+        </div>
        
 
     </div>
@@ -1370,6 +1385,19 @@ async function loadTrophyList() {
         btn.disabled = false;
         btn.innerHTML = original;
     }
+        }
+        async function saveEvent() {
+    const data = {
+        title: document.getElementById('evTitle').value,
+        date: document.getElementById('evDate').value,
+        type: document.getElementById('evType').value
+    };
+    await fetch(`${API}/api/calendar/events`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    alert("Calendar Updated!");
         }
 
 // 3. Add to the unified window.onload
