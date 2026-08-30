@@ -1155,6 +1155,34 @@
     color: var(--text-dim);
     font-size: 1rem;
 }
+        /* Fix for the big header icon */
+.ranking-header-img {
+    width: 40px; 
+    height: 40px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 8px rgba(215, 173, 87, 0.4)); /* Subtle gold glow */
+}
+
+/* Fix for the small crown on Rank #1 */
+.rank-crown-img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Ensure the number container stays aligned */
+.rank-num-box {
+    width: 35px;
+    font-weight: 900;
+    color: #475569;
+    text-align: center;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
     </style>
 </head>
 <body>
@@ -1477,37 +1505,41 @@
     }
 
     function renderBDRRankings(container) {
-        const sorted = [...allPlayers].sort((a, b) => (b.bdrPoints || 0) - (a.bdrPoints || 0));
-        let html = `
-            <div class="ranking-header">
-                <i class="fa-solid fa-trophy"></i>
-                <div>
-                    <span style="color: #64748b; font-size: 0.7rem; font-weight: bold;">BDR RANKING</span>
-                    <h4>BALLOND'OR</h4>
+    const sorted = [...allPlayers].sort((a, b) => (b.bdrPoints || 0) - (a.bdrPoints || 0));
+    
+    // 1. Header Trophy Image Fix
+    let html = `
+        <div class="ranking-header">
+            <img src="https://i.postimg.cc/vH0Rd0Sj/232666-removebg-preview.png" class="ranking-header-img"> 
+            <div>
+                <span style="color: #64748b; font-size: 0.7rem; font-weight: bold;">BDR RANKING</span>
+                <h4>BALLOND'OR</h4>
+            </div>
+        </div>
+    `;
+
+    html += sorted.map((p, index) => {
+        const rank = index + 1;
+        const isFirst = rank === 1;
+
+        return `
+            <div class="rank-row" onclick="window.location.href='player.html?id=${p._id}'" style="cursor:pointer">
+                <div class="rank-num-box">
+                    <!-- 2. Crown Image Fix for Rank #1 -->
+                    ${isFirst ? '<img src="https://i.postimg.cc/HkNHstnq/261207-removebg-preview.png" class="rank-crown-img">' : '#' + rank}
+                </div>
+                <img src="${p.image || 'https://via.placeholder.com/45'}" class="p-img" style="width:45px; height:45px; border-radius:8px;">
+                <div class="rank-info">
+                    <span style="font-weight: bold; font-size: 1rem;">${p.name}</span>
+                    <div class="rank-pts">
+                        <b>${p.bdrPoints || 0}</b>
+                        <span>pts</span>
+                    </div>
                 </div>
             </div>
         `;
-
-        html += sorted.map((p, index) => {
-            const rank = index + 1;
-            const isFirst = rank === 1;
-            return `
-                <div class="rank-row" onclick="window.location.href='player.html?id=${p._id}'" style="cursor:pointer">
-                    <div class="${isFirst ? 'rank-1-icon' : 'rank-num'}">
-                        ${isFirst ? '<i class="fa-solid fa-crown"></i>' : '#' + rank}
-                    </div>
-                    <img src="${p.image || 'https://via.placeholder.com/45'}" class="p-img" style="width:45px; height:45px; border-radius:8px;">
-                    <div class="rank-info">
-                        <span style="font-weight: bold; font-size: 1rem;">${p.name}</span>
-                        <div class="rank-pts">
-                            <b>${p.bdrPoints || 0}</b>
-                            <span>pts</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        container.innerHTML = html;
+    }).join('');
+    container.innerHTML = html;
     }
         function renderMarketValues(container) {
     // 1. Sort players by Market Value (High to Low)
