@@ -459,6 +459,113 @@
     text-transform: uppercase;
 }
 .captain-badge i { font-size: 0.8rem; text-shadow: 0 0 10px var(--gold); }
+        /* --- NEXUS LEGENDS CUSTOM LOADER --- */
+#nl-loader-wrapper {
+    position: fixed;
+    inset: 0;
+    background: #020617; /* Ultra Dark Blue */
+    z-index: 100000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nl-loader-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.nl-logo-container {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 20px;
+}
+
+.nl-svg {
+    width: 100%;
+    height: 100%;
+}
+
+.nl-svg path {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.5));
+}
+
+.letter-n {
+    stroke: #00e5ff; /* Cyan */
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: drawLetter 2s ease-in-out infinite;
+}
+
+.letter-l {
+    stroke: #10b981; /* Emerald */
+    stroke-dasharray: 150;
+    stroke-dashoffset: 150;
+    animation: drawLetter 2s ease-in-out infinite 0.3s;
+}
+
+.nexus-point {
+    fill: white;
+    box-shadow: 0 0 15px #fff;
+    animation: pointPulse 1s ease-in-out infinite;
+}
+
+@keyframes drawLetter {
+    0% { stroke-dashoffset: 200; opacity: 0; }
+    30% { opacity: 1; }
+    50% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -200; opacity: 0; }
+}
+
+@keyframes pointPulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.5); opacity: 1; }
+}
+
+.nl-text {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 5px;
+    font-weight: 900;
+    margin-top: 10px;
+}
+
+.n-text { color: #00e5ff; margin-right: 8px; }
+.l-text { color: #10b981; }
+
+.nl-progress-mini {
+    width: 100px;
+    height: 2px;
+    background: rgba(255,255,255,0.05);
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.nl-bar {
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg, #00e5ff, #10b981);
+    animation: barMove 1.5s infinite linear;
+}
+
+@keyframes barMove {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(250%); }
+}
+
+/* Page exit animation */
+.loader-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
     </style>
 </head>
 <body>
@@ -467,7 +574,27 @@
         <a href="index.html" class="back-link"><i class="fa-solid fa-chevron-left"></i> Back</a>
     </nav>
 
-    <div id="loading"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading Profile...</div>
+    <div id="nl-loader-wrapper">
+    <div class="nl-loader-content">
+        <div class="nl-logo-container">
+            <svg viewBox="0 0 100 100" class="nl-svg">
+                <!-- The "N" Path -->
+                <path class="letter-n" d="M20,70 L20,30 L50,70 L50,30" />
+                <!-- The "L" Path -->
+                <path class="letter-l" d="M60,30 L60,70 L85,70" />
+                
+                <!-- Intersecting Glow Point -->
+                <circle class="nexus-point" cx="50" cy="70" r="3" />
+            </svg>
+        </div>
+        <div class="nl-text">
+            <span class="n-text">Loading</span><span class="l-text">Profile...</span>
+        </div>
+        <div class="nl-progress-mini">
+            <div class="nl-bar"></div>
+        </div>
+    </div>
+    </div>
 
     <div id="playerContent" style="display: none;">
         <div id="profileCard" class="glass-card-themed">
@@ -838,7 +965,7 @@ if (playerMatches.length > 0) {
 
             document.getElementById('h2hSelector').innerHTML = '<option value="">Select opponent...</option>' + 
                 otherPlayers.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
-            document.getElementById('loading').style.display = 'none';
+            document.getElementById('nl-loader-wrapper').style.display = 'none';
             document.getElementById('playerContent').style.display = 'block';
         } catch (e) { console.error(e); }
     }
