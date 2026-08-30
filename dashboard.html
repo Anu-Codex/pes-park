@@ -408,6 +408,13 @@
         <i class="fa-solid fa-cloud-arrow-down"></i> Sync Squads from Auction
     </button>
             </div>
+            <div class="sub-box" style="border: 1px solid var(--accent); background: rgba(16, 185, 129, 0.05);">
+    <h4 style="color: var(--accent);"><i class="fa-solid fa-sync"></i> Logo Recovery Tool</h4>
+    <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 10px;">Instantly import club logos for newly registered players.</p>
+    <button onclick="syncNewLogos()" class="btn-green">
+        <i class="fa-solid fa-shield-halved"></i> SYNC MISSING LOGOS
+    </button>
+            </div>
         </div>
        
 
@@ -1336,6 +1343,34 @@ async function loadTrophyList() {
     const trophies = await res.json();
     document.getElementById('trCustomSelect').innerHTML = trophies.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
 }
+        async function syncNewLogos() {
+    // Capture the button element to show loading state
+    const btn = event.currentTarget;
+    const original = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> ANALYZING DATABASE...`;
+
+    try {
+        // Replace ${API} with your actual backend URL variable
+        const res = await fetch(`${API}/api/admin/sync-new-logos`);
+        const data = await res.json();
+        
+        if (data.success) {
+            alert("COMMAND EXECUTED: " + data.message);
+            location.reload(); // Refresh to see updated logos
+        } else {
+            alert("SYNC FAILED: " + data.error);
+        }
+    } catch (e) {
+        alert("CONNECTION ERROR: Check Server Status.");
+        console.error(e);
+    } finally {
+        // Reset button state
+        btn.disabled = false;
+        btn.innerHTML = original;
+    }
+        }
 
 // 3. Add to the unified window.onload
 // Inside your existing window.onload = async () => { ... }
