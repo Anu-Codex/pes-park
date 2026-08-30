@@ -1477,7 +1477,7 @@
 
     // 1. Initial Loader & Data Fetching
     async function manageLoader() {
-        const overlay = document.getElementById('loader-overlay');
+        const overlay = document.getElementById('nl-loader-wrapper');
         const hasSeenLoader = sessionStorage.getItem('hasSeenLoader');
 
         if (hasSeenLoader === 'true') {
@@ -1511,7 +1511,7 @@
     }
     // 2. Fetch Data and Setup UI
     async function initPage() {
-    const loader = document.getElementById('partial-loader');
+    const loader = document.getElementById('nl-loader-wrapper');
     const content = document.getElementById('main-content-area');
 
     try {
