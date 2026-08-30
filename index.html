@@ -1446,19 +1446,14 @@
                     }, 500);
                 } else if (linkedView) {
                     switchView(linkedView); // Fallback if tour not found
-                }
-            } catch (e) { 
-                console.error("Deep link failed", e); 
-                switchView('total'); // Fallback on error
-            }
-        } else {
+                } else {
             // Default behavior if no link exists in the URL
             switchView('total');
+                }
             updateLeagueLeader();
+        
+                                        }
         }
-        
-        
-        
     }
     }
 
