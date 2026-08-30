@@ -186,9 +186,9 @@
     <div class="glass-box" style="margin-top:15px;">
         <h4 style="font-size:0.6rem; color:var(--accent); letter-spacing:2px; margin-top:0;">HARDWARE ARCHIVE</h4>
         <div class="stat-row"><label>Cloud Provider</label><span>Render.com (Linux)</span></div>
-        <div class="stat-row"><label>Physical Region</label><span id="region">--</span></div>
-        <div class="stat-row"><label>Node Architecture</label><span id="arch">--</span></div>
-        <div class="stat-row"><label>Instance UID</label><span id="instance" style="color:var(--accent)">--</span></div>
+        <div class="stat-row"><label>Physical Region</label><span id="region">Scanning...</span></div>
+        <div class="stat-row"><label>Node Architecture</label><span id="arch">Scanning...</span></div>
+        <div class="stat-row"><label>Instance UID</label><span id="instance" style="color:var(--accent)">Scanning...</span></div>
     </div>
     <div class="glass-card">
     <div class="section-title"><i class="fa-solid fa-network-wired"></i> Neural Grid Status</div>
@@ -234,7 +234,7 @@
     const API = "https://pes-park-backend.onrender.com"; 
     const API_V2 = "https://nexus-database-v2.onrender.com";
 
-    // 1. SYNC DATABASE TELEMETRY (Top Card - Data from Node 01)
+    // 1. SYNC DATABASE TELEMETRY (Top Card - MongoDB Stats)
     async function syncTelemetry() {
         try {
             const res = await fetch(`${API}/api/admin/telemetry`);
@@ -251,36 +251,58 @@
                 document.getElementById('uptime').innerText = (data.network.uptime / 3600).toFixed(1) + " H";
             }
         } catch (e) { 
-            document.getElementById('status').innerText = "OFFLINE"; 
-            document.getElementById('status').style.color = "#ef4444";
+            const statusLabel = document.getElementById('status');
+            if(statusLabel) {
+                statusLabel.innerText = "OFFLINE"; 
+                statusLabel.style.color = "#ef4444";
+            }
         }
     }
 
-    // 2. HARDWARE TELEMETRY HELPER (Handles RAM and DISK for both nodes)
+    // 2. HARDWARE TELEMETRY HELPER (Maps all RAM, DISK, and SYSTEM fields)
     async function updateNodeUI(url, prefix) {
         try {
             const res = await fetch(`${url}/api/system/stats`);
             const data = await res.json();
             
             if (data.success) {
-                // Update RAM UI elements for this node
-                document.getElementById(`${prefix}-ramUsed`).innerText = data.ram.used;
+                // Update RAM
+                document.getElementById(`${prefix}-ramUsed`).innerText = data.ram.used || "--";
+                document.getElementById(`${prefix}-ramTotal`).innerText = data.ram.total || "--";
+                document.getElementById(`${prefix}-ramFree`).innerText = data.ram.free || "--";
                 document.getElementById(`${prefix}-ramPercent`).innerText = data.ram.percent + "%";
                 document.getElementById(`${prefix}-ramFill`).style.width = data.ram.percent + "%";
 
-                // Update DISK UI elements for this node
-                document.getElementById(`${prefix}-diskUsed`).innerText = data.disk.used;
+                // Update DISK
+                document.getElementById(`${prefix}-diskUsed`).innerText = data.disk.used || "--";
+                document.getElementById(`${prefix}-diskTotal`).innerText = data.disk.total || "--";
+                document.getElementById(`${prefix}-diskFree`).innerText = data.disk.free || "--";
                 document.getElementById(`${prefix}-diskPercent`).innerText = data.disk.percent + "%";
                 document.getElementById(`${prefix}-diskFill`).style.width = data.disk.percent + "%";
+
+                // Update Mini Cards (Latency & Uptime)
+                const pingEl = document.getElementById(`${prefix}-ping`);
+                const uptimeEl = document.getElementById(`${prefix}-uptime`);
+                if(pingEl) pingEl.innerText = (data.latency || "--") + " ms";
+                if(uptimeEl) uptimeEl.innerText = data.uptime || "--";
+
+                // Update Hardware Archive (Only from Node 1/Primary)
+                if(prefix === 'n1') {
+                    if(data.system) {
+                        document.getElementById('region').innerText = data.system.region || "Oregon, USA";
+                        document.getElementById('arch').innerText = data.system.arch || "x64 / Linux";
+                        document.getElementById('instance').innerText = data.system.instanceId || "RENDER-PRIMARY";
+                    }
+                }
             }
         } catch (e) { 
             console.error(`Telemetry sync failed for ${prefix}:`, e); 
         }
     }
 
-    // 3. MAIN ORCHESTRATOR (Grid status and triggering hardware stats)
+    // 3. MAIN ORCHESTRATOR
     async function fetchStats() {
-        // Grid Status (Pinging both /test routes)
+        // Grid Status Ping
         try {
             const [n1, n2] = await Promise.all([
                 fetch(`${API}/test`).then(r => r.ok).catch(() => false),
@@ -288,15 +310,19 @@
             ]);
 
             const n1Label = document.getElementById('node1Status');
-            n1Label.innerText = n1 ? "OPERATIONAL" : "OVERLOADED";
-            n1Label.style.color = n1 ? "#10b981" : "#ef4444";
+            if(n1Label) {
+                n1Label.innerText = n1 ? "OPERATIONAL" : "OVERLOADED";
+                n1Label.style.color = n1 ? "#10b981" : "#ef4444";
+            }
 
             const n2Label = document.getElementById('node2Status');
-            n2Label.innerText = n2 ? "OPERATIONAL" : "OVERLOADED";
-            n2Label.style.color = n2 ? "#10b981" : "#ef4444";
+            if(n2Label) {
+                n2Label.innerText = n2 ? "OPERATIONAL" : "OVERLOADED";
+                n2Label.style.color = n2 ? "#10b981" : "#ef4444";
+            }
         } catch (e) { console.error("Grid status check failed"); }
 
-        // Fetch Hardware Telemetry for both nodes independently
+        // Update Hardware UI
         updateNodeUI(API, 'n1');
         updateNodeUI(API_V2, 'n2');
     }
@@ -306,8 +332,10 @@
     setInterval(fetchStats, 5000);
 
     // Initial load
-    syncTelemetry();
-    fetchStats();
+    window.onload = () => {
+        syncTelemetry();
+        fetchStats();
+    };
 </script>
 </body>
 </html>
