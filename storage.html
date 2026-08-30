@@ -211,16 +211,16 @@
 </html>
 
 <script>
-    const API = "https://pes-park-backend.onrender.com"; // Your Render URL
+    const API = "https://pes-park-backend.onrender.com"; 
     const API_V2 = "https://nexus-database-v2.onrender.com";
 
+    // 1. SYNC DATABASE TELEMETRY (Top Card)
     async function syncTelemetry() {
         try {
             const res = await fetch(`${API}/api/admin/telemetry`);
             const data = await res.json();
 
             if (data.success) {
-                // Calculation
                 const usedMB = (data.storage.usedBytes / (1024 * 1024)).toFixed(2);
                 const perc = ((usedMB / 512) * 100).toFixed(1);
 
@@ -228,61 +228,80 @@
                 document.getElementById('perc').innerText = Math.round(perc) + "%";
                 document.getElementById('pFill').style.width = perc + "%";
                 
-                document.getElementById('ping').innerText = data.network.latency + " MS";
+                // Updates the "Latency" inside the Database Monitoring card
+                const dbPing = document.getElementById('ping'); 
+                if(dbPing) dbPing.innerText = data.network.latency + " MS";
+                
                 document.getElementById('objects').innerText = data.storage.objects;
                 
-                // Uptime format
                 const hours = (data.network.uptime / 3600).toFixed(1);
-                document.getElementById('uptime').innerText = hours + " H";
+                const dbUptime = document.getElementById('uptime');
+                if(dbUptime) dbUptime.innerText = hours + " H";
             }
         } catch (e) {
-            document.getElementById('status').innerText = "LINK LOST";
-            document.getElementById('status').style.color = "#ef4444";
+            const statusLabel = document.getElementById('status');
+            if(statusLabel) {
+                statusLabel.innerText = "LINK LOST";
+                statusLabel.style.color = "#ef4444";
+            }
         }
     }
+
+    // 2. FETCH SERVER HARDWARE STATS (Bottom Cards)
     async function fetchStats() {
-    const start = Date.now();
-    try {
-        const n1 = await fetch(`${API}/test`).then(r => r.ok).catch(e => false);
-    const n2 = await fetch(`${API_V2}/test`).then(r => r.ok).catch(e => false);
-        const data = await res.json();
-        const latency = Date.now() - start;
+        const start = Date.now();
+        try {
+            // Check Node Availability (Grid Status)
+            const n1Status = await fetch(`${API}/test`).then(r => r.ok).catch(e => false);
+            const n2Status = await fetch(`${API_V2}/test`).then(r => r.ok).catch(e => false);
 
-        if (data.success) {
-            // RAM Update
-            document.getElementById('ramUsed').innerText = data.ram.used;
-            document.getElementById('ramTotal').innerText = data.ram.total;
-            document.getElementById('ramFree').innerText = data.ram.free;
-            document.getElementById('ramPercent').innerText = data.ram.percent + "%";
-            document.getElementById('ramFill').style.width = data.ram.percent + "%";
-            document.getElementById('node1Status').innerText = n1 ? "OPERATIONAL" : "OVERLOADED";
-    document.getElementById('node1Status').style.color = n1 ? "#10b981" : "#ef4444";
+            // Update Grid UI
+            document.getElementById('node1Status').innerText = n1Status ? "OPERATIONAL" : "OVERLOADED";
+            document.getElementById('node1Status').style.color = n1Status ? "#10b981" : "#ef4444";
+            document.getElementById('node2Status').innerText = n2Status ? "OPERATIONAL" : "OVERLOADED";
+            document.getElementById('node2Status').style.color = n2Status ? "#10b981" : "#ef4444";
 
-    document.getElementById('node2Status').innerText = n2 ? "OPERATIONAL" : "OVERLOADED";
-    document.getElementById('node2Status').style.color = n2 ? "#10b981" : "#ef4444";
+            // Fetch actual hardware data
+            const res = await fetch(`${API}/api/system/stats`);
+            const data = await res.json();
+            const latency = Date.now() - start;
 
-            // DISK Update (NEW)
-            document.getElementById('diskUsed').innerText = data.disk.used;
-            document.getElementById('diskTotal').innerText = data.disk.total;
-            document.getElementById('diskFree').innerText = data.disk.free;
-            document.getElementById('diskPercent').innerText = data.disk.percent + "%";
-            document.getElementById('diskFill').style.width = data.disk.percent + "%";
+            if (data.success) {
+                // RAM UI
+                document.getElementById('ramUsed').innerText = data.ram.used;
+                document.getElementById('ramTotal').innerText = data.ram.total;
+                document.getElementById('ramFree').innerText = data.ram.free;
+                document.getElementById('ramPercent').innerText = data.ram.percent + "%";
+                document.getElementById('ramFill').style.width = data.ram.percent + "%";
 
-            // Server Info
-            document.getElementById('ping').innerText = latency + " ms";
-            const hours = (data.server.uptime / 3600).toFixed(1);
-            document.getElementById('uptime').innerText = hours + " h";
-            document.getElementById('region').innerText = data.server.region;
+                // DISK UI
+                document.getElementById('diskUsed').innerText = data.disk.used;
+                document.getElementById('diskTotal').innerText = data.disk.total;
+                document.getElementById('diskFree').innerText = data.disk.free;
+                document.getElementById('diskPercent').innerText = data.disk.percent + "%";
+                document.getElementById('diskFill').style.width = data.disk.percent + "%";
+
+                // Server Telemetry Card (Middle)
+                // Note: We use querySelectorAll because you have duplicate IDs (ping/uptime) in your HTML
+                const serverPing = document.querySelectorAll('.val')[0];
+                const serverUptime = document.querySelectorAll('.val')[1];
+                
+                if(serverPing) serverPing.innerText = latency + " ms";
+                if(serverUptime) serverUptime.innerText = (data.server.uptime / 3600).toFixed(1) + " h";
+                
+                document.getElementById('region').innerText = data.server.region;
+            }
+        } catch (e) { 
+            console.error("Telemetry link failed:", e); 
         }
-    } catch (e) { console.error("Telemetry link failed."); }
     }
 
+    // Initialize Loops
     setInterval(fetchStats, 5000);
     fetchStats();
 
     setInterval(syncTelemetry, 5000);
     syncTelemetry();
 </script>
-
 </body>
 </html>
