@@ -1457,8 +1457,7 @@
         else {
             switchView('total');
         }
-        if(typeof updateLeagueLeader === \"function\") 
-           updateLeagueLeader();
+        if(typeof updateLeagueLeader === \"function\") updateLeagueLeader();
         
                                         }
         }
@@ -1616,7 +1615,7 @@ function switchView(viewName) {
 
     toggleMenu();
     if (window.pingInterval) clearInterval(window.pingInterval);
-    const newUrl = window.location.pathname + \"?view=\" + viewName;
+    const newUrl = window.location.pathname + "?view=" + viewName;
         window.history.pushState({ path: newUrl }, '', newUrl);
 
     // Close Menu
