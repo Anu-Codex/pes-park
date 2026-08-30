@@ -1224,6 +1224,9 @@
         <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
         <li onclick="switchView('bdr')"><i class="fa-solid fa-trophy"></i> BDR Rankings</li>
         <li onclick="switchView('market')"><i class="fa-solid fa-chart-line"></i> Market Value</li>
+        <li onclick="switchView('teamBDR')">
+    <i class="fa-solid fa-trophy" style="color:var(--gold)"></i> Club Championship
+        </li>
         <li onclick="window.location.href='transfer.html'">
     <i class="fa-solid fa-cart-shopping"></i> Transfer Market
         </li>
@@ -1647,6 +1650,10 @@ function switchView(viewName) {
     } else if (viewName === 'quickTour') {
     title.innerText = "QUICK TOUR • INDEPENDENT KNOCKOUT";
         renderQuickTour(container);
+    } else if (viewName === 'teamBDR') {
+    title.innerText = "CHAMPIONSHIP STANDINGS";
+    renderTeamBDR(container);
+    }
         } else if (viewName === 'quick') {
         title.innerText = "QUICK TOUR";
         renderQuickTour(container);
@@ -2461,6 +2468,90 @@ updateTopStats();
     el.style.display = isHidden ? 'block' : 'none';
     arrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
         }
+        async function renderTeamBDR(container) {
+    const res = await fetch(`${API}/api/stats/team-bdr`);
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+        container.innerHTML = '<p style="text-align:center; padding:40px;">No Team Data Found.</p>';
+        return;
+    }
+
+    const leader = data[0];
+
+    // 1. CHAMPIONSHIP HEADER
+    let html = `
+        <div style="text-align:center; padding:30px 20px; background:radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 100%);">
+            <img src="https://i.ibb.co/SrtXpYy/ucl-trophy.png" style="width:80px; margin-bottom:15px; filter:drop-shadow(0 0 15px var(--gold));">
+            <h1 style="font-family:\"Rajdhani\"; font-size:2.2rem; margin:0; letter-spacing:2px;">Championship</h1>
+            <p style="color:var(--text-dim); font-size:0.75rem; margin-top:5px;">Team BDR Standings — Season Total</p>
+            
+            <div style="display:inline-flex; align-items:center; gap:10px; background:rgba(245,158,11,0.1); border:1px solid var(--gold); padding:8px 20px; border-radius:50px; margin-top:20px;">
+                <i class="fa-solid fa-star" style="color:var(--gold)"></i>
+                <span style="color:var(--gold); font-weight:800; font-size:0.75rem; text-transform:uppercase;">${leader.name} leads with ${leader.totalBDR} pts</span>
+            </div>
+        </div>
+    `;
+
+    // 2. TEAM CARDS
+    html += data.map((t, i) => `
+        <div class="glass-card" style="margin-bottom:12px; padding:0; border-left: ${i === 0 ? '4px solid var(--gold)' : '1px solid var(--border)'}; overflow:hidden;">
+            <!-- Header Row (Click to Toggle) -->
+            <div onclick="toggleTeamDetails('${i}')" style="padding:20px; display:flex; align-items:center; gap:15px; cursor:pointer;">
+                <div style="width:35px; height:35px; border-radius:50%; background:#1e293b; display:flex; align-items:center; justify-content:center; font-weight:900; color:${i === 0 ? 'var(--gold)' : 'white'};">
+                    ${i === 0 ? '<i class="fa-solid fa-crown"></i>' : i + 1}
+                </div>
+                <div style="flex:1;">
+                    <b style="font-size:1rem; letter-spacing:1px;">${t.name.toUpperCase()}</b>
+                    <span style="display:block; font-size:0.65rem; color:var(--text-dim);">${t.playerCount} players</span>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:1.4rem; font-weight:900; color:${i === 0 ? 'var(--gold)' : 'white'};">${t.totalBDR}</div>
+                    <span style="font-size:0.55rem; color:var(--text-dim); font-weight:bold; letter-spacing:1px;">BDR PTS</span>
+                </div>
+                <i class="fa-solid fa-chevron-down" id="icon-${i}" style="color:var(--text-dim); font-size:0.8rem; transition:0.3s;"></i>
+            </div>
+
+            <!-- Expanded Member List -->
+            <div id="details-${i}" style="display:none; background:rgba(0,0,0,0.2); padding:10px 20px; border-top:1px solid var(--border);">
+                <table style="width:100%; border-collapse:collapse;">
+                    <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                        <th style="text-align:left; padding:10px 0; font-size:0.6rem; color:var(--text-dim);"># PLAYER</th>
+                        <th style="text-align:right; padding:10px 0; font-size:0.6rem; color:var(--text-dim);">BDR</th>
+                    </tr>
+                    ${t.members.sort((a,b) => b.bdr - a.bdr).map((m, idx) => `
+                        <tr>
+                            <td style="padding:12px 0; display:flex; align-items:center; gap:12px;">
+                                <span style="font-size:0.7rem; color:var(--text-dim);">${idx+1}</span>
+                                <img src="${m.image || 'https://via.placeholder.com/35'}" style="width:35px; height:35px; border-radius:8px; object-fit:cover;">
+                                <div>
+                                    <div style="font-size:0.85rem; font-weight:700;">${m.name}</div>
+                                    <div style="font-size:0.6rem; color:var(--text-dim);">${m.grade}</div>
+                                </div>
+                            </td>
+                            <td style="text-align:right; font-weight:900; color:var(--accent); font-size:1.1rem;">${m.bdr}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+                <div style="padding:15px 0; display:flex; justify-content:space-between; border-top:1px solid var(--gold); margin-top:10px;">
+                    <span style="font-size:0.75rem; color:var(--text-dim);">Team Total</span>
+                    <b style="color:var(--gold); font-size:1rem;">${t.totalBDR}</b>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    container.innerHTML = html;
+}
+
+// Toggle function for the accordion effect
+function toggleTeamDetails(id) {
+    const el = document.getElementById(`details-${id}`);
+    const icon = document.getElementById(`icon-${id}`);
+    const isHidden = el.style.display === 'none';
+    el.style.display = isHidden ? 'block' : 'none';
+    icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+}
         async function downloadActiveTab() {
     const tab = document.getElementById('tourTabSelector').value;
     const tourName = document.getElementById('tourNameSelector').options[document.getElementById('tourNameSelector').selectedIndex].text;
