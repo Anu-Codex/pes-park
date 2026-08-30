@@ -1444,18 +1444,24 @@
                             switchTourTab(tour.type);
                         }
                     }, 500);
-                } else if (linkedView) {
-                    switchView(linkedView); // Fallback if tour not found
                 } else {
-            // Default behavior if no link exists in the URL
+                    switchView('total'); // Fallback if tour not found
+                } 
+            } catch (e) {
+                switchView('total');
+            }
+        }
+        else if (linkedView) {
+            switchView(linkedView);
+        }
+        else {
             switchView('total');
-                }
-            updateLeagueLeader();
+        }
+        if(typeof updateLeagueLeader === \"function\") 
+           updateLeagueLeader();
         
                                         }
         }
-    }
-    }
 
     // 3. View Toggler (BDR vs Total Players)
     function toggleView() {
