@@ -1620,8 +1620,7 @@ function switchView(viewName) {
         window.history.pushState({ path: newUrl }, '', newUrl);
 
     // Close Menu
-    menu.classList.remove('active');
-    overlay.style.display = 'none';
+    
     if (viewName === 'uptime') {
         title.innerText = "COMMAND CENTER • LIVE STATS";
         renderUptimeStats(container);
