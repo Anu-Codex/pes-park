@@ -54,6 +54,7 @@
             <button class="nav-tab" onclick="showSection('sec-requests', this)">NMS Inbox</button>
             <button class="nav-tab" onclick="showSection('sec-trophies', this)">CUSTOM TROPHIES</button>
             <button class="nav-tab" onclick="showSection('sec-calendar', this)">EVENT CALENDARS</button>
+            <button class="nav-tab" onclick="showSection('sec-media', this)">Media Center</button>
             <button class="nav-tab" style="color: var(--danger);" onclick="showSection('sec-danger', this)">Danger</button>
         </div>
 
@@ -432,12 +433,31 @@
         <button onclick="saveEvent()" class="btn-green">Post to Calendar</button>
     </div>
         </div>
+        <div id="sec-media" class="admin-section">
+    <div class="sub-box">
+        <h4><i class="fa-solid fa-video"></i> Add Video to Showcase</h4>
+        <input type="text" id="vTitle" placeholder="Video Title (e.g. S7 Grand Final)">
+        <input type="text" id="vUrl" placeholder="Full YouTube Link (https://youtube.com/watch?v=...)">
+        <select id="vCat">
+            <option value="Tournament">Tournament Replay</option>
+            <option value="Highlights">Player Highlights</option>
+            <option value="Tutorial">Tactical Tutorial</option>
+        </select>
+        <button onclick="addMedia()" class="btn-green">Publish to Media Hub</button>
+    </div>
+
+    <div class="sub-box">
+        <h4>Manage Videos</h4>
+        <div id="adminVideoList" class="list-container"></div>
+    </div>
+        </div>
        
 
     </div>
 
     <script>
     const API = "https://pes-park-backend.onrender.com";
+    const API_V2 = "https://nexus-database-v2.onrender.com";
 
     // Security Check
     if (localStorage.getItem('isAdmin') !== 'true') { window.location.href = 'login.html'; }
@@ -1399,6 +1419,36 @@ async function loadTrophyList() {
         body: JSON.stringify(data)
     });
     alert("Calendar Updated!");
+        }
+        async function addMedia() {
+    const data = {
+        title: document.getElementById('vTitle').value,
+        youtubeUrl: document.getElementById('vUrl').value,
+        category: document.getElementById('vCat').value
+    };
+
+    const res = await fetch(`${API_V2}/api/media/add`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    if(res.ok) { alert("Video Added!"); location.reload(); }
+        }
+        async function loadMediaManager() {
+    const res = await fetch(`${API_V2}/api/media/all`);
+    const videos = await res.json();
+    document.getElementById('adminVideoList').innerHTML = videos.map(v => `
+        <div class="row-item">
+            <span>${v.title}</span>
+            <button class="delete-btn" onclick="deleteVideo('${v._id}')">Remove</button>
+        </div>
+    `).join('');
+        }
+        async function deleteVideo(id) {
+    if(confirm("Delete this video?")) {
+        await fetch(`${API_V2}/api/media/${id}`, { method: 'DELETE' });
+        location.reload();
+    }
         }
 
 // 3. Add to the unified window.onload
