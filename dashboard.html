@@ -594,22 +594,50 @@ document.getElementById('attrMent').value = attr.mental || 50;
         image: document.getElementById('pImage').value 
     }));
 
-    setup('updateStatsForm', `${API}/api/players/${document.getElementById('playerSelector').value}`, 'PUT', () => ({ 
-        name: document.getElementById('upName').value, 
-        auctionPrice: document.getElementById('upAuction').value,
-        marketValue: document.getElementById('upMarket').value,
-        bdrPoints: document.getElementById('upBDR').value,
-        nickname: document.getElementById('upNick').value,
-        attributes: {
-        consistency: parseInt(document.getElementById('attrCons').value),
-        bigMatch: parseInt(document.getElementById('attrBig').value),
-        scoring: parseInt(document.getElementById('attrScore').value),
-        playmaking: parseInt(document.getElementById('attrPlay').value),
-        defense: parseInt(document.getElementById('attrDef').value),
-        mental: parseInt(document.getElementById('attrMent').value)
-        }
-    }));
+    const updateForm = document.getElementById('updateStatsForm');
+if (updateForm) {
+    updateForm.onsubmit = async (e) => {
+        e.preventDefault();
+        
+        // Get the CURRENTLY selected ID
+        const id = document.getElementById('playerSelector').value;
+        if (!id) return alert("Please select a player first!");
 
+        const data = {
+            name: document.getElementById('upName').value, // Include Name
+            auctionPrice: document.getElementById('upAuction').value,
+            marketValue: document.getElementById('upMarket').value,
+            bdrPoints: document.getElementById('upBDR').value,
+            nickname: document.getElementById('upNick').value,
+            attributes: {
+                consistency: parseInt(document.getElementById('attrCons').value),
+                bigMatch: parseInt(document.getElementById('attrBig').value),
+                scoring: parseInt(document.getElementById('attrScore').value),
+                playmaking: parseInt(document.getElementById('attrPlay').value),
+                defense: parseInt(document.getElementById('attrDef').value),
+                mental: parseInt(document.getElementById('attrMent').value)
+            }
+        };
+
+        try {
+            const res = await fetch(`${API}/api/players/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert("Player Updated Successfully! ✅");
+                location.reload();
+            } else {
+                alert("Update failed. Check server logs.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Connection Error");
+        }
+    };
+}
     setup('createTeamForm', `${API}/api/teams/create`, 'POST', () => ({
         name: document.getElementById('ntName').value,
         logo: document.getElementById('ntLogo').value,
