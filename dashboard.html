@@ -65,6 +65,7 @@
                 <form id="statsForm">
                     <p style="font-size:0.7rem; color:var(--accent)">Sets the top 4 boxes on index page manually.</p>
                     <div class="grid-2">
+                        <input type="text" id="upName" placeholder="Edit Player Name">
                         <input type="text" id="bdrLeader" placeholder="BDR Leader Name">
                         <input type="number" id="bdrValue" placeholder="Points">
                         <input type="text" id="highestMV" placeholder="MV Leader Name">
@@ -552,6 +553,7 @@
         if(!id) return;
         const res = await fetch(`${API}/api/players/${id}`);
         const p = await res.json();
+        document.getElementById('upName').value = p.name || "";
         document.getElementById('upAuction').value = p.auctionPrice || 0;
         document.getElementById('upMarket').value = p.marketValue || 0;
         document.getElementById('upBDR').value = p.bdrPoints || 0;
@@ -591,6 +593,7 @@ document.getElementById('attrMent').value = attr.mental || 50;
     }));
 
     setup('updateStatsForm', `${API}/api/players/${document.getElementById('playerSelector').value}`, 'PUT', () => ({ 
+        name: document.getElementById('upName').value, 
         auctionPrice: document.getElementById('upAuction').value,
         marketValue: document.getElementById('upMarket').value,
         bdrPoints: document.getElementById('upBDR').value,
@@ -1505,6 +1508,21 @@ async function loadTrophyList() {
     if(res.ok) {
         alert("Announcement Published! 🚀");
         document.getElementById('annMessage').value = "";
+    }
+        }
+        async function deletePlayer(id) {
+    if (!confirm("⚠️ DANGER: Permanently delete this player and all their records?")) return;
+
+    try {
+        const res = await fetch(`${API}/api/players/${id}`, {
+            method: 'DELETE'
+        });
+        if (res.ok) {
+            alert("Player Deleted successfully.");
+            location.reload();
+        }
+    } catch (e) {
+        alert("Error deleting player.");
     }
         }
 
