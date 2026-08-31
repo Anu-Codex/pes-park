@@ -2298,10 +2298,12 @@ function renderWeekendSeries(container) {
             container.innerHTML = '<p style="text-align:center; color:var(--text-dim); padding:20px;">No teams registered yet.</p>';
             return;
         }
+
         container.innerHTML = teams.map(t => `
             <div class="player-row" onclick="window.location.href='team.html?id=${t._id}'" style="cursor:pointer;">
                 <div class="p-details">
-                    <img src="${t.logo || 'https://via.placeholder.com/40'}" class="p-img" style="object-fit: contain; background: transparent;" onerror="this.src='https://via.placeholder.com/40'">
+                    <!-- Added t.logo support -->
+                    <img src="${t.logo || 'https://via.placeholder.com/40'}" class="p-img" style="object-fit: contain; background: transparent;">
                     <div>
                         <span class="p-name">${t.name}</span>
                         <span class="p-nick" style="color:var(--accent)">Official Club</span>
@@ -2313,7 +2315,7 @@ function renderWeekendSeries(container) {
             </div>
         `).join('');
     } catch (err) {
-        container.innerHTML = '<p style="text-align:center; color:red;">Error loading teams.</p>';
+        container.innerHTML = '<p style="text-align:center; color:red;">Error connecting to API.</p>';
     }
         }
         async function renderUptimeStats(container) {
