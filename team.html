@@ -105,57 +105,83 @@
 
     <script>
         const API = "https://pes-park-backend.onrender.com";
-        // CAPTURE UNIQUE ID FROM URL
-        const teamId = new URLSearchParams(window.location.search).get('id');
+const teamId = new URLSearchParams(window.location.search).get('id');
 
-        async function init() {
-            try {
-                // Fetch by ID (Backend needs to support fetching profile by Mongo _id)
-                const res = await fetch(`${API}/api/teams/profile-by-id/${teamId}`);
-                const data = await res.json();
+async function init() {
+    if (!teamId) {
+        document.getElementById('loader').innerHTML = "ERROR: No Team ID provided.";
+        return;
+    }
 
-                document.getElementById('tName').innerText = data.team.name;
-                document.getElementById('tLogo').src = data.team.logo;
-                document.getElementById('playerCount').innerText = `${data.players.length} Players Registered`;
+    try {
+        const res = await fetch(`${API}/api/teams/profile-by-id/${teamId}`);
+        
+        // Check if the response is actually JSON
+        if (!res.ok) throw new Error("API Route not found on Server");
+        
+        const data = await res.json();
 
-                // Calculate Win Rate logic
-                let w=0, d=0, l=0;
-                data.matches.forEach(m => {
-                    const myScore = (m.playerA === data.team.name) ? m.scoreA : m.scoreB;
-                    const oppScore = (m.playerA === data.team.name) ? m.scoreB : m.scoreA;
-                    if(myScore > oppScore) w++; else if(myScore === oppScore) d++; else l++;
-                });
-                document.getElementById('wrPerc').innerText = (data.matches.length > 0 ? Math.round((w/data.matches.length)*100) : 0) + "%";
-                document.getElementById('wrRecord').innerText = `${w}W • ${d}D • ${l}L`;
+        // 1. Set Header
+        document.getElementById('tName').innerText = data.team.name;
+        document.getElementById('tLogo').src = data.team.logo || data.team.logoUrl;
+        document.getElementById('playerCount').innerText = `${data.players.length} Players Registered`;
+        document.getElementById('titleSummaryText').innerText = `${data.trophies.length} Titles`;
 
-                // Trophies
-                document.getElementById('totalTitles').innerText = data.trophies.length;
-                document.getElementById('statLeague').innerText = data.trophies.filter(t => t.title.includes('League')).length;
-                document.getElementById('trophyList').innerHTML = data.trophies.map(t => `<div class="trophy-pill">${t.title}</div>`).join('');
+        // 2. Win Rate Calculation
+        let w=0, d=0, l=0;
+        data.matches.forEach(m => {
+            const isA = m.playerA === data.team.name;
+            const myS = isA ? m.scoreA : m.scoreB;
+            const oppS = isA ? m.scoreB : m.scoreA;
+            if(myS > oppS) w++; else if(myS === oppS) d++; else l++;
+        });
+        const total = data.matches.length;
+        document.getElementById('wrPerc').innerText = (total > 0 ? Math.round((w/total)*100) : 0) + "%";
+        document.getElementById('wrRecord').innerText = `${w}W • ${d}D • ${l}L`;
 
-                // Roster Numbering + Captain Crown logic
-                document.getElementById('playerList').innerHTML = data.players.map((p, i) => {
-                    const isCap = p.isCaptain;
-                    return `
-                        <a href="player.html?id=${p._id}" class="player-row">
-                            <div class="rank-circle ${isCap ? 'cap-gold' : ''}">${isCap ? '<i class="fa-solid fa-crown"></i>' : (i + 1)}</div>
-                            <img src="${p.image}" class="p-avatar">
-                            <div class="p-info">
-                                <h3 class="${isCap ? 'cap-name' : ''}">${p.name} ${isCap ? '<span style="font-weight:400; font-size:0.7rem; color:var(--text-dim)">• Captain</span>' : ''}</h3>
-                                <p style="font-size:0.75rem; color:var(--text-dim); margin-top:3px;">"${p.nickname || p.name}"</p>
-                            </div>
-                            <i class="fa-solid fa-chevron-right" style="color:var(--border); font-size:0.7rem;"></i>
-                        </a>
-                    `;
-                }).join('');
+        // 3. Trophies
+        document.getElementById('statLeague').innerText = data.trophies.length;
+        document.getElementById('trophyList').innerHTML = data.trophies.map(t => 
+            `<div class="trophy-pill">${t.title} - ${t.season}</div>`
+        ).join('');
 
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
+        // 4. Roster List (Image 1 Style)
+        document.getElementById('playerList').innerHTML = data.players.map((p, i) => {
+            const isCap = p.isCaptain || false;
+            return `
+                <a href="player.html?id=${p._id}" class="player-row">
+                    <div class="rank-circle ${isCap ? 'cap-gold' : ''}">
+                        ${isCap ? '<i class="fa-solid fa-crown"></i>' : (i + 1)}
+                    </div>
+                    <img src="${p.image || 'https://via.placeholder.com/50'}" class="p-avatar">
+                    <div class="p-info">
+                        <h3 class="${isCap ? 'cap-name' : ''}">${p.name} ${isCap ? '<span>• Captain</span>' : ''}</h3>
+                        <p>"${p.nickname || p.name}"</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="color:var(--border); font-size:0.7rem;"></i>
+                </a>
+            `;
+        }).join('');
 
-            } catch (e) { document.getElementById('loader').innerHTML = "ERROR: Team Link Broken."; }
-        }
+        // Show Content
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
 
-        if(teamId) init();
+    } catch (e) {
+        console.error(e);
+        document.getElementById('loader').innerHTML = `
+            <div style="text-align:center; padding:20px;">
+                <i class="fa-solid fa-circle-exclamation fa-2x" style="color:#ef4444; margin-bottom:10px;"></i>
+                <br><b>ERROR: Team Link Broken</b>
+                <p style="font-size:0.7rem; color:#64748b; margin-top:10px;">
+                    This usually means the Backend Route is missing.<br>
+                    Please update your server.js file.
+                </p>
+            </div>`;
+    }
+}
+
+init();
     </script>
 </body>
 </html>
