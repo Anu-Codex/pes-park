@@ -74,6 +74,12 @@
                     <button type="submit" class="btn-green">Apply to Homepage</button>
                 </form>
             </div>
+            <div class="sub-box" style="border-left: 4px solid var(--accent);">
+    <h4><i class="fa-solid fa-bullhorn"></i> Post Announcement</h4>
+    <textarea id="annMessage" placeholder="Type community update here..." 
+              style="width: 100%; height: 80px; background: #060b13; border: 1px solid var(--border); color: white; border-radius: 10px; padding: 10px; outline: none;"></textarea>
+    <button onclick="postAnnouncement()" class="btn-green" style="margin-top:10px;">Send Notification</button>
+</div>
         </div>
 
         <!-- 2. PLAYERS (Add/Edit/Delete) -->
@@ -1484,6 +1490,21 @@ async function loadTrophyList() {
     } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
+    }
+        }
+        async function postAnnouncement() {
+    const msg = document.getElementById('annMessage').value;
+    if(!msg) return alert("Message is empty!");
+
+    const res = await fetch(`${API_V2}/api/announcements`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ message: msg })
+    });
+
+    if(res.ok) {
+        alert("Announcement Published! 🚀");
+        document.getElementById('annMessage').value = "";
     }
         }
 
