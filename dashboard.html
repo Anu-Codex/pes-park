@@ -417,6 +417,16 @@
         <i class="fa-solid fa-shield-halved"></i> SYNC MISSING LOGOS
     </button>
             </div>
+            <div class="sub-box" style="border: 1px solid #3b82f6; margin-top:15px;">
+    <h4 style="color:#3b82f6"><i class="fa-solid fa-sync-alt"></i> Selective Pro-Sync</h4>
+    <p style="font-size:0.7rem; color:var(--text-dim);">
+        Recalculates all BDR & Market Values using ONLY <b>Auction</b> and <b>Solo</b> match history. 
+        <span style="color:#ef4444;">Quick Tour matches will be ignored.</span>
+    </p>
+    <button onclick="triggerProSync()" class="btn-gold" style="background: linear-gradient(90deg, #3b82f6, #1d4ed8); color: white;">
+        <i class="fa-solid fa-bolt-lightning"></i> RUN PRO-TOUR SYNC
+    </button>
+            </div>
         </div>
         <div id="sec-calendar" class="admin-section">
     <div class="sub-box">
@@ -1448,6 +1458,32 @@ async function loadTrophyList() {
     if(confirm("Delete this video?")) {
         await fetch(`${API_V2}/api/media/${id}`, { method: 'DELETE' });
         location.reload();
+    }
+        }
+        async function triggerProSync() {
+    if (!confirm("This will reset all current BDR/Market Values and rebuild them ONLY from Auction and Solo match history. Proceed?")) return;
+
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> SYNCING PRO DATA...`;
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/smart/sync-pro-rewards`);
+        const data = await res.json();
+        
+        if (data.success) {
+            alert("✅ " + data.message);
+            location.reload();
+        } else {
+            alert("❌ Error: " + data.error);
+        }
+    } catch (e) {
+        alert("❌ Failed to reach server.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
         }
 
