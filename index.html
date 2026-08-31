@@ -2299,7 +2299,7 @@ function renderWeekendSeries(container) {
             return;
         }
         container.innerHTML = teams.map(t => `
-            <div class="player-row" onclick="window.location.href='team.html?id=${encodeURIComponent(t.name)}'" style="cursor:pointer;">
+            <div class="player-row" onclick="window.location.href='team.html?id=${t._id}'" style="cursor:pointer;">
                 <div class="p-details">
                     <img src="${t.logo || 'https://via.placeholder.com/40'}" class="p-img" style="object-fit: contain; background: transparent;" onerror="this.src='https://via.placeholder.com/40'">
                     <div>
