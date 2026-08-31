@@ -1296,6 +1296,43 @@
     opacity: 0;
     pointer-events: none;
 }
+        .announcement-wrapper {
+    position: relative;
+    background: #1e293b;
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px; border: 1px solid var(--border);
+    cursor: pointer; transition: 0.3s;
+}
+.announcement-wrapper:hover { border-color: var(--accent); color: var(--accent); }
+
+.ann-badge {
+    position: absolute; top: -5px; right: -5px;
+    background: #ef4444; color: white; font-size: 0.65rem;
+    font-weight: 900; padding: 2px 6px; border-radius: 20px;
+    border: 2px solid var(--bg);
+}
+
+.ann-box {
+    position: fixed; top: 90px; right: 20px;
+    width: 300px; max-height: 400px;
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 20px; z-index: 11000; display: none;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.8);
+    overflow: hidden; animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+.ann-header { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.ann-header h4 { margin: 0; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+.ann-header button { background: none; border: none; color: var(--text-dim); font-size: 1.5rem; cursor: pointer; }
+
+.ann-list { padding: 10px; overflow-y: auto; max-height: 320px; }
+.ann-item { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.ann-item:last-child { border-bottom: none; }
+.ann-item p { margin: 0; font-size: 0.85rem; color: #e2e8f0; line-height: 1.4; }
+.ann-item span { font-size: 0.65rem; color: var(--text-dim); margin-top: 5px; display: block; }
+        
     </style>
 </head>
 <body>
@@ -1388,6 +1425,22 @@
             <div class="dropdown-row">
                 <select><option>2026</option></select>
                 <select><option>Season 1 • Current</option></select>
+                <div class="announcement-wrapper" id="annTrigger" onclick="toggleAnnouncements()">
+        <i class="fa-solid fa-bell"></i>
+        <span id="ann-badge" class="ann-badge" style="display:none;">0</span>
+    </div>
+</div>
+
+<!-- FLOATING ANNOUNCEMENT BOX -->
+<div id="ann-box" class="ann-box">
+    <div class="ann-header">
+        <h4><i class="fa-solid fa-bullhorn" style="color:var(--accent)"></i> Community News</h4>
+        <button onclick="toggleAnnouncements()">&times;</button>
+    </div>
+    <div id="ann-list" class="ann-list">
+        <!-- Messages will load here -->
+    </div>
+</div>
             </div>
             <h1 class="league-title">NEXUS LEGENDS<br>Players Data</h1>
             <div class="league-leader">
@@ -1471,7 +1524,8 @@
 
     </div>
     <script>
-    const API = "https://pes-park-backend.onrender.com"; 
+    const API = "https://pes-park-backend.onrender.com";
+    const API_V2 = "https://nexus-database-v2.onrender.com";
     let allPlayers = []; // Global store for players
         
 
@@ -2550,6 +2604,56 @@ updateTopStats();
         }
     });
         }
+        async function loadAnnouncements() {
+    try {
+        const res = await fetch(`${API_V2}/api/announcements`);
+        const data = await res.json();
+        
+        // Use timestamp of the newest message to check if it's "New"
+        const lastRead = localStorage.getItem('nexus_last_ann_read');
+        let unreadCount = 0;
+
+        if (data.length > 0) {
+            data.forEach(ann => {
+                if (!lastRead || new Date(ann.timestamp) > new Date(lastRead)) {
+                    unreadCount++;
+                }
+            });
+
+            // Update Badge
+            const badge = document.getElementById('ann-badge');
+            if (unreadCount > 0) {
+                badge.innerText = unreadCount;
+                badge.style.display = 'block';
+            }
+
+            // Render List
+            document.getElementById('ann-list').innerHTML = data.map(ann => `
+                <div class="ann-item">
+                    <p>${ann.message}</p>
+                    <span>${new Date(ann.timestamp).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                </div>
+            `).join('');
+        } else {
+            document.getElementById('ann-list').innerHTML = `<p style="text-align:center; color:var(--text-dim); font-size:0.8rem; padding:20px;">No new updates.</p>`;
+        }
+    } catch (e) { console.error("Announcements failed to load"); }
+}
+
+function toggleAnnouncements() {
+    const box = document.getElementById('ann-box');
+    if (box.style.display === 'block') {
+        box.style.display = 'none';
+    } else {
+        box.style.display = 'block';
+        // Clear badge and save "Last Read" time
+        document.getElementById('ann-badge').style.display = 'none';
+        localStorage.setItem('nexus_last_ann_read', new Date().toISOString());
+    }
+}
+
+// Initialize in your window.onload
+loadAnnouncements();
 
         async function toggleSubMatches(parentId, arrow) {
     const container = document.getElementById(`subs-${parentId}`);
