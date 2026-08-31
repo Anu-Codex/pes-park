@@ -218,8 +218,17 @@
                 document.getElementById('content').style.display = 'block';
 
             } catch (e) {
-                console.error(e);
-                document.getElementById('loader').innerHTML = "ERROR: Team database link broken.";
+    console.error("Detailed Error:", e);
+    document.getElementById('loader').innerHTML = `
+        <div style="text-align:center; padding:20px;">
+            <i class="fa-solid fa-triangle-exclamation fa-2x" style="color:var(--gold)"></i>
+            <br><br><b>SYSTEM LINK ERROR</b><br>
+            <p style="font-size:0.7rem; color:var(--text-dim); margin-top:10px;">
+                ID Received: ${teamId} <br>
+                Check if your Backend is running and the route exists.
+            </p>
+            <button onclick="location.reload()" style="background:var(--accent); border:none; padding:5px 15px; border-radius:5px; margin-top:10px;">Retry</button>
+        </div>`;
             }
         }
 
