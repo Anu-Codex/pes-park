@@ -2912,25 +2912,51 @@ loadAnnouncements();
             }
             content.innerHTML = tableHtml;
         }
-        // --- 2. FIXTURES ---
+        // --- 2. CLEAN & DISTINCT FIXTURES ---
         else if (tab === 'fixtures') {
             content.innerHTML = data.map(m => `
-                <div class="match-card" style="border-left: 3px solid #00d1ff; padding:15px; margin-bottom:12px; background:rgba(255,255,255,0.02);">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                        <span style="font-size:0.6rem; color:#00d1ff; font-weight:900; text-transform:uppercase;">
-                             <i class="fa-solid fa-sitemap"></i> ${m.stage || 'Round'}
-                        </span>
-                        <span style="font-size:0.6rem; color:var(--text-dim); font-weight:800;">${m.group || 'Group A'}</span>
+                <div class="match-card" style="border-left: 3px solid #00d1ff; padding: 15px; margin-bottom: 12px; background: rgba(255,255,255,0.02); display: block; border-radius: 12px;">
+                    
+                    <!-- Top Metadata Bar: Separates Stage and Group clearly -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-sitemap" style="color:#00d1ff; font-size: 0.7rem;"></i>
+                            <span style="font-size: 0.65rem; color:#00d1ff; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">
+                                ${m.stage || 'Group Stage'}
+                            </span>
+                        </div>
+                        <div style="font-size: 0.65rem; color: var(--text-dim); font-weight: 800; background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px;">
+                            ${m.group || 'Group A'}
+                        </div>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div class="m-team" style="flex:1; font-weight:700; color:white; font-size:0.85rem;">${m.playerA}</div>
-                        <div style="text-align:center; min-width:80px;">
-                            <b class="m-score-badge" style="background:#060b13; border:1px solid rgba(0, 209, 255, 0.3); color:#00d1ff; padding:4px 10px; border-radius:6px;">
+
+                    <!-- Main Match Row: Team vs Team -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                        <!-- Team A -->
+                        <div style="flex: 1; font-weight: 700; color: white; font-size: 0.9rem; text-align: left; line-height: 1.2;">
+                            ${m.playerA}
+                        </div>
+
+                        <!-- Score / VS Badge -->
+                        <div style="min-width: 70px; text-align: center;">
+                            <b style="background: #060b13; border: 1px solid rgba(0, 209, 255, 0.3); color: #00d1ff; padding: 5px 12px; border-radius: 8px; font-family: 'Orbitron'; font-size: 0.85rem; display: inline-block; box-shadow: 0 0 10px rgba(0, 209, 255, 0.1);">
                                 ${m.status === 'Completed' ? `${m.scoreA} - ${m.scoreB}` : 'VS'}
                             </b>
                         </div>
-                        <div class="m-team right" style="flex:1; text-align:right; font-weight:700; color:white; font-size:0.85rem;">${m.playerB}</div>
+
+                        <!-- Team B -->
+                        <div style="flex: 1; font-weight: 700; color: white; font-size: 0.9rem; text-align: right; line-height: 1.2;">
+                            ${m.playerB}
+                        </div>
                     </div>
+
+                    <!-- Optional: Timestamp if match is completed -->
+                    ${m.status === 'Completed' ? `
+                        <div style="text-align: center; margin-top: 10px; font-size: 0.55rem; color: #475569; text-transform: uppercase; font-weight: bold;">
+                            Final Result Verified
+                        </div>
+                    ` : ''}
+
                 </div>
             `).join('');
         }
