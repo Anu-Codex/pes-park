@@ -2800,43 +2800,33 @@ loadAnnouncements();
 
         // --- 2. FIXTURES WITH STAGES ---
         async function switchDuoTab() {
-    const tourId = document.getElementById('duoNameSelector').value;
-    const tab = document.getElementById('duoTabSelector').value;
+    const selector = document.getElementById('duoNameSelector');
+    const tabSelector = document.getElementById('duoTabSelector');
     const content = document.getElementById('duoContent');
+
+    if (!selector || !tabSelector || !content) return;
+
+    const tourId = selector.value;
+    const tab = tabSelector.value;
 
     if (!tourId || tourId === "") {
         content.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-dim);">Select a Duo Tournament to begin.</p>';
         return;
     }
 
-    content.innerHTML = '<p style="text-align:center; padding:30px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Initializing Neural Link...</p>';
+    content.innerHTML = '<p style="text-align:center; padding:30px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Syncing Nexus Duo Link...</p>';
 
     try {
         const endpoint = tab === 'table' ? `standings/${tourId}` : (tab === 'fixtures' ? `fixtures/${tourId}` : `boot/${tourId}`);
-        
-        // 1. Fetch data
-        const res = await fetch(`${API_DUO}/api/duo/${endpoint}`);
+        const res = await fetch(`${API_V2}/api/duo/${endpoint}`);
         const data = await res.json();
 
-        // 2. CRITICAL SAFETY CHECK: Ensure data is an Array
-        console.log("Server Response Data:", data);
-
-        if (!data || (Array.isArray(data) && data.length === 0)) {
-            content.innerHTML = `
-                <div style="text-align:center; padding:40px; color:var(--text-dim);">
-                    <i class="fa-solid fa-database" style="font-size:2rem; margin-bottom:10px; opacity:0.2;"></i>
-                    <p>No data found for this tour.<br>Add matches in Dashboard first.</p>
-                </div>`;
+        if (!Array.isArray(data) || data.length === 0) {
+            content.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-dim);">No data found in this category.</p>';
             return;
         }
 
-        // 3. Check if list is empty
-        if (data.length === 0) {
-            content.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-dim);">No records found for this category.</p>';
-            return;
-        }
-
-        // --- 1. GROUPED POINTS TABLE ---
+        // --- 1. POINTS TABLE ---
         if (tab === 'table') {
             const groups = {};
             data.forEach(team => {
@@ -2858,18 +2848,21 @@ loadAnnouncements();
                         <div class="table-responsive">
                             <table class="pts-table">
                                 <thead>
-                                    <tr><th>#</th><th style="text-align:left;">TEAM</th><th>P</th><th>W</th><th>GD</th><th>PTS</th></tr>
+                                    <tr><th>#</th><th style="text-align:left;">DUO TEAM</th><th>P</th><th>W</th><th>GD</th><th>PTS</th></tr>
                                 </thead>
                                 <tbody>
-                                    ${groupTeams.map((s, i) => `
-                                    <tr class="${i < 2 ? 'row-highlight' : ''}">
-                                        <td style="color:#00d1ff; font-weight:bold; width:30px;">${i + 1}</td>
-                                        <td class="col-team-name" style="color:white; font-weight:700;">${s.participant}</td>
-                                        <td>${s.played || 0}</td>
-                                        <td>${s.wins || 0}</td>
-                                        <td style="font-weight:bold; color:${(s.gf-s.ga) >= 0 ? '#10b981' : '#ef4444'}">${(s.gf-s.ga) > 0 ? '+' : ''}${s.gf - s.ga}</td>
-                                        <td class="col-pts-bold" style="color:#f59e0b !important;">${s.points || 0}</td>
-                                    </tr>`).join('')}
+                                    ${groupTeams.map((s, i) => {
+                                        const gd = (s.gf || 0) - (s.ga || 0);
+                                        return `
+                                        <tr>
+                                            <td style="color:#00d1ff; font-weight:bold; width:30px;">${i + 1}</td>
+                                            <td class="col-team-name" style="color:white; font-weight:700;">${s.participant}</td>
+                                            <td>${s.played || 0}</td>
+                                            <td>${s.wins || 0}</td>
+                                            <td style="font-weight:bold; color:${gd >= 0 ? '#10b981' : '#ef4444'}">${gd > 0 ? '+' + gd : gd}</td>
+                                            <td class="col-pts-bold" style="color:#f59e0b !important;">${s.points || 0}</td>
+                                        </tr>`;
+                                    }).join('')}
                                 </tbody>
                             </table>
                         </div>
@@ -2900,14 +2893,10 @@ loadAnnouncements();
                 </div>
             `).join('');
         }
-        // --- 3. DUO GOLDEN BOOT ---
-        else if (tab === 'boot') {
-            if (!data || data.length === 0) {
-                content.innerHTML = '<p style="text-align:center; padding:20px;">Scorer data not available yet.</p>';
-                return;
-            }
-            data.sort((a,b) => b.totalValue - a.totalValue);
 
+        // --- 3. GOLDEN BOOT ---
+        else if (tab === 'boot') {
+            data.sort((a,b) => b.totalValue - a.totalValue);
             content.innerHTML = `
                 <table class="ranking-table">
                     <thead>
@@ -2918,9 +2907,7 @@ loadAnnouncements();
                         <tr>
                             <td class="rank-col" style="color:#00d1ff;">${i+1}</td>
                             <td class="player-col-name" style="color:white; font-weight:700;">${d.playerName}</td>
-                            <td class="val-col-data" style="text-align:right; font-weight:900; color:#00d1ff; font-family:'Orbitron';">
-                                ${d.totalValue}
-                            </td>
+                            <td style="text-align:right; font-weight:900; color:#00d1ff;">${d.totalValue}</td>
                         </tr>`).join('')}
                     </tbody>
                 </table>`;
@@ -2928,7 +2915,7 @@ loadAnnouncements();
 
     } catch (e) {
         console.error("Duo UI Crash:", e);
-        content.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Connection Interrupted. Please check if the Duo Server is online.</p>';
+        content.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Duo Database Link Interrupted.</p>';
     }
         }
 
