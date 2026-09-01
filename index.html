@@ -2790,7 +2790,7 @@ loadAnnouncements();
     `;
     
     // Fetch Duo Tours
-    const res = await fetch(`${API}/api/duo/tournaments`);
+    const res = await fetch(`${API_V2}/api/duo/tournaments`);
     const tours = await res.json();
     document.getElementById('duoNameSelector').innerHTML = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
     switchDuoTab();
@@ -2803,7 +2803,7 @@ async function switchDuoTab() {
     
     // Determine Endpoint based on tab
     const endpoint = tab === 'table' ? `standings/${tourId}` : (tab === 'fixtures' ? `fixtures/${tourId}` : `boot/${tourId}`);
-    const res = await fetch(`${API}/api/duo/${endpoint}`);
+    const res = await fetch(`${API_V2}/api/duo/${endpoint}`);
     const data = await res.json();
     
     if(tab === 'table') {
