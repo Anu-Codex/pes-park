@@ -2819,9 +2819,14 @@ loadAnnouncements();
         const data = await res.json();
 
         // 2. CRITICAL SAFETY CHECK: Ensure data is an Array
-        if (!Array.isArray(data)) {
-            console.error("Backend returned an object instead of an array:", data);
-            content.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">Server Error: Expected a list but received an error object. Check Backend Logs.</p>`;
+        console.log("Server Response Data:", data);
+
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+            content.innerHTML = `
+                <div style="text-align:center; padding:40px; color:var(--text-dim);">
+                    <i class="fa-solid fa-database" style="font-size:2rem; margin-bottom:10px; opacity:0.2;"></i>
+                    <p>No data found for this tour.<br>Add matches in Dashboard first.</p>
+                </div>`;
             return;
         }
 
