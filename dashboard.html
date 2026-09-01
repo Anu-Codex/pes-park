@@ -557,6 +557,7 @@
             document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Tour to Delete...</option>' + tourOpts;
             document.getElementById('subTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             document.getElementById('rebuildTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
+            document.getElementById('dTTourSelect').innerHTML = '<option value="">Select Tour...</option>' + tourOpts;
             
             
 
@@ -1583,7 +1584,7 @@ async function loadTrophyList() {
 }
 
 async function createDuoFixture() {
-    const tourId = document.getElementById('dtTourSelect').value;
+    const tourId = document.getElementById('dTTourSelect').value;
     const playerA = document.getElementById('dtPlayerA').value;
     const playerB = document.getElementById('dtPlayerB').value;
     
