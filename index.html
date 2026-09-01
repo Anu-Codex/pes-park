@@ -2811,7 +2811,7 @@ async function switchDuoTab() {
     try {
         // Use your Duo API constant here
         const endpoint = tab === 'table' ? `standings/${tourId}` : (tab === 'fixtures' ? `fixtures/${tourId}` : `boot/${tourId}`);
-        const res = await fetch(`${API_DUO}/api/duo/${endpoint}`);
+        const res = await fetch(`${API_V2}/api/duo/${endpoint}`);
         const data = await res.json();
 
         // --- 1. GROUPED POINTS TABLE ---
