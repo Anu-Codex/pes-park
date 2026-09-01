@@ -81,6 +81,24 @@
               style="width: 100%; height: 80px; background: #060b13; border: 1px solid var(--border); color: white; border-radius: 10px; padding: 10px; outline: none;"></textarea>
     <button onclick="postAnnouncement()" class="btn-green" style="margin-top:10px;">Send Notification</button>
 </div>
+            
+    <!-- Part 1: Create Tour -->
+    <div class="sub-box" style="border-left: 4px solid #00d1ff;">
+        <h4><i class="fa-solid fa-users-rectangle"></i> Create Duo Tournament</h4>
+        <input type="text" id="dtName" placeholder="Tournament Name (e.g. S1 Duo Masters)">
+        <button onclick="createDuoTour()" class="btn-green" style="background:#00d1ff; color:#000;">Initialize Duo Tour</button>
+    </div>
+
+    <!-- Part 2: Manual Fixtures -->
+    <div class="sub-box" style="border-left: 4px solid #00d1ff;">
+        <h4><i class="fa-solid fa-calendar-plus"></i> Duo Fixture (Manual Input)</h4>
+        <select id="dtTourSelect"><option>Select Duo Tour...</option></select>
+        <div class="grid-2">
+            <input type="text" id="dtPlayerA" placeholder="Team 1 Name">
+            <input type="text" id="dtPlayerB" placeholder="Team 2 Name">
+        </div>
+        <button onclick="createDuoFixture()" class="btn-gold" style="background:#00d1ff; color:#000;">Add Duo Match</button>
+    </div>
         </div>
 
         <!-- 2. PLAYERS (Add/Edit/Delete) -->
@@ -1554,6 +1572,30 @@ async function loadTrophyList() {
         alert("Error deleting player.");
     }
         }
+        async function createDuoTour() {
+    const name = document.getElementById('dtName').value;
+    const res = await fetch(`${API_V2}/api/duo/create-tour`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ name })
+    });
+    if(res.ok) { alert("Duo Tour Live!"); location.reload(); }
+}
+
+async function createDuoFixture() {
+    const tourId = document.getElementById('dtTourSelect').value;
+    const playerA = document.getElementById('dtPlayerA').value;
+    const playerB = document.getElementById('dtPlayerB').value;
+    
+    const res = await fetch(`${API_V2}/api/duo/create-fixture`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ tourId, playerA, playerB })
+    });
+    if(res.ok) alert("Match Added!");
+}
+
+// In loadAllDashboardData, fetch from /api/duo/tournaments to fill dtTourSelect
 
 // 3. Add to the unified window.onload
 // Inside your existing window.onload = async () => { ... }
