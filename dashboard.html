@@ -91,15 +91,24 @@
 
     <!-- Part 2: Manual Fixtures -->
     <div class="sub-box" style="border-left: 4px solid #00d1ff;">
-        <h4><i class="fa-solid fa-calendar-plus"></i> Duo Fixture (Manual Input)</h4>
-        <select id="dtTourSelect"><option>Select Duo Tour...</option></select>
-        <div class="grid-2">
-            <input type="text" id="dtPlayerA" placeholder="Team 1 Name">
-            <input type="text" id="dtPlayerB" placeholder="Team 2 Name">
-        </div>
-        <button onclick="createDuoFixture()" class="btn-gold" style="background:#00d1ff; color:#000;">Add Duo Match</button>
+    <h4><i class="fa-solid fa-users-viewfinder"></i> Duo Fixture Entry</h4>
+    
+    <div class="grid-2">
+        <select id="dtGroup">
+            <option value="Group A">Group A</option>
+            <option value="Group B">Group B</option>
+            <option value="Group C">Group C</option>
+            <option value="Group D">Group D</option>
+        </select>
+        <input type="text" id="dtStage" placeholder="Stage (e.g. Round 1)">
     </div>
-        </div>
+
+    <div class="grid-2" style="margin-top:10px;">
+        <input type="text" id="dtPlayerA" placeholder="Team 1">
+        <input type="text" id="dtPlayerB" placeholder="Team 2">
+    </div>
+    <button onclick="createDuoFixture()" class="btn-gold" style="background:#00d1ff; color:#000;">Add Duo Match</button>
+</div>
 
         <!-- 2. PLAYERS (Add/Edit/Delete) -->
         <div id="sec-players" class="admin-section">
@@ -1599,11 +1608,14 @@ async function loadDuoFixtures() {
 
         container.innerHTML = matches.map(m => `
             <div class="sub-box" style="border-left: 3px solid #00d1ff; background: rgba(0,0,0,0.2);">
-                <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:10px;">
-                    <span>${m.playerA}</span>
-                    <span style="color:#00d1ff">VS</span>
-                    <span>${m.playerB}</span>
-                </div>
+                <div style="font-size: 0.6rem; color: #94a3b8; margin-bottom: 5px; font-weight: bold;">
+            STAGE: ${m.stage}
+        </div>
+        <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:10px;">
+            <span>${m.playerA}</span>
+            <span style="color:#00d1ff">VS</span>
+            <span>${m.playerB}</span>
+        </div>
                 <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap: 10px;">
                     <input type="number" id="duo-scA-${m._id}" value="${m.scoreA}" placeholder="0">
                     <input type="number" id="duo-scB-${m._id}" value="${m.scoreB}" placeholder="0">
@@ -1630,15 +1642,31 @@ async function loadDuoFixtures() {
 
 async function createDuoFixture() {
     const tourId = document.getElementById('dtTourSelect').value;
+    const stage = document.getElementById('dtStage').value || "Group Stage"; // Get Stage
     const playerA = document.getElementById('dtPlayerA').value;
     const playerB = document.getElementById('dtPlayerB').value;
+    const group = document.getElementById('dtGroup').value;
     
+    if(!tourId || !playerA || !playerB) return alert("Fill all fields");
+
     const res = await fetch(`${API_V2}/api/duo/create-fixture`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ tourId, playerA, playerB })
+        body: JSON.stringify({ 
+            tourId, 
+            playerA, 
+            playerB, 
+            stage: stage, // Send Stage to Backend
+            group
+        })
     });
-    if(res.ok) alert("Match Added!");
+
+    if(res.ok) { 
+        alert("Match Added to " + stage + "! ✅"); 
+        // Reset only team inputs for continuous adding
+        document.getElementById('dtPlayerA').value = "";
+        document.getElementById('dtPlayerB').value = "";
+    }
 }
         async function updateDuoScore(id) {
     const sA = document.getElementById(`duo-scA-${id}`).value;
