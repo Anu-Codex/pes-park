@@ -1368,6 +1368,10 @@
         <hr style="border: 0; border-top: 1px solid var(--border); margin: 10px 0;">
         <li onclick="switchView('soloTour')"><i class="fa-solid fa-user"></i> Solo Challenge</li>
 <li onclick="switchView('auction')"><i class="fa-solid fa-gavel"></i> Auction Tournament</li>
+<li onclick="switchView('duoTour')">
+    <i class="fa-solid fa-user-group" style="color: #00d1ff; text-shadow: 0 0 10px rgba(0, 209, 255, 0.5);"></i> 
+    Duo Challenge (2v2)
+</li>
         <li onclick="switchView('quickTour')" style="border-left: 4px solid #ef4444; background: rgba(239, 68, 68, 0.05);">
     <i class="fa-solid fa-bolt" style="color: #ef4444;"></i> Quick Tour <span style="font-size: 0.6rem; background: #ef4444; color: white; padding: 2px 5px; border-radius: 4px; margin-left: 5px;">LIVE</span>
         </li>
@@ -1819,6 +1823,9 @@ function switchView(viewName) {
     } else if (viewName === 'soloTour') {
         title.innerText = "SOLO TOUR";
         renderSoloTour(container);
+    } else if (viewName === 'duoTour') {
+    title.innerText = "DUO CHALLENGE • 2V2";
+    renderDuoTour(container);
     } else if (viewName === 'quickTour') {
     title.innerText = "QUICK TOUR • INDEPENDENT KNOCKOUT";
         renderQuickTour(container);
@@ -2765,6 +2772,47 @@ loadAnnouncements();
     `).join('');
 
     container.innerHTML = html;
+}
+        async function renderDuoTour(container) {
+    container.innerHTML = `
+        <div class="tour-nav-row">
+            <h4 style="color:#00d1ff">DUO CHALLENGE</h4>
+            <select id="duoNameSelector" class="tour-name-select" onchange="switchDuoTab()">
+                <option value="">Loading...</option>
+            </select>
+            <select id="duoTabSelector" class="tour-dropdown" onchange="switchDuoTab()">
+                <option value="table">Table</option>
+                <option value="fixtures">Fixtures</option>
+                <option value="boot">Golden Boot</option>
+            </select>
+        </div>
+        <div id="duoContent"></div>
+    `;
+    
+    // Fetch Duo Tours
+    const res = await fetch(`${API}/api/duo/tournaments`);
+    const tours = await res.json();
+    document.getElementById('duoNameSelector').innerHTML = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+    switchDuoTab();
+}
+
+async function switchDuoTab() {
+    const tourId = document.getElementById('duoNameSelector').value;
+    const tab = document.getElementById('duoTabSelector').value;
+    const content = document.getElementById('duoContent');
+    
+    // Determine Endpoint based on tab
+    const endpoint = tab === 'table' ? `standings/${tourId}` : (tab === 'fixtures' ? `fixtures/${tourId}` : `boot/${tourId}`);
+    const res = await fetch(`${API}/api/duo/${endpoint}`);
+    const data = await res.json();
+    
+    if(tab === 'table') {
+        // Render Duo Table (Same logic as switchTourTab but uses Duo data)
+    } else if (tab === 'fixtures') {
+        // Render Duo Fixtures
+    } else {
+        // Render Duo Golden Boot
+    }
 }
 
 // Toggle function for the accordion effect
