@@ -2774,11 +2774,12 @@ loadAnnouncements();
     container.innerHTML = html;
 }
         async function renderDuoTour(container) {
+    // 1. Set up the basic structure immediately
     container.innerHTML = `
         <div class="tour-nav-row">
             <h4 style="color:#00d1ff">DUO CHALLENGE</h4>
             <select id="duoNameSelector" class="tour-name-select" onchange="switchDuoTab()">
-                <option value="">Loading...</option>
+                <option value="">Fetching Names...</option>
             </select>
             <select id="duoTabSelector" class="tour-dropdown" onchange="switchDuoTab()">
                 <option value="table">Table</option>
@@ -2788,13 +2789,29 @@ loadAnnouncements();
         </div>
         <div id="duoContent"></div>
     `;
-    
-    // Fetch Duo Tours
-    const res = await fetch(`${API_V2}/api/duo/tournaments`);
-    const tours = await res.json();
-    document.getElementById('duoNameSelector').innerHTML = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
-    switchDuoTab();
-}
+
+    try {
+        // 2. Fetch the list of tournaments from your SEPARATE duo server
+        const res = await fetch(`${API_V2}/api/duo/tournaments`);
+        const tours = await res.json();
+
+        const nameSelector = document.getElementById('duoNameSelector');
+
+        if (Array.isArray(tours) && tours.length > 0) {
+            // 3. Fill the dropdown with names
+            nameSelector.innerHTML = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+            
+            // 4. Automatically load the first tournament's data
+            switchDuoTab(); 
+        } else {
+            nameSelector.innerHTML = '<option value="">No Tours Found</option>';
+            document.getElementById('duoContent').innerHTML = '<p style="text-align:center; padding:20px;">No Duo Tournaments found on server.</p>';
+        }
+    } catch (e) {
+        console.error("Duo Name Fetch Error:", e);
+        document.getElementById('duoNameSelector').innerHTML = '<option value="">Server Error</option>';
+    }
+        }
 
 
 
