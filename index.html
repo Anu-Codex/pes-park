@@ -2796,7 +2796,10 @@ loadAnnouncements();
     switchDuoTab();
 }
 
-async function switchDuoTab() {
+
+
+        // --- 2. FIXTURES WITH STAGES ---
+        async function switchDuoTab() {
     const tourId = document.getElementById('duoNameSelector').value;
     const tab = document.getElementById('duoTabSelector').value;
     const content = document.getElementById('duoContent');
@@ -2806,22 +2809,30 @@ async function switchDuoTab() {
         return;
     }
 
-    content.innerHTML = '<p style="text-align:center; padding:30px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Synchronizing Neural Link...</p>';
+    content.innerHTML = '<p style="text-align:center; padding:30px;"><i class="fa-solid fa-circle-notch fa-spin"></i> Initializing Neural Link...</p>';
 
     try {
-        // Use your Duo API constant here
         const endpoint = tab === 'table' ? `standings/${tourId}` : (tab === 'fixtures' ? `fixtures/${tourId}` : `boot/${tourId}`);
-        const res = await fetch(`${API_V2}/api/duo/${endpoint}`);
+        
+        // 1. Fetch data
+        const res = await fetch(`${API_DUO}/api/duo/${endpoint}`);
         const data = await res.json();
+
+        // 2. CRITICAL SAFETY CHECK: Ensure data is an Array
+        if (!Array.isArray(data)) {
+            console.error("Backend returned an object instead of an array:", data);
+            content.innerHTML = `<p style="text-align:center; color:#ef4444; padding:20px;">Server Error: Expected a list but received an error object. Check Backend Logs.</p>`;
+            return;
+        }
+
+        // 3. Check if list is empty
+        if (data.length === 0) {
+            content.innerHTML = '<p style="text-align:center; padding:20px; color:var(--text-dim);">No records found for this category.</p>';
+            return;
+        }
 
         // --- 1. GROUPED POINTS TABLE ---
         if (tab === 'table') {
-            if (!data || data.length === 0) {
-                content.innerHTML = '<p style="text-align:center; padding:20px;">Points table not yet initialized.</p>';
-                return;
-            }
-
-            // Grouping logic: Organize teams by their assigned "group"
             const groups = {};
             data.forEach(team => {
                 const gName = team.group || "Group A";
@@ -2832,32 +2843,28 @@ async function switchDuoTab() {
             let tableHtml = '';
             for (const groupName in groups) {
                 const groupTeams = groups[groupName];
-                // Sort: Pts > GD > Wins
-                groupTeams.sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga) || b.wins - a.wins);
+                groupTeams.sort((a, b) => b.points - a.points || (b.gf - b.ga) - (a.gf - a.ga));
 
                 tableHtml += `
                     <div style="margin-bottom: 35px;">
-                        <div style="background:rgba(0, 209, 255, 0.1); color:#00d1ff; padding:10px 20px; border-radius:12px; font-weight:900; font-family:'Orbitron'; font-size:0.8rem; margin-bottom:12px; display:inline-block; border:1px solid rgba(0, 209, 255, 0.3); letter-spacing:2px;">
+                        <div style="background:rgba(0, 209, 255, 0.1); color:#00d1ff; padding:8px 15px; border-radius:8px; font-weight:900; font-size:0.7rem; margin-bottom:10px; display:inline-block; border:1px solid rgba(0, 209, 255, 0.3);">
                             <i class="fa-solid fa-layer-group"></i> ${groupName.toUpperCase()}
                         </div>
                         <div class="table-responsive">
                             <table class="pts-table">
                                 <thead>
-                                    <tr><th>#</th><th style="text-align:left;">DUO TEAM</th><th>P</th><th>W</th><th>GD</th><th style="color:#f59e0b">PTS</th></tr>
+                                    <tr><th>#</th><th style="text-align:left;">TEAM</th><th>P</th><th>W</th><th>GD</th><th>PTS</th></tr>
                                 </thead>
                                 <tbody>
-                                    ${groupTeams.map((s, i) => {
-                                        const gd = (s.gf || 0) - (s.ga || 0);
-                                        return `
-                                        <tr class="${i < 2 ? 'row-highlight' : ''}">
-                                            <td style="color:#00d1ff; font-weight:bold; width:30px;">${i + 1}</td>
-                                            <td class="col-team-name" style="color:white; font-weight:700;">${s.participant}</td>
-                                            <td>${s.played}</td>
-                                            <td>${s.wins}</td>
-                                            <td style="font-weight:bold; color:${gd >= 0 ? '#10b981' : '#ef4444'}">${gd > 0 ? '+'+gd : gd}</td>
-                                            <td class="col-pts-bold" style="color:#f59e0b !important;">${s.points}</td>
-                                        </tr>`;
-                                    }).join('')}
+                                    ${groupTeams.map((s, i) => `
+                                    <tr class="${i < 2 ? 'row-highlight' : ''}">
+                                        <td style="color:#00d1ff; font-weight:bold; width:30px;">${i + 1}</td>
+                                        <td class="col-team-name" style="color:white; font-weight:700;">${s.participant}</td>
+                                        <td>${s.played || 0}</td>
+                                        <td>${s.wins || 0}</td>
+                                        <td style="font-weight:bold; color:${(s.gf-s.ga) >= 0 ? '#10b981' : '#ef4444'}">${(s.gf-s.ga) > 0 ? '+' : ''}${s.gf - s.ga}</td>
+                                        <td class="col-pts-bold" style="color:#f59e0b !important;">${s.points || 0}</td>
+                                    </tr>`).join('')}
                                 </tbody>
                             </table>
                         </div>
@@ -2866,34 +2873,28 @@ async function switchDuoTab() {
             content.innerHTML = tableHtml;
         }
 
-        // --- 2. FIXTURES WITH STAGES ---
+        // --- 2. FIXTURES ---
         else if (tab === 'fixtures') {
-            if (!data || data.length === 0) {
-                content.innerHTML = '<p style="text-align:center; padding:20px;">No fixtures scheduled for this tour.</p>';
-                return;
-            }
-
             content.innerHTML = data.map(m => `
                 <div class="match-card" style="border-left: 3px solid #00d1ff; padding:15px; margin-bottom:12px; background:rgba(255,255,255,0.02);">
                     <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                        <span style="font-size:0.6rem; color:#00d1ff; font-weight:900; letter-spacing:1px; text-transform:uppercase;">
-                             <i class="fa-solid fa-sitemap"></i> ${m.stage || 'Group Stage'}
+                        <span style="font-size:0.6rem; color:#00d1ff; font-weight:900; text-transform:uppercase;">
+                             <i class="fa-solid fa-sitemap"></i> ${m.stage || 'Round'}
                         </span>
                         <span style="font-size:0.6rem; color:var(--text-dim); font-weight:800;">${m.group || 'Group A'}</span>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div class="m-team" style="flex:1; font-weight:700; color:white; font-size:0.9rem;">${m.playerA}</div>
+                        <div class="m-team" style="flex:1; font-weight:700; color:white; font-size:0.85rem;">${m.playerA}</div>
                         <div style="text-align:center; min-width:80px;">
-                            <b class="m-score-badge" style="background:#060b13; border:1px solid rgba(0, 209, 255, 0.4); color:#00d1ff; padding:5px 12px; border-radius:8px; font-family:'Orbitron';">
+                            <b class="m-score-badge" style="background:#060b13; border:1px solid rgba(0, 209, 255, 0.3); color:#00d1ff; padding:4px 10px; border-radius:6px;">
                                 ${m.status === 'Completed' ? `${m.scoreA} - ${m.scoreB}` : 'VS'}
                             </b>
                         </div>
-                        <div class="m-team right" style="flex:1; text-align:right; font-weight:700; color:white; font-size:0.9rem;">${m.playerB}</div>
+                        <div class="m-team right" style="flex:1; text-align:right; font-weight:700; color:white; font-size:0.85rem;">${m.playerB}</div>
                     </div>
                 </div>
             `).join('');
         }
-
         // --- 3. DUO GOLDEN BOOT ---
         else if (tab === 'boot') {
             if (!data || data.length === 0) {
@@ -2922,9 +2923,9 @@ async function switchDuoTab() {
 
     } catch (e) {
         console.error("Duo UI Crash:", e);
-        content.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Duo Database Link Interrupted.</p>';
+        content.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Connection Interrupted. Please check if the Duo Server is online.</p>';
     }
-}
+        }
 
 // Toggle function for the accordion effect
 function toggleTeamDetails(id) {
