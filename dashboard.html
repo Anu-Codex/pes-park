@@ -92,7 +92,7 @@
     <!-- Part 2: Manual Fixtures -->
     <div class="sub-box" style="border-left: 4px solid #00d1ff;">
         <h4><i class="fa-solid fa-calendar-plus"></i> Duo Fixture (Manual Input)</h4>
-        <select id="dTTourSelect"><option>Select Duo Tour...</option></select>
+        <select id="dtTourSelect"><option>Select Duo Tour...</option></select>
         <div class="grid-2">
             <input type="text" id="dtPlayerA" placeholder="Team 1 Name">
             <input type="text" id="dtPlayerB" placeholder="Team 2 Name">
@@ -519,6 +519,8 @@
             const tours = await tRes.json();
             const teams = await teamRes.json();
             const requests = await rRes.json();
+            const duoRes = await fetch(`${API_V2}/api/duo/tournaments`);
+            const duoTours = await duoRes.json();
 
             // Populate Player Selectors
             const pOpts = players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
@@ -557,7 +559,10 @@
             document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Tour to Delete...</option>' + tourOpts;
             document.getElementById('subTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             document.getElementById('rebuildTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
-            document.getElementById('dTTourSelect').innerHTML = '<option value="">Select Tour...</option>' + tourOpts;
+            
+            const duoOpts = duoTours.map(t => `<option value="${t._id}">${t.name} (DUO)</option>`).join('');
+            document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
+            document.getElementById('srTourSelect').innerHTML += duoOpts;
             
             
 
@@ -1573,6 +1578,46 @@ async function loadTrophyList() {
         alert("Error deleting player.");
     }
         }
+        // Function to load DUO fixtures into the score update area
+async function loadDuoFixtures() {
+    const tourId = document.getElementById('srTourSelect').value; // Reuse the same dropdown
+    const container = document.getElementById('srFixtureList');
+
+    if (!tourId) return;
+
+    container.innerHTML = '<p style="text-align:center;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching Duo Matches...</p>';
+
+    try {
+        // FETCH FROM API_DUO (Important!)
+        const res = await fetch(`${API_V2}/api/duo/fixtures/${tourId}`);
+        const matches = await res.json();
+
+        if (matches.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:var(--text-dim);">No Duo fixtures found.</p>';
+            return;
+        }
+
+        container.innerHTML = matches.map(m => `
+            <div class="sub-box" style="border-left: 3px solid #00d1ff; background: rgba(0,0,0,0.2);">
+                <div style="display:flex; justify-content:space-between; font-weight:bold; margin-bottom:10px;">
+                    <span>${m.playerA}</span>
+                    <span style="color:#00d1ff">VS</span>
+                    <span>${m.playerB}</span>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap: 10px;">
+                    <input type="number" id="duo-scA-${m._id}" value="${m.scoreA}" placeholder="0">
+                    <input type="number" id="duo-scB-${m._id}" value="${m.scoreB}" placeholder="0">
+                    <button onclick="updateDuoScore('${m._id}')" class="btn-green" style="background:#00d1ff; color:black; padding:10px;">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (e) {
+        container.innerHTML = '<p style="color:red; text-align:center;">Failed to load Duo matches.</p>';
+    }
+}
         async function createDuoTour() {
     const name = document.getElementById('dtName').value;
     const res = await fetch(`${API_V2}/api/duo/create-tour`, {
@@ -1584,7 +1629,7 @@ async function loadTrophyList() {
 }
 
 async function createDuoFixture() {
-    const tourId = document.getElementById('dTTourSelect').value;
+    const tourId = document.getElementById('dtTourSelect').value;
     const playerA = document.getElementById('dtPlayerA').value;
     const playerB = document.getElementById('dtPlayerB').value;
     
@@ -1595,6 +1640,21 @@ async function createDuoFixture() {
     });
     if(res.ok) alert("Match Added!");
 }
+        async function updateDuoScore(id) {
+    const sA = document.getElementById(`duo-scA-${id}`).value;
+    const sB = document.getElementById(`duo-scB-${id}`).value;
+
+    const res = await fetch(`${API_V2}/api/duo/update-score/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ scoreA: sA, scoreB: sB })
+    });
+
+    if(res.ok) {
+        alert("Duo Score Updated! ✅");
+        loadDuoFixtures();
+    }
+        }
 
 // In loadAllDashboardData, fetch from /api/duo/tournaments to fill dtTourSelect
 
