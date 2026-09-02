@@ -1799,27 +1799,35 @@ async function syncDuoDropdowns() {
     document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Duo Tournament...</option>' + opts;
 }
 async function recalculateDuoTable() {
+    // 1. Get the ID from the management dropdown
     const tourId = document.getElementById('dmTourSelect').value;
-    if (!tourId) return alert("Select a Duo Tournament first!");
+    
+    if (!tourId) {
+        return alert("❌ ERROR: Please select a Duo Tournament from the Result Centre dropdown first!");
+    }
 
-    if (!confirm("This will rebuild the entire points table for this tour from scratch using match history. Proceed?")) return;
+    if (!confirm("This will WIPE the current table and rebuild it using match history. Use this to fix mistakes. Proceed?")) return;
 
-    const btn = event.target.closest('button');
+    const btn = event.target;
     const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Recalculating...';
+    btn.innerHTML = '<i class="fa-solid fa-cog fa-spin"></i> REBUILDING...';
     btn.disabled = true;
 
     try {
+        // 2. Call the NEW Duo API
         const res = await fetch(`${API_V2}/api/duo/recalculate/${tourId}`);
         const data = await res.json();
         
         if (data.success) {
-            alert("✅ Duo Standings fixed and updated!");
+            alert("✅ SUCCESS: " + data.message);
+            // Refresh the management list to show updated status
+            if (typeof loadDuoManagementFixtures === "function") loadDuoManagementFixtures();
         } else {
-            alert("❌ Error: " + data.error);
+            alert("❌ BACKEND ERROR: " + data.error);
         }
     } catch (e) {
-        alert("❌ Failed to reach Duo Server.");
+        console.error("Recalc Fetch Failed:", e);
+        alert("❌ CONNECTION ERROR: Duo Server is not responding.");
     } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
