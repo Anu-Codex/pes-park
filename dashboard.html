@@ -1717,7 +1717,7 @@ async function loadDuoManagementFixtures() {
     container.innerHTML = '<p style="text-align:center; padding:10px;">Syncing Duo Records...</p>';
 
     try {
-        const res = await fetch(`${API_DUO}/api/duo/fixtures/${tourId}`);
+        const res = await fetch(`${API_V2}/api/duo/fixtures/${tourId}`);
         const matches = await res.json();
 
         if (matches.length === 0) {
@@ -1757,7 +1757,7 @@ async function updateDuoResult(id) {
 
     if(sA === "" || sB === "") return alert("Enter both scores!");
 
-    const res = await fetch(`${API_DUO}/api/duo/update-score/${id}`, {
+    const res = await fetch(`${API_V2}/api/duo/update-score/${id}`, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ scoreA: parseInt(sA), scoreB: parseInt(sB) })
@@ -1773,7 +1773,7 @@ async function updateDuoResult(id) {
 async function deleteDuoFixture(id) {
     if(!confirm("⚠️ Delete this fixture permanently? This will NOT automatically revert points in the table.")) return;
 
-    const res = await fetch(`${API_DUO}/api/duo/fixture/${id}`, { method: 'DELETE' });
+    const res = await fetch(`${API_V2}/api/duo/fixture/${id}`, { method: 'DELETE' });
     if(res.ok) {
         alert("Fixture Removed.");
         loadDuoManagementFixtures();
@@ -1782,7 +1782,7 @@ async function deleteDuoFixture(id) {
 
 // 4. Initial Sync: Add this to your loadAllDashboardData()
 async function syncDuoDropdowns() {
-    const res = await fetch(`${API_DUO}/api/duo/tournaments`);
+    const res = await fetch(`${API_V2}/api/duo/tournaments`);
     const tours = await res.json();
     const opts = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
     
