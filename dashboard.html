@@ -1720,60 +1720,72 @@ async function createDuoFixture() {
 async function loadDuoManagementFixtures() {
     const tourId = document.getElementById('dmTourSelect').value;
     const container = document.getElementById('duoManagementList');
-
     if (!tourId) return;
 
-    container.innerHTML = '<p style="text-align:center; padding:10px;">Syncing Duo Records...</p>';
+    container.innerHTML = '<p style="text-align:center; padding:10px;">Fetching Fixtures...</p>';
 
     try {
         const res = await fetch(`${API_V2}/api/duo/fixtures/${tourId}`);
         const matches = await res.json();
 
-        if (matches.length === 0) {
-            container.innerHTML = '<p style="text-align:center; padding:10px;">No fixtures found.</p>';
-            return;
-        }
-
         container.innerHTML = matches.map(m => `
-            <div class="sub-box" style="background: rgba(0,0,0,0.3); border: 1px solid #1e293b; margin-bottom: 10px; padding: 12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-                    <span style="font-size:0.6rem; color:#00d1ff;">${m.group} | ${m.stage}</span>
-                    <button onclick="deleteDuoFixture('${m._id}')" style="width:auto; padding:5px 10px; background:none; color:#ef4444; border:1px solid #ef4444; font-size:0.6rem; border-radius:5px;">DELETE</button>
+            <div class="sub-box" style="background: rgba(0,0,0,0.3); border: 1px solid #1e293b; margin-bottom: 15px; padding: 15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <!-- EDITABLE METADATA -->
+                    <div style="display:flex; gap:5px;">
+                        <select id="edit-grp-${m._id}" style="width:auto; padding:4px; font-size:0.6rem; margin:0; background:#1e293b;">
+                            <option value="Group A" ${m.group === 'Group A' ? 'selected' : ''}>GRP A</option>
+                            <option value="Group B" ${m.group === 'Group B' ? 'selected' : ''}>GRP B</option>
+                            <option value="Group C" ${m.group === 'Group C' ? 'selected' : ''}>GRP C</option>
+                            <option value="Group D" ${m.group === 'Group D' ? 'selected' : ''}>GRP D</option>
+                            <option value="Group E" ${m.group === 'Group E' ? 'selected' : ''}>GRP E</option>
+                            <option value="Group F" ${m.group === 'Group F' ? 'selected' : ''}>GRP F</option>
+                        </select>
+                        <input type="text" id="edit-stg-${m._id}" value="${m.stage || ''}" placeholder="Stage" style="width:70px; padding:4px; font-size:0.6rem; margin:0; background:#1e293b;">
+                    </div>
+                    <button onclick="deleteDuoFixture('${m._id}')" style="width:auto; padding:4px 8px; background:none; color:#ef4444; border:1px solid #ef4444; font-size:0.6rem; border-radius:4px;">DELETE</button>
                 </div>
                 
-                <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.85rem; margin-bottom:10px;">
-                    <span>${m.playerA}</span>
-                    <span style="color:var(--accent);">VS</span>
-                    <span>${m.playerB}</span>
+                <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.85rem; margin-bottom:10px; color:white;">
+                    <span style="flex:1;">${m.playerA}</span>
+                    <span style="color:#00d1ff; margin:0 10px;">VS</span>
+                    <span style="flex:1; text-align:right;">${m.playerB}</span>
                 </div>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items:center;">
-                    <input type="number" id="dm-scA-${m._id}" value="${m.scoreA}" placeholder="0">
-                    <input type="number" id="dm-scB-${m._id}" value="${m.scoreB}" placeholder="0">
-                    <button onclick="updateDuoResult('${m._id}')" class="btn-green" style="background:#00d1ff; color:black; padding: 10px; margin:0;">
-                        <i class="fa-solid fa-check"></i>
+                    <input type="number" id="dm-scA-${m._id}" value="${m.scoreA}" placeholder="0" style="margin:0;">
+                    <input type="number" id="dm-scB-${m._id}" value="${m.scoreB}" placeholder="0" style="margin:0;">
+                    <button onclick="updateDuoResult('${m._id}')" class="btn-green" style="background:#00d1ff; color:black; padding: 10px; margin:0; width:45px;">
+                        <i class="fa-solid fa-save"></i>
                     </button>
                 </div>
             </div>
         `).join('');
-    } catch (e) { container.innerHTML = "Error loading management list."; }
+    } catch (e) { console.log(e); }
 }
 
 // 2. Submit Score to Duo Result Centre
 async function updateDuoResult(id) {
     const sA = document.getElementById(`dm-scA-${id}`).value;
     const sB = document.getElementById(`dm-scB-${id}`).value;
+    const group = document.getElementById(`edit-grp-${id}`).value; // NEW
+    const stage = document.getElementById(`edit-stg-${id}`).value; // NEW
 
     if(sA === "" || sB === "") return alert("Enter both scores!");
 
     const res = await fetch(`${API_V2}/api/duo/update-score/${id}`, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ scoreA: parseInt(sA), scoreB: parseInt(sB) })
+        body: JSON.stringify({ 
+            scoreA: parseInt(sA), 
+            scoreB: parseInt(sB),
+            group: group,
+            stage: stage
+        })
     });
 
     if(res.ok) {
-        alert("Duo Result Verified! ✅");
+        alert("Saved! Now click 'SYNC TABLE' to move the team.");
         loadDuoManagementFixtures();
     }
 }
