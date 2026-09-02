@@ -119,6 +119,17 @@
         ADD DUO MATCH
     </button>
 </div>
+            <!-- 3. DUO RESULT CENTRE & DELETE -->
+<div class="sub-box" style="border-left: 4px solid #ef4444;">
+    <h4><i class="fa-solid fa-trophy"></i> Duo Result Centre</h4>
+    <select id="dmTourSelect" onchange="loadDuoManagementFixtures()">
+        <option value="">Select Duo Tour to Manage...</option>
+    </select>
+    
+    <div id="duoManagementList" class="list-container" style="margin-top:15px; border-color:#334155;">
+        <p style="text-align:center; color:var(--text-dim); padding:10px;">Select a tour to view/edit matches.</p>
+    </div>
+</div>
         </div>
 
         <!-- 2. PLAYERS (Add/Edit/Delete) -->
@@ -1694,6 +1705,88 @@ async function createDuoFixture() {
         loadDuoFixtures();
     }
         }
+        // 1. Load Duo Matches for Management
+async function loadDuoManagementFixtures() {
+    const tourId = document.getElementById('dmTourSelect').value;
+    const container = document.getElementById('duoManagementList');
+
+    if (!tourId) return;
+
+    container.innerHTML = '<p style="text-align:center; padding:10px;">Syncing Duo Records...</p>';
+
+    try {
+        const res = await fetch(`${API_DUO}/api/duo/fixtures/${tourId}`);
+        const matches = await res.json();
+
+        if (matches.length === 0) {
+            container.innerHTML = '<p style="text-align:center; padding:10px;">No fixtures found.</p>';
+            return;
+        }
+
+        container.innerHTML = matches.map(m => `
+            <div class="sub-box" style="background: rgba(0,0,0,0.3); border: 1px solid #1e293b; margin-bottom: 10px; padding: 12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                    <span style="font-size:0.6rem; color:#00d1ff;">${m.group} | ${m.stage}</span>
+                    <button onclick="deleteDuoFixture('${m._id}')" style="width:auto; padding:5px 10px; background:none; color:#ef4444; border:1px solid #ef4444; font-size:0.6rem; border-radius:5px;">DELETE</button>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; font-weight:700; font-size:0.85rem; margin-bottom:10px;">
+                    <span>${m.playerA}</span>
+                    <span style="color:var(--accent);">VS</span>
+                    <span>${m.playerB}</span>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap: 10px; align-items:center;">
+                    <input type="number" id="dm-scA-${m._id}" value="${m.scoreA}" placeholder="0">
+                    <input type="number" id="dm-scB-${m._id}" value="${m.scoreB}" placeholder="0">
+                    <button onclick="updateDuoResult('${m._id}')" class="btn-green" style="background:#00d1ff; color:black; padding: 10px; margin:0;">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) { container.innerHTML = "Error loading management list."; }
+}
+
+// 2. Submit Score to Duo Result Centre
+async function updateDuoResult(id) {
+    const sA = document.getElementById(`dm-scA-${id}`).value;
+    const sB = document.getElementById(`dm-scB-${id}`).value;
+
+    if(sA === "" || sB === "") return alert("Enter both scores!");
+
+    const res = await fetch(`${API_DUO}/api/duo/update-score/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ scoreA: parseInt(sA), scoreB: parseInt(sB) })
+    });
+
+    if(res.ok) {
+        alert("Duo Result Verified! ✅");
+        loadDuoManagementFixtures();
+    }
+}
+
+// 3. Delete Duo Fixture
+async function deleteDuoFixture(id) {
+    if(!confirm("⚠️ Delete this fixture permanently? This will NOT automatically revert points in the table.")) return;
+
+    const res = await fetch(`${API_DUO}/api/duo/fixture/${id}`, { method: 'DELETE' });
+    if(res.ok) {
+        alert("Fixture Removed.");
+        loadDuoManagementFixtures();
+    }
+}
+
+// 4. Initial Sync: Add this to your loadAllDashboardData()
+async function syncDuoDropdowns() {
+    const res = await fetch(`${API_DUO}/api/duo/tournaments`);
+    const tours = await res.json();
+    const opts = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+    
+    document.getElementById('dmTourSelect').innerHTML = '<option value="">Select Duo Tour to Manage...</option>' + opts;
+    document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Duo Tournament...</option>' + opts;
+}
 
 // In loadAllDashboardData, fetch from /api/duo/tournaments to fill dtTourSelect
 
