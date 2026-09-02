@@ -129,6 +129,15 @@
     <div id="duoManagementList" class="list-container" style="margin-top:15px; border-color:#334155;">
         <p style="text-align:center; color:var(--text-dim); padding:10px;">Select a tour to view/edit matches.</p>
     </div>
+    <!-- Inside the Duo Result Centre sub-box -->
+<div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+    <p style="font-size:0.65rem; color:var(--text-dim); margin-bottom:10px;">
+        Use this if you deleted a match or made a scoring mistake to fix the table.
+    </p>
+    <button onclick="recalculateDuoTable()" class="btn-gold" style="background:#f59e0b; color:black;">
+        <i class="fa-solid fa-arrows-rotate"></i> SYNC DUO POINTS TABLE
+    </button>
+</div>
 </div>
         </div>
 
@@ -1789,7 +1798,33 @@ async function syncDuoDropdowns() {
     document.getElementById('dmTourSelect').innerHTML = '<option value="">Select Duo Tour to Manage...</option>' + opts;
     document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Duo Tournament...</option>' + opts;
 }
+async function recalculateDuoTable() {
+    const tourId = document.getElementById('dmTourSelect').value;
+    if (!tourId) return alert("Select a Duo Tournament first!");
 
+    if (!confirm("This will rebuild the entire points table for this tour from scratch using match history. Proceed?")) return;
+
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Recalculating...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API_V2}/api/duo/recalculate/${tourId}`);
+        const data = await res.json();
+        
+        if (data.success) {
+            alert("✅ Duo Standings fixed and updated!");
+        } else {
+            alert("❌ Error: " + data.error);
+        }
+    } catch (e) {
+        alert("❌ Failed to reach Duo Server.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
 // In loadAllDashboardData, fetch from /api/duo/tournaments to fill dtTourSelect
 
 // 3. Add to the unified window.onload
