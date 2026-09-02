@@ -593,6 +593,7 @@
             
             const duoOpts = duoTours.map(t => `<option value="${t._id}">${t.name} (DUO)</option>`).join('');
             document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
+            document.getElementById('dmTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('srTourSelect').innerHTML += duoOpts;
             
             
