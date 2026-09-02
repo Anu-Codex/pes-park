@@ -1675,28 +1675,28 @@ async function loadDuoFixtures() {
 
 async function createDuoFixture() {
     const tourId = document.getElementById('dtTourSelect').value;
-    const stage = document.getElementById('dtStage').value || "Group Stage"; // Get Stage
-    const playerA = document.getElementById('dtPlayerA').value;
-    const playerB = document.getElementById('dtPlayerB').value;
-    const group = document.getElementById('dtGroup').value;
-    
-    if(!tourId || !playerA || !playerB) return alert("Fill all fields");
+    const groupSelect = document.getElementById('dtGroup');
+    const groupValue = groupSelect.options[groupSelect.selectedIndex].value; // Stronger capture
+    const stage = document.getElementById('dtStage').value || "Group Stage";
+    const pA = document.getElementById('dtPlayerA').value;
+    const pB = document.getElementById('dtPlayerB').value;
 
-    const res = await fetch(`${API_V2}/api/duo/create-fixture`, {
+    if(!tourId || !pA || !pB) return alert("Fill Team 1 and Team 2!");
+
+    const res = await fetch(`${API_DUO}/api/duo/create-fixture`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ 
             tourId, 
-            playerA, 
-            playerB, 
-            stage: stage, // Send Stage to Backend
-            group
+            playerA: pA, 
+            playerB: pB, 
+            stage, 
+            group: groupValue // Sends A, B, C, D, E, or F
         })
     });
 
-    if(res.ok) { 
-        alert("Match Added to " + stage + "! ✅"); 
-        // Reset only team inputs for continuous adding
+    if(res.ok) {
+        alert(`Match added to ${groupValue}! ✅`);
         document.getElementById('dtPlayerA').value = "";
         document.getElementById('dtPlayerB').value = "";
     }
