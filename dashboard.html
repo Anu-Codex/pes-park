@@ -1768,24 +1768,24 @@ async function loadDuoManagementFixtures() {
 async function updateDuoResult(id) {
     const sA = document.getElementById(`dm-scA-${id}`).value;
     const sB = document.getElementById(`dm-scB-${id}`).value;
-    const group = document.getElementById(`edit-grp-${id}`).value; // NEW
-    const stage = document.getElementById(`edit-stg-${id}`).value; // NEW
-
-    if(sA === "" || sB === "") return alert("Enter both scores!");
+    
+    // CAPTURE THE GROUP FROM THE DROPDOWN INSIDE THE MATCH CARD
+    const group = document.getElementById(`edit-grp-${id}`).value; 
+    const stage = document.getElementById(`edit-stg-${id}`).value;
 
     const res = await fetch(`${API_V2}/api/duo/update-score/${id}`, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ 
-            scoreA: parseInt(sA), 
-            scoreB: parseInt(sB),
-            group: group,
+            scoreA: parseInt(sA || 0), 
+            scoreB: parseInt(sB || 0),
+            group: group, // THIS MOVES THE MATCH
             stage: stage
         })
     });
 
     if(res.ok) {
-        alert("Saved! Now click 'SYNC TABLE' to move the team.");
+        alert("Match Updated! Now click 'SYNC DUO POINTS TABLE' to apply changes.");
         loadDuoManagementFixtures();
     }
 }
