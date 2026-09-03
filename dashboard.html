@@ -139,6 +139,33 @@
     </button>
 </div>
 </div>
+            <!-- 4. MANUAL GROUP OVERRIDE TOOL -->
+<div class="sub-box" style="border-left: 4px solid #a855f7; background: rgba(168, 85, 247, 0.05);">
+    <h4 style="color:#a855f7;"><i class="fa-solid fa-wand-magic-sparkles"></i> Manual Group Fixer</h4>
+    <p style="font-size:0.65rem; color:var(--text-dim); margin-bottom:15px;">
+        Force a team into a specific group. This updates their table position and all their existing fixtures.
+    </p>
+    
+    <select id="mgTourSelect">
+        <option value="">Select Tournament...</option>
+    </select>
+
+    <div class="grid-2">
+        <input type="text" id="mgTeamName" placeholder="Enter Team Name Exactly">
+        <select id="mgGroup">
+            <option value="Group A">Move to Group A</option>
+            <option value="Group B">Move to Group B</option>
+            <option value="Group C">Move to Group C</option>
+            <option value="Group D">Move to Group D</option>
+            <option value="Group E">Move to Group E</option>
+            <option value="Group F">Move to Group F</option>
+        </select>
+    </div>
+    
+    <button onclick="manualGroupFix()" class="btn-gold" style="background:#a855f7; color:white; margin-top:10px;">
+        EXECUTE GROUP MOVE
+    </button>
+</div>
         </div>
 
         <!-- 2. PLAYERS (Add/Edit/Delete) -->
@@ -603,6 +630,7 @@
             const duoOpts = duoTours.map(t => `<option value="${t._id}">${t.name} (DUO)</option>`).join('');
             document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('dmTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
+            document.getElementById('mgTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('srTourSelect').innerHTML += duoOpts;
             
             
@@ -1845,6 +1873,41 @@ async function recalculateDuoTable() {
         btn.disabled = false;
     }
 }
+        // 1. The Execution Function
+async function manualGroupFix() {
+    const tourId = document.getElementById('mgTourSelect').value;
+    const teamName = document.getElementById('mgTeamName').value.trim();
+    const newGroup = document.getElementById('mgGroup').value;
+
+    if (!tourId || !teamName) return alert("Select Tour and enter Team Name!");
+
+    const btn = event.target;
+    btn.innerText = "EXECUTING...";
+    
+    try {
+        const res = await fetch(`${API_V2}/api/duo/manual-group-move`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ tourId, teamName, newGroup })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            alert("✅ " + data.message);
+            document.getElementById('mgTeamName').value = ""; // Clear input
+            // Refresh management list to see the changes
+            if (typeof loadDuoManagementFixtures === "function") loadDuoManagementFixtures();
+        }
+    } catch (e) {
+        alert("Connection to Duo Server failed.");
+    } finally {
+        btn.innerText = "EXECUTE GROUP MOVE";
+    }
+}
+
+// 2. Add 'mgTourSelect' to your loadAllDashboardData() loop
+// Find the part where you populate 'dtTourSelect' and 'dmTourSelect' and add this:
+
 // In loadAllDashboardData, fetch from /api/duo/tournaments to fill dtTourSelect
 
 // 3. Add to the unified window.onload
