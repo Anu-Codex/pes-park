@@ -166,6 +166,21 @@
         EXECUTE GROUP MOVE
     </button>
 </div>
+            <!-- 5. DELETE DUO TOURNAMENT -->
+<div class="sub-box" style="border: 2px solid var(--danger); background: rgba(239, 68, 68, 0.05); margin-top: 30px;">
+    <h4 style="color: var(--danger);"><i class="fa-solid fa-trash-can"></i> Delete Tournament</h4>
+    <p style="font-size: 0.65rem; color: var(--text-dim); margin-bottom: 15px;">
+        Warning: This will permanently delete the tournament, all its fixtures, and the points table. This cannot be undone.
+    </p>
+    
+    <select id="deleteTourSelect" style="border-color: var(--danger); color: white;">
+        <option value="">Select Tour to Delete...</option>
+    </select>
+    
+    <button onclick="deleteFullDuoTour()" class="delete-btn" style="width: 100%; padding: 12px; margin-top: 10px; font-weight: 900;">
+        CONFIRM PERMANENT DELETE
+    </button>
+</div>
         </div>
 
         <!-- 2. PLAYERS (Add/Edit/Delete) -->
@@ -631,6 +646,7 @@
             document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('dmTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('mgTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
+            document.getElementById('deleteTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('srTourSelect').innerHTML += duoOpts;
             
             
@@ -1904,6 +1920,41 @@ async function manualGroupFix() {
         btn.innerText = "EXECUTE GROUP MOVE";
     }
 }
+        // Function to delete the entire Duo Tournament
+async function deleteFullDuoTour() {
+    const tourId = document.getElementById('deleteTourSelect').value;
+    
+    if (!tourId) return alert("Please select a tournament to delete!");
+
+    const check = confirm("⚠️ FINAL WARNING ⚠️\n\nThis will wipe ALL matches and points for this tournament. Are you 100% sure?");
+    if (!check) return;
+
+    const btn = event.target;
+    btn.innerText = "WIPING DATA...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API_V2}/api/duo/tournament/${tourId}`, {
+            method: 'DELETE'
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            alert("🔥 TOURNAMENT PURGED SUCCESSFULLY.");
+            location.reload(); // Refresh to clear all selectors
+        } else {
+            alert("Error: " + data.error);
+        }
+    } catch (e) {
+        alert("Failed to connect to Duo Server.");
+    } finally {
+        btn.innerText = "CONFIRM PERMANENT DELETE";
+        btn.disabled = false;
+    }
+}
+
+// Update your loadAllDashboardData() to fill this new dropdown
+// Add this inside the duo fetch block:
 
 // 2. Add 'mgTourSelect' to your loadAllDashboardData() loop
 // Find the part where you populate 'dtTourSelect' and 'dmTourSelect' and add this:
