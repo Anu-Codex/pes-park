@@ -814,39 +814,52 @@ if (updateForm) {
     const matches = await res.json();
 
     container.innerHTML = matches.map(m => {
-        // Style difference for Member Matches vs Team Matches
         const isSub = m.isSubFixture;
         const bgColor = isSub ? "rgba(16, 185, 129, 0.05)" : "rgba(0,0,0,0.3)";
-        const label = isSub ? `<span style="color:var(--accent); font-size:0.6rem;">MEMBER MATCH</span>` : `<span style="color:var(--gold); font-size:0.6rem;">TEAM MATCH</span>`;
+        const label = isSub ? `<span style="color:var(--accent); font-size:0.6rem;">MEMBER MATCH</span>` : `<span style="color:var(--text-dim); font-size:0.6rem;">TEAM MATCH</span>`;
 
         return `
-            <div class="sub-box" style="background: ${bgColor}; border: 1px solid ${isSub ? 'var(--accent)' : '#1e293b'}; margin-bottom: 10px; padding: 12px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-            ${label}
-            
-            <i class="fa-solid fa-trash-can" 
-               onclick="deleteIndividualFixture('${m._id}')" 
-               style="color:var(--danger); cursor:pointer; font-size:0.8rem; padding:5px;"></i>
-        </div>
-        <input type="text" id="stg-${m._id}" value="${m.stage || ''}" 
-               placeholder="Edit Stage (e.g. Semi-Final)" 
-               style="font-size:0.6rem; padding:5px; margin: 5px 0; border-color:var(--gold);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
-                    <span style="font-weight:700; font-size:0.8rem;">${m.playerA}</span>
-                    <span style="font-size:0.6rem; opacity:0.5;">VS</span>
-                    <span style="font-weight:700; font-size:0.8rem;">${m.playerB}</span>
-                </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-top:10px;">
-                    <input type="number" id="scA-${m._id}" value="${m.scoreA}" placeholder="0">
-                    <input type="number" id="scB-${m._id}" value="${m.scoreB}" placeholder="0">
-                    <button onclick="submitSmartScore('${m._id}')" class="btn-green" style="padding:10px; font-size:0.8rem; margin:0;">
-                        <i class="fa-solid fa-save"></i>
-                    </button>
-                </div>
+        <div class="sub-box" style="background: ${bgColor}; border: 1px solid ${isSub ? 'var(--accent)' : '#1e293b'};">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                ${label}
+                <i class="fa-solid fa-trash-can" 
+                   onclick="deleteIndividualFixture('${m._id}')" 
+                   style="color:var(--danger); cursor:pointer; font-size:0.8rem; padding:5px;"></i>
             </div>
+            <input type="text" id="stg-${m._id}" value="${m.stage || ''}" 
+                   placeholder="Edit Stage (e.g. Semi-Final)" 
+                   style="font-size:0.6rem; padding:5px; margin: 5px 0; border-color:var(--gold);">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                <span style="font-weight:700; font-size:0.8rem;">${m.playerA}</span>
+                <span style="font-size:0.6rem; opacity:0.5;">VS</span>
+                <span style="font-weight:700; font-size:0.8rem;">${m.playerB}</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-top:10px;">
+                <input type="number" id="scA-${m._id}" value="${m.scoreA}" placeholder="0">
+                <input type="number" id="scB-${m._id}" value="${m.scoreB}" placeholder="0">
+                <button onclick="submitSmartScore('${m._id}')" class="btn-green" style="padding:10px; font-size:0.8rem;">
+                    <i class="fa-solid fa-save"></i>
+                </button>
+            </div>
+
+            <!-- WALKOVER SECTION -->
+            <div style="display:flex; gap:5px; margin-top:10px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
+                <button onclick="markWalkover('${m._id}', 'A')" 
+                        style="flex:1; background:transparent; color:#10b981; border:1px solid #10b981; padding:5px; font-size:0.55rem; border-radius:5px; font-weight:bold; cursor:pointer;">
+                        W/O ${m.playerA.split(' ')[0]}
+                </button>
+                <button onclick="markWalkover('${m._id}', 'B')" 
+                        style="flex:1; background:transparent; color:#10b981; border:1px solid #10b981; padding:5px; font-size:0.55rem; border-radius:5px; font-weight:bold; cursor:pointer;">
+                        W/O ${m.playerB.split(' ')[0]}
+                </button>
+            </div>
+            <div style="font-size: 0.55rem; color: #475569; margin-top: 5px; text-align: center;">Status: ${m.status}</div>
+        </div>
         `;
     }).join('');
-        }
+    }
 
     async function submitSmartScore(id) {
     const sA = document.getElementById(`scA-${id}`).value;
@@ -1952,6 +1965,27 @@ async function deleteFullDuoTour() {
         btn.disabled = false;
     }
 }
+        async function markWalkover(fixtureId, winnerSide) {
+    const winnerName = winnerSide === 'A' ? "Player A" : "Player B";
+    if(!confirm(`Award Walkover (3-0) to ${winnerName}? This will update BDR and Standings immediately.`)) return;
+
+    try {
+        const res = await fetch(`${API}/api/smart/walkover/${fixtureId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ winner: winnerSide })
+        });
+
+        if (res.ok) {
+            alert("Walkover Processed! ✅");
+            loadTourFixtures(); // Refresh list
+        } else {
+            alert("Error processing walkover.");
+        }
+    } catch (e) {
+        alert("Server connection failed.");
+    }
+        }
 
 // Update your loadAllDashboardData() to fill this new dropdown
 // Add this inside the duo fetch block:
