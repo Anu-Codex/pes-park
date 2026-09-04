@@ -181,6 +181,35 @@
         CONFIRM PERMANENT DELETE
     </button>
 </div>
+            <!-- 1. NEURAL STAT INJECTOR -->
+<div class="sub-box" style="border-left: 4px solid #10b981;">
+    <h4><i class="fa-solid fa-file-import"></i> 1. Neural Stat Injector</h4>
+    <p style="font-size:0.65rem; color:var(--text-dim); margin-bottom:10px;">
+        Calculates points from fixtures into the table. <b>Groups will not change.</b>
+    </p>
+    <select id="siTourSelect"><option value="">Select Tour...</option></select>
+    <button onclick="injectDuoStats()" class="btn-green">INJECT MATCH DATA</button>
+</div>
+
+<!-- 2. INTERNAL FIXTURE ENGINE (Auto-Group) -->
+<div class="sub-box" style="border-left: 4px solid #00d1ff;">
+    <h4><i class="fa-solid fa-robot"></i> 2. Internal Match Engine</h4>
+    <p style="font-size:0.65rem; color:var(--text-dim); margin-bottom:10px;">
+        Generate matches between teams already assigned to groups.
+    </p>
+    <select id="ieTourSelect" onchange="loadInternalDuoTeams(this.value)">
+        <option value="">Select Tour...</option>
+    </select>
+    <input type="text" id="ieStage" placeholder="Stage (e.g. Round 2)">
+    
+    <div class="grid-2">
+        <select id="ieTeamA"><option>Select Team 1...</option></select>
+        <select id="ieTeamB"><option>Select Team 2...</option></select>
+    </div>
+    <button onclick="createInternalFixture()" class="btn-gold" style="background:#00d1ff; color:black; margin-top:10px;">
+        GENERATE INTERNAL MATCH
+    </button>
+</div>
         </div>
 
         <!-- 2. PLAYERS (Add/Edit/Delete) -->
@@ -665,6 +694,8 @@
             document.getElementById('dtTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('dmTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('mgTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
+            document.getElementById('siTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
+            document.getElementById('ieTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('deleteTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('srTourSelect').innerHTML += duoOpts;
             
@@ -2059,6 +2090,55 @@ async function executeRelease() {
         alert("Server communication error.");
     }
 }
+        // Function for Feature 1: Inject Stats
+async function injectDuoStats() {
+    const tourId = document.getElementById('siTourSelect').value;
+    if(!tourId) return alert("Select Tour!");
+    
+    const btn = event.target;
+    btn.innerText = "INJECTING...";
+    
+    const res = await fetch(`${API_V2}/api/duo/sync-stats/${tourId}`);
+    const data = await res.json();
+    if(data.success) alert("✅ " + data.message);
+    btn.innerText = "INJECT MATCH DATA";
+}
+
+// Function for Feature 2: Load Internal Teams
+let internalTeamsCache = [];
+async function loadInternalDuoTeams(tourId) {
+    if(!tourId) return;
+    const res = await fetch(`${API_V2}/api/duo/participants/${tourId}`);
+    const teams = await res.json();
+    internalTeamsCache = teams; // Save for group lookup later
+
+    const opts = teams.map(t => `<option value="${t.participant}">${t.participant} (${t.group})</option>`).join('');
+    document.getElementById('ieTeamA').innerHTML = opts;
+    document.getElementById('ieTeamB').innerHTML = opts;
+}
+
+// Create Fixture v2 (Auto-detects Group)
+async function createInternalFixture() {
+    const tourId = document.getElementById('ieTourSelect').value;
+    const teamA = document.getElementById('ieTeamA').value;
+    const teamB = document.getElementById('ieTeamB').value;
+    const stage = document.getElementById('ieStage').value || "League";
+
+    // Lookup group for Team A (Assuming Team A and B must be in same group)
+    const teamData = internalTeamsCache.find(t => t.participant === teamA);
+    const group = teamData ? teamData.group : "Group A";
+
+    const res = await fetch(`${API_V2}/api/duo/create-fixture`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ tourId, playerA: teamA, playerB: teamB, stage, group })
+    });
+    
+    if(res.ok) alert(`Match generated in ${group}! ✅`);
+}
+
+// Update your loadAllDashboardData() to fill 'siTourSelect' and 'ieTourSelect'
+// Inside your existing duo fetch loop:
 
 // Add to your window.onload
 
