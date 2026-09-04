@@ -267,6 +267,25 @@
 
     <button onclick="assignCaptain()" class="btn-gold">Confirm Captaincy</button>
             </div>
+            <!-- RELEASE PLAYER TOOL -->
+<div class="sub-box" style="border-left: 4px solid var(--danger); background: rgba(239, 68, 68, 0.05);">
+    <h4 style="color: var(--danger);"><i class="fa-solid fa-user-minus"></i> Player Release Center</h4>
+    <p style="font-size:0.7rem; color:var(--text-dim); margin-bottom:15px;">Remove a player from their current team and return them to the Free Agent pool.</p>
+    
+    <label style="font-size:0.6rem; color:var(--text-dim);">1. SELECT TEAM</label>
+    <select id="relTeamSelect" onchange="loadPlayersForRelease(this.value)">
+        <option value="">Choose Team...</option>
+    </select>
+
+    <label style="font-size:0.6rem; color:var(--text-dim);">2. SELECT PLAYER TO RELEASE</label>
+    <select id="relPlayerSelect">
+        <option value="">Select Team First...</option>
+    </select>
+
+    <button onclick="executeRelease()" class="delete-btn" style="width: 100%; margin-top: 10px; font-weight: 900;">
+        RELEASE TO FREE AGENT POOL
+    </button>
+</div>
         </div>
 
         <!-- 4. SMART CENTER (Tournament Logic) -->
@@ -628,7 +647,7 @@
 
             const teamOpts = teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
         
-        const teamSelectors = ['capTeamSelect', 'pTeamSelect'];
+        const teamSelectors = ['capTeamSelect', 'pTeamSelect', 'relTeamSelect'];
         teamSelectors.forEach(id => {
             const el = document.getElementById(id);
             if(el) el.innerHTML = '<option value="">Select Club...</option>' + teamOpts;
@@ -1986,18 +2005,60 @@ async function deleteFullDuoTour() {
         alert("Server connection failed.");
     }
         }
+        // 1. Function to load players filtered by the selected team
+async function loadPlayersForRelease(teamName) {
+    const playerSelect = document.getElementById('relPlayerSelect');
+    if (!teamName) {
+        playerSelect.innerHTML = '<option value="">Select Team First...</option>';
+        return;
+    }
 
-// Update your loadAllDashboardData() to fill this new dropdown
-// Add this inside the duo fetch block:
+    playerSelect.innerHTML = '<option>Loading squad...</option>';
 
-// 2. Add 'mgTourSelect' to your loadAllDashboardData() loop
-// Find the part where you populate 'dtTourSelect' and 'dmTourSelect' and add this:
+    try {
+        const res = await fetch(`${API}/api/players`);
+        const allPlayers = await res.json();
+        
+        // Filter players who belong to the selected team
+        const squad = allPlayers.filter(p => p.teamName === teamName);
 
-// In loadAllDashboardData, fetch from /api/duo/tournaments to fill dtTourSelect
+        if (squad.length === 0) {
+            playerSelect.innerHTML = '<option value="">No players in this team</option>';
+        } else {
+            playerSelect.innerHTML = squad.map(p => 
+                `<option value="${p._id}">${p.name}</option>`
+            ).join('');
+        }
+    } catch (e) {
+        playerSelect.innerHTML = '<option>Error loading players</option>';
+    }
+}
 
-// 3. Add to the unified window.onload
-// Inside your existing window.onload = async () => { ... }
-// Add: await loadManagementRequests();
+// 2. Function to trigger the backend release
+async function executeRelease() {
+    const playerId = document.getElementById('relPlayerSelect').value;
+    const teamName = document.getElementById('relTeamSelect').value;
+
+    if (!playerId || !teamName) return alert("Please select both Team and Player!");
+
+    const confirmCheck = confirm(`Are you sure you want to release this player from ${teamName}?`);
+    if (!confirmCheck) return;
+
+    try {
+        const res = await fetch(`${API}/api/players/${playerId}/release`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (res.ok) {
+            alert("Player has been released! ✅");
+            // Refresh dropdown
+            loadPlayersForRelease(teamName);
+        }
+    } catch (e) {
+        alert("Server communication error.");
+    }
+}
 
 // Add to your window.onload
 
