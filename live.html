@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS STADIUM | LIVE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
+        :root { --bg: #020617; --accent: #10b981; --danger: #ef4444; --border: #1e293b; }
+        
+        body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; overflow: hidden; }
+
+        /* Top Broadcast Bar */
+        .broadcast-header {
+            height: 60px; background: #000; display: flex; align-items: center; 
+            justify-content: space-between; padding: 0 20px; border-bottom: 2px solid var(--accent);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .live-indicator {
+            background: var(--danger); color: white; padding: 4px 12px; border-radius: 4px;
+            font-family: 'Orbitron'; font-size: 0.7rem; font-weight: 900;
+            animation: pulse 1.5s infinite; letter-spacing: 1px;
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        /* Stadium Frame */
+        .stadium-container {
+            width: 100%; height: calc(100vh - 60px);
+            background: #000; position: relative;
+        }
+
+        /* The Iframe */
+        #streamFrame {
+            width: 100%; height: 100%; border: none;
+            background: url('https://wallpaperaccess.com/full/1325191.jpg') center/cover; /* Placeholder bg */
+        }
+
+        /* Signal Overlay (eSports Style) */
+        .overlay-elements {
+            position: absolute; inset: 0; pointer-events: none;
+            border: 15px solid transparent;
+            border-image: radial-gradient(circle, transparent 70%, rgba(16, 185, 129, 0.05) 100%) 30;
+        }
+
+        .watermark {
+            position: absolute; bottom: 20px; right: 20px; opacity: 0.5;
+            font-family: 'Orbitron'; font-size: 0.8rem; color: var(--accent);
+        }
+
+        /* Fallback UI if server says no match */
+        #noMatch {
+            position: absolute; inset: 0; display: none; flex-direction: column;
+            align-items: center; justify-content: center; background: var(--bg); text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="broadcast-header">
+        <div style="display:flex; align-items:center; gap:15px;">
+            <div class="live-indicator">LIVE</div>
+            <h2 id="matchTitle" style="margin:0; font-size:1.1rem; text-transform:uppercase; letter-spacing:1px;">SYNCING SIGNAL...</h2>
+        </div>
+        <div style="color:var(--accent); font-size:0.8rem;">
+            <i class="fa-solid fa-tower-broadcast"></i> <span id="node">NODE-01</span>
+        </div>
+    </div>
+
+    <div class="stadium-container">
+        <iframe id="streamFrame" src="" allowfullscreen></iframe>
+        <div class="overlay-elements"></div>
+        <div class="watermark">NEXUS LEGENDS TV</div>
+
+        <!-- Offline State -->
+        <div id="noMatch">
+            <i class="fa-solid fa-satellite-dish fa-4x" style="color:var(--border); margin-bottom:20px;"></i>
+            <h2 style="font-family: 'Orbitron';">NO ACTIVE BROADCAST</h2>
+            <p style="color:var(--border)">Check the schedule for upcoming match streams.</p>
+            <a href="index.html" style="color:var(--accent); text-decoration:none; font-weight:bold;">RETURN TO HUB</a>
+        </div>
+    </div>
+
+    <script>
+        const API = "https://nexus-database-v2.onrender.com";
+
+        async function initBroadcast() {
+            try {
+                const res = await fetch(`${API}/api/live/now`);
+                const data = await res.json();
+
+                if (data.isActive && data.url) {
+                    document.getElementById('streamFrame').src = data.url;
+                    document.getElementById('matchTitle').innerText = data.title;
+                } else {
+                    document.getElementById('noMatch').style.display = 'flex';
+                    document.getElementById('streamFrame').style.display = 'none';
+                }
+            } catch (e) {
+                console.error("Signal Lost");
+            }
+        }
+
+        initBroadcast();
+    </script>
+</body>
+</html>
