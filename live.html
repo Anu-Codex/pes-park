@@ -73,59 +73,93 @@
             <h3 id="status-msg">INITIALIZING ENCRYPTED LINK...</h3>
             <button id="manual-play" class="btn-play" style="display:none;" onclick="startStream()">START BROADCAST</button>
         </div>
+        <button id="unmute-btn" onclick="forceUnmute()" style="display:none; position:absolute; bottom:80px; left:50%; transform:translateX(-50%); background:rgba(239, 68, 68, 0.9); color:white; border:none; padding:10px 20px; border-radius:50px; font-family:'Orbitron'; font-size:0.7rem; z-index:20; cursor:pointer; box-shadow:0 0 15px rgba(239,68,68,0.5);">
+        <i class="fa-solid fa-volume-xmark"></i> TAP TO UNMUTE
+        </button>
     </div>
 
-    <script>
-        const API = "https://nexus-database-v2.onrender.com";
-        const video = document.getElementById('video');
-        const overlay = document.getElementById('status-overlay');
-        const statusMsg = document.getElementById('status-msg');
-        const playBtn = document.getElementById('manual-play');
 
-        let streamSource = "";
+<script>
+    const API = "https://nexus-database-v2.onrender.com";
+    const video = document.getElementById('video');
+    const overlay = document.getElementById('status-overlay');
+    const statusMsg = document.getElementById('status-msg');
+    const playBtn = document.getElementById('manual-play');
+    const unmuteBtn = document.getElementById('unmute-btn');
 
-        async function init() {
-            try {
-                const res = await fetch(`${API}/api/live/now`);
-                const data = await res.json();
+    let streamSource = "";
 
-                if (data.isActive && data.url) {
-                    document.getElementById('matchTitle').innerText = data.title;
-                    streamSource = data.url;
-                    
-                    // Show play button (Browsers block auto-play with sound)
-                    statusMsg.innerText = "SIGNAL ACQUIRED";
-                    playBtn.style.display = "block";
-                    document.querySelector('.fa-spin').style.display = "none";
-                } else {
-                    statusMsg.innerText = "NO ACTIVE FEED FOUND";
-                }
-            } catch (e) {
-                statusMsg.innerText = "CONNECTION TO NEXUS HUB LOST";
+    async function init() {
+        try {
+            const res = await fetch(`${API}/api/live/now`);
+            const data = await res.json();
+
+            if (data.isActive && data.url) {
+                document.getElementById('matchTitle').innerText = data.title;
+                streamSource = data.url;
+                statusMsg.innerText = "SIGNAL ACQUIRED";
+                playBtn.style.display = "block";
+                document.querySelector('.fa-spin').style.display = "none";
+            } else {
+                statusMsg.innerText = "NO ACTIVE FEED FOUND";
             }
+        } catch (e) {
+            statusMsg.innerText = "CONNECTION ERROR";
         }
+    }
 
-        function startStream() {
-            overlay.style.display = "none";
-            
-            if (Hls.isSupported()) {
-                const hls = new Hls();
-                hls.loadSource(streamSource);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play();
-                });
-            } 
-            // For Safari/iOS which support HLS natively
-            else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = streamSource;
-                video.addEventListener('loadedmetadata', function() {
-                    video.play();
-                });
-            }
+    function startStream() {
+        overlay.style.display = "none";
+        
+        // 1. Force the video element settings
+        video.muted = false;
+        video.volume = 1.0;
+
+        if (Hls.isSupported()) {
+            const hls = new Hls({
+                // Optimized for live audio
+                autoStartLoad: true,
+                startPosition: -1,
+                debug: false
+            });
+            hls.loadSource(streamSource);
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                attemptPlay();
+            });
+        } 
+        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = streamSource;
+            video.addEventListener('loadedmetadata', attemptPlay);
         }
+    }
 
-        init();
-    </script>
+    function attemptPlay() {
+        // Attempt to play with sound
+        const playPromise = video.play();
+
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                // Autoplay started successfully with sound
+                console.log("Stream started with sound");
+            }).catch(error => {
+                // Browser blocked sound, play muted and show Unmute button
+                console.log("Sound blocked by browser. Playing muted.");
+                video.muted = true;
+                video.play();
+                unmuteBtn.style.display = "block";
+            });
+        }
+    }
+
+    function forceUnmute() {
+        video.muted = false;
+        video.volume = 1.0;
+        unmuteBtn.style.display = "none";
+    }
+
+    init();
+</script>
+        
 </body>
 </html>
