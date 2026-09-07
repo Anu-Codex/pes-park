@@ -617,6 +617,16 @@
         <h4>Manage Videos</h4>
         <div id="adminVideoList" class="list-container"></div>
     </div>
+            <div class="sub-box" style="border-left: 4px solid var(--danger);">
+    <h4><i class="fa-solid fa-tower-broadcast"></i> Live Broadcast Control</h4>
+    <input type="text" id="liveTitle" placeholder="Match Title (e.g. East Bengal vs Mohun Bagan)">
+    <input type="text" id="liveUrl" placeholder="Blogspot Link (https://...)">
+    
+    <div class="grid-2">
+        <button onclick="setLive(true)" class="btn-green">GO LIVE 🚀</button>
+        <button onclick="setLive(false)" class="delete-btn">END STREAM</button>
+    </div>
+            </div>
         </div>
        
 
@@ -2136,6 +2146,21 @@ async function createInternalFixture() {
     
     if(res.ok) alert(`Match generated in ${group}! ✅`);
 }
+        async function setLive(status) {
+    const data = {
+        title: document.getElementById('liveTitle').value,
+        url: document.getElementById('liveUrl').value,
+        isActive: status
+    };
+
+    const res = await fetch(`${API_V2}/api/live/update`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+
+    if(res.ok) alert(status ? "BROADCAST IS LIVE!" : "Stream Ended.");
+        }
 
 // Update your loadAllDashboardData() to fill 'siTourSelect' and 'ieTourSelect'
 // Inside your existing duo fetch loop:
