@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS LIVE | STADIUM</title>
+    <title>NEXUS LIVE | STADIUM STREAM</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- HLS Player Library -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
-        :root { --bg: #020617; --accent: #10b981; --danger: #ef4444; --border: #1e293b; }
+        :root { --bg: #020617; --accent: #10b981; --danger: #ef4444; }
         
         body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
 
+        /* Top Broadcast Bar */
         .broadcast-header {
             height: 60px; background: #000; display: flex; align-items: center; 
             justify-content: space-between; padding: 0 20px; border-bottom: 2px solid var(--accent);
@@ -23,27 +26,29 @@
         }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
-        /* The Main Content Area */
-        .content-area { flex: 1; position: relative; background: #000; }
-
-        iframe { width: 100%; height: 100%; border: none; }
-
-        /* Professional Fallback UI (This stays behind the iframe) */
-        .redirect-overlay {
-            position: absolute; inset: 0;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 20px; background: radial-gradient(circle, #0f172a 0%, #020617 100%);
+        /* Video Container */
+        .video-wrapper {
+            flex: 1; background: #000; position: relative;
+            display: flex; align-items: center; justify-content: center;
         }
 
-        .external-btn {
-            background: var(--accent); color: #000; padding: 15px 35px; border-radius: 12px;
-            font-family: 'Orbitron'; font-weight: 900; text-decoration: none;
-            margin-top: 25px; box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
-            transition: 0.3s; border: none; cursor: pointer;
+        video {
+            width: 100%; height: 100%; max-height: 100vh;
+            object-fit: contain; /* Keeps aspect ratio perfect */
+            outline: none;
         }
-        .external-btn:hover { transform: scale(1.05); background: #34d399; }
 
-        .shield-icon { font-size: 4rem; color: var(--accent); opacity: 0.2; margin-bottom: 20px; }
+        /* Loading / Error States */
+        #status-overlay {
+            position: absolute; inset: 0; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; background: var(--bg); z-index: 5;
+        }
+
+        .btn-play {
+            background: var(--accent); color: #000; border: none; padding: 15px 30px;
+            border-radius: 50px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -51,35 +56,33 @@
     <div class="broadcast-header">
         <div style="display:flex; align-items:center; gap:15px;">
             <div class="live-indicator">LIVE</div>
-            <h2 id="matchTitle" style="margin:0; font-size:1.1rem; text-transform:uppercase; letter-spacing:1px;">LINKING TO STREAM...</h2>
+            <h2 id="matchTitle" style="margin:0; font-size:1.1rem; text-transform:uppercase; letter-spacing:1px;">SYNCING STREAM...</h2>
         </div>
-        <div style="color:var(--accent); font-size:0.8rem;">
-            <i class="fa-solid fa-satellite-dish"></i> BROADCAST ACTIVE
+        <div style="color:var(--accent); font-size:0.7rem; font-weight:bold;">
+            <i class="fa-solid fa-signal"></i> 4K NEURAL FEED
         </div>
     </div>
 
-    <div class="content-area">
-        <!-- The Redirect UI (Shown if iframe fails or as a primary choice) -->
-        <div class="redirect-overlay">
-            <i class="fa-solid fa-shield-halved shield-icon"></i>
-            <h2 style="font-family:'Orbitron'; letter-spacing:2px; margin:0;">ENCRYPTED SIGNAL DETECTED</h2>
-            <p style="color:#64748b; max-width:300px; margin-top:10px;">The host server requires a direct connection to view the high-quality broadcast.</p>
-            
-            <a href="" id="externalLink" target="_blank" class="external-btn">
-                <i class="fa-solid fa-play"></i> OPEN LIVE PLAYER
-            </a>
-            
-            <div style="margin-top:40px; font-size:0.6rem; color:#475569; letter-spacing:2px; font-weight:bold;">
-                SECURE NEXUS BROADCAST LINK • V.7.2
-            </div>
-        </div>
+    <div class="video-wrapper">
+        <!-- THE ACTUAL PLAYER -->
+        <video id="video" controls playsinline></video>
 
-        <!-- The Iframe (Hidden behind or removed if you prefer just the button) -->
-        <!-- <iframe id="streamFrame" src="" allowfullscreen></iframe> -->
+        <!-- Status Overlay -->
+        <div id="status-overlay">
+            <i class="fa-solid fa-circle-notch fa-spin fa-3x" style="color:var(--accent); margin-bottom:20px;"></i>
+            <h3 id="status-msg">INITIALIZING ENCRYPTED LINK...</h3>
+            <button id="manual-play" class="btn-play" style="display:none;" onclick="startStream()">START BROADCAST</button>
+        </div>
     </div>
 
     <script>
         const API = "https://nexus-database-v2.onrender.com";
+        const video = document.getElementById('video');
+        const overlay = document.getElementById('status-overlay');
+        const statusMsg = document.getElementById('status-msg');
+        const playBtn = document.getElementById('manual-play');
+
+        let streamSource = "";
 
         async function init() {
             try {
@@ -88,13 +91,37 @@
 
                 if (data.isActive && data.url) {
                     document.getElementById('matchTitle').innerText = data.title;
-                    // Update the button link
-                    document.getElementById('externalLink').href = data.url;
+                    streamSource = data.url;
+                    
+                    // Show play button (Browsers block auto-play with sound)
+                    statusMsg.innerText = "SIGNAL ACQUIRED";
+                    playBtn.style.display = "block";
+                    document.querySelector('.fa-spin').style.display = "none";
                 } else {
-                    document.body.innerHTML = `<div class="redirect-overlay"><h2>NO ACTIVE BROADCAST</h2><a href="index.html" class="external-btn">BACK TO HUB</a></div>`;
+                    statusMsg.innerText = "NO ACTIVE FEED FOUND";
                 }
             } catch (e) {
-                console.error("Signal Lost");
+                statusMsg.innerText = "CONNECTION TO NEXUS HUB LOST";
+            }
+        }
+
+        function startStream() {
+            overlay.style.display = "none";
+            
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(streamSource);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play();
+                });
+            } 
+            // For Safari/iOS which support HLS natively
+            else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = streamSource;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play();
+                });
             }
         }
 
