@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS LIVE | STADIUM STREAM</title>
+    <title>NEXUS LIVE | STADIUM</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <!-- HLS Player Library -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
-        :root { --bg: #020617; --accent: #10b981; --danger: #ef4444; }
+        :root { --bg: #020617; --accent: #10b981; --danger: #ef4444; --border: #1e293b; }
         
         body { background: var(--bg); color: white; font-family: 'Rajdhani', sans-serif; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
 
-        /* Top Broadcast Bar */
+        /* Broadcast Header */
         .broadcast-header {
             height: 60px; background: #000; display: flex; align-items: center; 
             justify-content: space-between; padding: 0 20px; border-bottom: 2px solid var(--accent);
-            z-index: 10;
+            z-index: 100;
         }
 
         .live-indicator {
@@ -26,28 +25,30 @@
         }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
 
-        /* Video Container */
-        .video-wrapper {
-            flex: 1; background: #000; position: relative;
-            display: flex; align-items: center; justify-content: center;
+        /* Viewport */
+        .viewport { flex: 1; position: relative; background: #000; }
+        
+        /* Player and Iframe must cover full area */
+        #video, #externalFrame { width: 100%; height: 100%; border: none; display: none; }
+
+        /* Sandbox Warning Overlay (For Mirror Sites) */
+        #sandbox-notice {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); padding: 5px 15px; border-radius: 50px;
+            font-size: 0.6rem; color: var(--accent); border: 1px solid var(--accent);
+            z-index: 50; display: none; letter-spacing: 1px;
         }
 
-        video {
-            width: 100%; height: 100%; max-height: 100vh;
-            object-fit: contain; /* Keeps aspect ratio perfect */
-            outline: none;
-        }
-
-        /* Loading / Error States */
+        /* Status Overlay */
         #status-overlay {
             position: absolute; inset: 0; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; background: var(--bg); z-index: 5;
+            align-items: center; justify-content: center; background: var(--bg); z-index: 10;
         }
 
-        .btn-play {
+        .btn-action {
             background: var(--accent); color: #000; border: none; padding: 15px 30px;
-            border-radius: 50px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer;
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+            border-radius: 12px; font-family: 'Orbitron'; font-weight: 900; cursor: pointer;
+            margin-top: 20px; box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
         }
     </style>
 </head>
@@ -56,110 +57,92 @@
     <div class="broadcast-header">
         <div style="display:flex; align-items:center; gap:15px;">
             <div class="live-indicator">LIVE</div>
-            <h2 id="matchTitle" style="margin:0; font-size:1.1rem; text-transform:uppercase; letter-spacing:1px;">SYNCING STREAM...</h2>
+            <h2 id="matchTitle" style="margin:0; font-size:1.1rem; text-transform:uppercase; letter-spacing:1px;">SCANNING SIGNAL...</h2>
         </div>
         <div style="color:var(--accent); font-size:0.7rem; font-weight:bold;">
-            <i class="fa-solid fa-signal"></i> 4K NEURAL FEED BY NEXUS LEGENDS
+            <i class="fa-solid fa-shield-halved"></i> SECURE LINK BY NEXUS LEGENDS
         </div>
     </div>
 
-    <div class="video-wrapper">
-        <!-- THE ACTUAL PLAYER -->
+    <div class="viewport">
+        <div id="sandbox-notice"><i class="fa-solid fa-lock"></i> NEXUS AD-BLOCKER ACTIVE</div>
+
+        <!-- 1. For .m3u8 Links -->
         <video id="video" controls playsinline></video>
 
-        <!-- Status Overlay -->
+        <!-- 2. For Mirror Web Links (like your Netmirror URL) -->
+        <iframe id="externalFrame" 
+                sandbox="allow-scripts allow-same-origin allow-forms" 
+                allowfullscreen>
+        </iframe>
+
+        <!-- Loading / Start UI -->
         <div id="status-overlay">
             <i class="fa-solid fa-circle-notch fa-spin fa-3x" style="color:var(--accent); margin-bottom:20px;"></i>
-            <h3 id="status-msg">INITIALIZING ENCRYPTED LINK...</h3>
-            <button id="manual-play" class="btn-play" style="display:none;" onclick="startStream()">START BROADCAST</button>
+            <h3 id="status-msg">ACQUIRING ENCRYPTED DATA...</h3>
+            <button id="startBtn" class="btn-action" style="display:none;" onclick="launchBroadcast()">INITIALIZE BROADCAST</button>
         </div>
-        <button id="unmute-btn" onclick="forceUnmute()" style="display:none; position:absolute; bottom:80px; left:50%; transform:translateX(-50%); background:rgba(239, 68, 68, 0.9); color:white; border:none; padding:10px 20px; border-radius:50px; font-family:'Orbitron'; font-size:0.7rem; z-index:20; cursor:pointer; box-shadow:0 0 15px rgba(239,68,68,0.5);">
-        <i class="fa-solid fa-volume-xmark"></i> TAP TO UNMUTE
-        </button>
     </div>
 
+    <script>
+        const API = "https://nexus-database-v2.onrender.com";
+        const video = document.getElementById('video');
+        const iframe = document.getElementById('externalFrame');
+        const overlay = document.getElementById('status-overlay');
+        const statusMsg = document.getElementById('status-msg');
+        const startBtn = document.getElementById('startBtn');
+        const sandboxNotice = document.getElementById('sandbox-notice');
 
-<script>
-    const API = "https://nexus-database-v2.onrender.com";
-    const video = document.getElementById('video');
-    const overlay = document.getElementById('status-overlay');
-    const statusMsg = document.getElementById('status-msg');
-    const playBtn = document.getElementById('manual-play');
-    const unmuteBtn = document.getElementById('unmute-btn');
+        let streamUrl = "";
 
-    let streamSource = "";
+        async function init() {
+            try {
+                const res = await fetch(`${API}/api/live/now`);
+                const data = await res.json();
 
-    async function init() {
-        try {
-            const res = await fetch(`${API}/api/live/now`);
-            const data = await res.json();
-
-            if (data.isActive && data.url) {
-                document.getElementById('matchTitle').innerText = data.title;
-                streamSource = data.url;
-                statusMsg.innerText = "SIGNAL ACQUIRED";
-                playBtn.style.display = "block";
-                document.querySelector('.fa-spin').style.display = "none";
-            } else {
-                statusMsg.innerText = "NO ACTIVE FEED FOUND";
+                if (data.isActive && data.url) {
+                    document.getElementById('matchTitle').innerText = data.title;
+                    streamUrl = data.url;
+                    statusMsg.innerText = "SIGNAL STABLE";
+                    startBtn.style.display = "block";
+                    document.querySelector('.fa-spin').style.display = "none";
+                } else {
+                    statusMsg.innerText = "NO ACTIVE BROADCAST";
+                }
+            } catch (e) {
+                statusMsg.innerText = "NEXUS HUB DISCONNECTED";
             }
-        } catch (e) {
-            statusMsg.innerText = "CONNECTION ERROR";
         }
-    }
 
-    function startStream() {
-        overlay.style.display = "none";
-        
-        // 1. Force the video element settings
-        video.muted = false;
-        video.volume = 1.0;
+        function launchBroadcast() {
+            overlay.style.display = "none";
 
-        if (Hls.isSupported()) {
-            const hls = new Hls({
-                // Optimized for live audio
-                autoStartLoad: true,
-                startPosition: -1,
-                debug: false
-            });
-            hls.loadSource(streamSource);
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                attemptPlay();
-            });
-        } 
-        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = streamSource;
-            video.addEventListener('loadedmetadata', attemptPlay);
+            // Check if it's a raw video file or a Mirror Webpage
+            if (streamUrl.includes('.m3u8')) {
+                // Use HLS Player
+                video.style.display = "block";
+                startHlsPlayer(streamUrl);
+            } else {
+                // Use Secure Iframe for netmirror/blogspot links
+                iframe.style.display = "block";
+                sandboxNotice.style.display = "block";
+                iframe.src = streamUrl;
+            }
         }
-    }
 
-    function attemptPlay() {
-        // Attempt to play with sound
-        const playPromise = video.play();
-
-        if (playPromise !== undefined) {
-            playPromise.then(_ => {
-                // Autoplay started successfully with sound
-                console.log("Stream started with sound");
-            }).catch(error => {
-                // Browser blocked sound, play muted and show Unmute button
-                console.log("Sound blocked by browser. Playing muted.");
-                video.muted = true;
+        function startHlsPlayer(url) {
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
                 video.play();
-                unmuteBtn.style.display = "block";
-            });
+            }
         }
-    }
 
-    function forceUnmute() {
-        video.muted = false;
-        video.volume = 1.0;
-        unmuteBtn.style.display = "none";
-    }
-
-    init();
-</script>
-        
+        init();
+    </script>
 </body>
 </html>
