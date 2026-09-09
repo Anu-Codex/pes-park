@@ -969,6 +969,7 @@
             const res = await fetch(`${API}/api/players/profile/${playerId}`);
             const data = await res.json();
             const p = data.player;
+            fetch(`${API_V2}/api/players/${playerId}/view`, { method: 'POST' }).catch(() => {});
             selectedAvatarUrl = p.image || "";
             selectedBgUrl = p.backgroundImage || "";
             playerMatches = data.matches;
