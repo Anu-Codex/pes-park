@@ -315,6 +315,30 @@
         RELEASE TO FREE AGENT POOL
     </button>
 </div>
+            <!-- SIGN FREE AGENT DIRECTLY -->
+<div class="sub-box" style="border-left: 4px solid var(--accent); background: rgba(16, 185, 129, 0.05); margin-top: 15px;">
+    <h4 style="color: var(--accent);"><i class="fa-solid fa-user-plus"></i> Sign Free Agent to Team</h4>
+    <p style="font-size:0.7rem; color:var(--text-dim); margin-bottom:15px;">
+        Pick an unassigned Free Agent and sign them directly to an active team.
+    </p>
+
+    <label style="font-size:0.6rem; color:var(--text-dim);">1. SELECT FREE AGENT</label>
+    <select id="faPlayerSelect">
+        <option value="">Loading Free Agents...</option>
+    </select>
+
+    <label style="font-size:0.6rem; color:var(--text-dim); margin-top: 10px; display:block;">2. ASSIGN TO TEAM</label>
+    <select id="faTargetTeamSelect">
+        <option value="">Choose Team...</option>
+    </select>
+
+    <label style="font-size:0.6rem; color:var(--text-dim); margin-top: 10px; display:block;">3. SIGNING / AUCTION VALUE (M) - OPTIONAL</label>
+    <input type="number" id="faSigningFee" placeholder="0" style="margin-bottom: 10px;">
+
+    <button onclick="executeSignFreeAgent()" class="btn-green" style="width: 100%; font-weight: 800;">
+        ASSIGN PLAYER TO SQUAD
+    </button>
+</div>
         </div>
 
         <!-- 4. SMART CENTER (Tournament Logic) -->
@@ -686,7 +710,7 @@
 
             const teamOpts = teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
         
-        const teamSelectors = ['capTeamSelect', 'pTeamSelect', 'relTeamSelect'];
+        const teamSelectors = ['capTeamSelect', 'pTeamSelect', 'relTeamSelect', 'faTargetTeamSelect'];
         teamSelectors.forEach(id => {
             const el = document.getElementById(id);
             if(el) el.innerHTML = '<option value="">Select Club...</option>' + teamOpts;
@@ -717,6 +741,7 @@
 
     } catch (e) { console.error("Sync Error", e); }
         syncDuoDropdowns();
+        loadFreeAgentsDropdown();
     }
 
     // Load Player Data for Edit
@@ -2161,6 +2186,70 @@ async function createInternalFixture() {
 
     if(res.ok) alert(status ? "BROADCAST IS LIVE!" : "Stream Ended.");
         }
+        // 1. Load Free Agents into the dropdown
+async function loadFreeAgentsDropdown() {
+    const select = document.getElementById('faPlayerSelect');
+    if (!select) return;
+
+    try {
+        const res = await fetch(`${API}/api/players`);
+        const players = await res.json();
+
+        // Filter players who have no team or are marked Free Agent
+        const freeAgents = players.filter(p => 
+            !p.teamName || 
+            p.teamName.trim() === "" || 
+            p.teamName.toLowerCase() === "free agent"
+        );
+
+        if (freeAgents.length === 0) {
+            select.innerHTML = '<option value="">No Free Agents available</option>';
+        } else {
+            select.innerHTML = '<option value="">Select a Player...</option>' + 
+                freeAgents.map(p => `<option value="${p._id}">${p.name} (BDR: ${p.bdrPoints || 0})</option>`).join('');
+        }
+    } catch (e) {
+        select.innerHTML = '<option value="">Error loading players</option>';
+    }
+}
+
+// 2. Submit the assignment
+async function executeSignFreeAgent() {
+    const playerId = document.getElementById('faPlayerSelect').value;
+    const teamName = document.getElementById('faTargetTeamSelect').value;
+    const fee = document.getElementById('faSigningFee').value || 0;
+
+    if (!playerId || !teamName) {
+        return alert("Please select both a Free Agent and a Target Team!");
+    }
+
+    const btn = event.target;
+    btn.innerText = "ASSIGNING...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/players/${playerId}/sign-free-agent`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ teamName, signingFee: fee })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            alert(data.message);
+            // Refresh dropdown so signed player disappears from Free Agent list
+            loadFreeAgentsDropdown();
+            document.getElementById('faSigningFee').value = "";
+        } else {
+            alert("❌ " + (data.error || "Failed to sign player"));
+        }
+    } catch (err) {
+        alert("Server connection failed.");
+    } finally {
+        btn.innerText = "ASSIGN PLAYER TO SQUAD";
+        btn.disabled = false;
+    }
+}
 
 // Update your loadAllDashboardData() to fill 'siTourSelect' and 'ieTourSelect'
 // Inside your existing duo fetch loop:
