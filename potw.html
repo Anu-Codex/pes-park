@@ -315,7 +315,7 @@
         if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
         try {
-            const res = await fetch(`${API}/api/players/potw`);
+            const res = await fetch(`${API}/api/potw/weekly`);
             const data = await res.json();
             const container = document.getElementById('potwList');
 
