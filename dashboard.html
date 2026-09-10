@@ -651,6 +651,15 @@
         <button onclick="setLive(false)" class="delete-btn">END STREAM</button>
     </div>
             </div>
+            <div class="sub-box" style="border-left: 4px solid var(--gold); margin-top: 15px;">
+    <h4 style="color:var(--gold)"><i class="fa-solid fa-arrows-split-up-and-left"></i> Isolate Auction & Solo BDR</h4>
+    <p style="font-size:0.7rem; color:var(--text-dim); margin-bottom:10px;">
+        Deducts Solo Tour points from the old BDR list and confines old BDR to <b>Auction Tour matches only</b>.
+    </p>
+    <button onclick="separateBDR()" class="btn-gold" style="background:#f59e0b; color:#000;">
+        ISOLATE AUCTION BDR
+    </button>
+</div>
         </div>
        
 
@@ -2250,6 +2259,20 @@ async function executeSignFreeAgent() {
         btn.disabled = false;
     }
 }
+        async function separateBDR() {
+    if (!confirm("This will clean and isolate Auction BDR from Solo BDR. Continue?")) return;
+    const btn = event.target;
+    btn.innerText = "ISOLATING...";
+    try {
+        const res = await fetch(`${API}/api/bdr/isolate-auction`);
+        const data = await res.json();
+        alert(data.message || "BDR Successfully separated!");
+    } catch(e) {
+        alert("Failed to communicate with server.");
+    } finally {
+        btn.innerText = "ISOLATE AUCTION BDR";
+    }
+        }
 
 // Update your loadAllDashboardData() to fill 'siTourSelect' and 'ieTourSelect'
 // Inside your existing duo fetch loop:
