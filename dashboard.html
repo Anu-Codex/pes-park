@@ -2230,24 +2230,22 @@ async function loadReplaceParticipants(tourId) {
 async function executePlayerReplacement() {
     const tourId = document.getElementById('repTourSelect').value;
     const oldPlayer = document.getElementById('repOldPlayerSelect').value;
-    const newPlayer = document.getElementById('repNewPlayerSelect').value;
+    
+    // 👉 FIX: Grab the actual Name text from the dropdown
+    const newSelect = document.getElementById('repNewPlayerSelect');
+    let newPlayer = newSelect.options[newSelect.selectedIndex]?.text?.trim() || newSelect.value;
+
+    // Clean up if text contains extra labels like "(BDR: 10)"
+    if (newPlayer.includes('(')) {
+        newPlayer = newPlayer.split('(')[0].trim();
+    }
 
     if (!tourId || !oldPlayer || !newPlayer) {
-        return alert("Please select the Tournament, the Current Player, and the Replacement Player!");
+        return alert("Please select the Tournament, Current Player, and Replacement Player!");
     }
 
-    if (oldPlayer === newPlayer) {
-        return alert("Current Player and Replacement Player cannot be the same!");
-    }
-
-    if (!confirm(`Are you sure you want to replace "${oldPlayer}" with "${newPlayer}" in this tournament?`)) {
-        return;
-    }
-
-    const btn = event.target;
-    const originalText = btn.innerText;
-    btn.innerText = "REPLACING...";
-    btn.disabled = true;
+    const check = confirm(`Replace "${oldPlayer}" with "${newPlayer}"?`);
+    if (!check) return;
 
     try {
         const res = await fetch(`${API}/api/smart/replace-player`, {
@@ -2261,22 +2259,16 @@ async function executePlayerReplacement() {
         });
 
         const data = await res.json();
-
         if (res.ok && data.success) {
             alert(data.message);
-            // Refresh the current tournament participants dropdown
-            loadReplaceParticipants(tourId);
+            location.reload();
         } else {
-            alert("❌ " + (data.error || "Replacement failed"));
+            alert("❌ " + (data.error || "Failed"));
         }
-    } catch (err) {
-        alert("Server connection failed.");
-    } finally {
-        btn.innerText = originalText;
-        btn.disabled = false;
+    } catch (e) {
+        alert("Server error");
     }
 }
-
 // Update your loadAllDashboardData() to fill 'siTourSelect' and 'ieTourSelect'
 // Inside your existing duo fetch loop:
 
