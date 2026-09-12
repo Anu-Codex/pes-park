@@ -699,7 +699,6 @@
             const players = await pRes.json();
             const tours = await tRes.json();
             const teams = await teamRes.json();
-            const requests = await rRes.json();
             const duoRes = await fetch(`${API_V2}/api/duo/tournaments`);
             const duoTours = await duoRes.json();
 
