@@ -690,11 +690,10 @@
 
     async function loadAllDashboardData() {
         try {
-            const [pRes, tRes, teamRes, rRes] = await Promise.all([
+            const [pRes, tRes, teamRes] = await Promise.all([
                 fetch(`${API}/api/players`),
                 fetch(`${API}/api/smart/tournaments`),
                 fetch(`${API}/api/teams/all`),
-                fetch(`${API}/api/requests/all`)
             ]);
 
             const players = await pRes.json();
