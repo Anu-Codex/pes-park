@@ -439,6 +439,37 @@
     </div>
     <button onclick="createSubFixture()" class="btn-green">Generate Member Match</button>
             </div>
+            <!-- REPLACE PLAYER IN TOURNAMENT -->
+<div class="sub-box" style="border-left: 4px solid var(--accent); background: rgba(16, 185, 129, 0.05); margin-top: 15px;">
+    <h4><i class="fa-solid fa-arrows-rotate"></i> Replace Player in Tournament</h4>
+    <p style="font-size:0.7rem; color:var(--text-dim); margin-bottom:12px;">
+        Substitute a player in a tournament. This updates the points table and all upcoming/completed fixtures.
+    </p>
+
+    <label style="font-size:0.6rem; color:var(--text-dim);">1. SELECT TOURNAMENT</label>
+    <select id="repTourSelect" onchange="loadReplaceParticipants(this.value)">
+        <option value="">Select Tournament...</option>
+    </select>
+
+    <div class="grid-2" style="margin-top: 10px;">
+        <div>
+            <label style="font-size:0.6rem; color:var(--danger);">CURRENT PLAYER (TO REMOVE)</label>
+            <select id="repOldPlayerSelect">
+                <option value="">Select Tournament First...</option>
+            </select>
+        </div>
+        <div>
+            <label style="font-size:0.6rem; color:var(--accent);">NEW REPLACEMENT PLAYER</label>
+            <select id="repNewPlayerSelect">
+                <option value="">Select New Player from DB...</option>
+            </select>
+        </div>
+    </div>
+
+    <button type="button" onclick="executePlayerReplacement()" class="btn-green" style="width: 100%; margin-top: 15px; font-weight: 800;">
+        CONFIRM PLAYER REPLACEMENT
+    </button>
+</div>
         </div>
 
         <!-- 5. PRESTIGE (SMART HOF) -->
@@ -723,6 +754,9 @@
             `).join('');
             document.getElementById('trPlayerSelect').innerHTML = '<option value="">Select Player...</option>' + 
     players.map(p => `<option value="${p._id}">${p.name}</option>`).join('');
+            document.getElementById('repNewPlayerSelect').innerHTML = players.map(p => `
+                <div style="display:flex; gap:10px; padding:5px"><input type="checkbox" class="st-cb" value="${p.name}"> <label>${p.name}</label></div>
+            `).join('');
 
             const teamOpts = teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
         
@@ -739,6 +773,7 @@
             document.getElementById('deleteTourSelect').innerHTML = '<option value="">Select Tour to Delete...</option>' + tourOpts;
             document.getElementById('subTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             document.getElementById('rebuildTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
+            document.getElementById('repTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             
             const duoOpts = duoTours.map(t => `<option value="${t._id}">${t.name} (DUO)</option>`).join('');
             document.getElementById('dmTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
@@ -2168,6 +2203,81 @@ async function executeSignFreeAgent() {
         btn.innerText = "ISOLATE AUCTION BDR";
     }
         }
+        // 1. Fetch participants of the chosen tournament to populate the "Current Player" dropdown
+async function loadReplaceParticipants(tourId) {
+    const oldSelect = document.getElementById('repOldPlayerSelect');
+    if (!tourId) {
+        oldSelect.innerHTML = '<option value="">Select Tournament First...</option>';
+        return;
+    }
+
+    oldSelect.innerHTML = '<option value="">Loading tournament participants...</option>';
+
+    try {
+        const res = await fetch(`${API}/api/smart/participants/${tourId}`);
+        const participants = await res.json();
+
+        if (!participants || participants.length === 0) {
+            oldSelect.innerHTML = '<option value="">No participants found in this tour</option>';
+        } else {
+            oldSelect.innerHTML = '<option value="">Select Player to Remove...</option>' + 
+                participants.map(name => `<option value="${name}">${name}</option>`).join('');
+        }
+    } catch (e) {
+        oldSelect.innerHTML = '<option value="">Error loading participants</option>';
+    }
+}
+
+// 2. Submit the replacement to the backend
+async function executePlayerReplacement() {
+    const tourId = document.getElementById('repTourSelect').value;
+    const oldPlayer = document.getElementById('repOldPlayerSelect').value;
+    const newPlayer = document.getElementById('repNewPlayerSelect').value;
+
+    if (!tourId || !oldPlayer || !newPlayer) {
+        return alert("Please select the Tournament, the Current Player, and the Replacement Player!");
+    }
+
+    if (oldPlayer === newPlayer) {
+        return alert("Current Player and Replacement Player cannot be the same!");
+    }
+
+    if (!confirm(`Are you sure you want to replace "${oldPlayer}" with "${newPlayer}" in this tournament?`)) {
+        return;
+    }
+
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "REPLACING...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/smart/replace-player`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                tourId: tourId,
+                oldPlayerName: oldPlayer,
+                newPlayerName: newPlayer
+            })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            alert(data.message);
+            // Refresh the current tournament participants dropdown
+            loadReplaceParticipants(tourId);
+        } else {
+            alert("❌ " + (data.error || "Replacement failed"));
+        }
+    } catch (err) {
+        alert("Server connection failed.");
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
 
 // Update your loadAllDashboardData() to fill 'siTourSelect' and 'ieTourSelect'
 // Inside your existing duo fetch loop:
