@@ -405,10 +405,10 @@
     <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 10px;">
         Warning: This will permanently delete the tournament, all its fixtures, and the points table.
     </p>
-    <select id="dtTourSelect" style="border-color: var(--danger);">
-        <option>Select Tournament to Delete...</option>
+    <select id="deleteTourSelect" style="border-color: var(--danger);">
+        <option value="">Select Tournament to Delete...</option>
     </select>
-    <button onclick="deleteSpecificTour()" class="delete-btn" style="width: 100%; margin-top: 5px;">
+    <button onclick="confirmDeleteTournament()" class="delete-btn" style="width: 100%; margin-top: 5px;">
         Confirm Permanent Delete
     </button>
 </div>
@@ -730,7 +730,7 @@
             const tourOpts = tours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
             document.getElementById('sfTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             document.getElementById('srTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
-            document.getElementById('dtTourSelect').innerHTML = '<option>Select Tour to Delete...</option>' + tourOpts;
+            document.getElementById('deleteTourSelect').innerHTML = '<option value="">Select Tour to Delete...</option>' + tourOpts;
             document.getElementById('subTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             document.getElementById('rebuildTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             
@@ -977,6 +977,7 @@ if (updateForm) {
         }
     } catch (e) { alert("Error"); }
     }
+        
         // 1. Function to add new rows dynamically in the UI
 function addHofRow(containerId, type) {
     const container = document.getElementById(containerId);
@@ -1283,25 +1284,26 @@ async function createAKFixture() {
         alert("❌ Connection Error");
     }
         }
-        async function deleteSpecificTour() {
-    const tourId = document.getElementById('dtTourSelect').value;
-    if (!tourId) return alert("Please select a tournament first!");
+        async function confirmDeleteTournament() {
+    const tourId = document.getElementById('deleteTourSelect').value;
+    if (!tourId) return alert("Please select a tournament to delete!");
 
-    const confirmName = prompt("This action is PERMANENT. To confirm, type 'DELETE' in the box below:");
-    if (confirmName !== "DELETE") return alert("Deletion cancelled.");
+    const check = confirm("⚠️ DANGER: This will delete this tournament, all its matches, and its points table forever. Proceed?");
+    if (!check) return;
 
     try {
-        const res = await fetch(`${API}/api/smart/delete-tour/${tourId}`, {
+        const res = await fetch(`${API}/api/smart/tournament/${tourId}`, {
             method: 'DELETE'
         });
         const data = await res.json();
-
         if (data.success) {
-            alert("SUCCESS: Tournament wiped from archives.");
-            location.reload(); // Refresh to update all dropdowns
+            alert("Tournament deleted successfully! 🗑️");
+            location.reload();
+        } else {
+            alert("Error: " + data.error);
         }
     } catch (e) {
-        alert("CRITICAL ERROR: Failed to reach server.");
+        alert("Server error. Check if the delete route exists.");
     }
         }
         // Load main team-vs-team fixtures
