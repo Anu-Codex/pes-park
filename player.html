@@ -779,6 +779,125 @@
     padding-top: 14px;
     border-top: 1px solid rgba(255, 255, 255, 0.03);
 }
+        /* --- TOURNAMENT HISTORY STYLES --- */
+.tour-history-card {
+    background: #0a1222;
+    border: 1px solid #162338;
+    border-radius: 20px;
+    padding: 22px 20px;
+    margin-bottom: 20px;
+}
+
+.tour-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tour-history-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.tour-history-title i {
+    color: #f59e0b; /* Gold Trophy */
+    font-size: 1.15rem;
+}
+
+/* Styled Dropdown */
+.tour-select-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+#tourHistoryFilter {
+    appearance: none;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    color: #e2e8f0;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px 32px 8px 16px;
+    cursor: pointer;
+    outline: none;
+    transition: 0.2s;
+}
+
+#tourHistoryFilter:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+}
+
+.select-chevron {
+    position: absolute;
+    right: 12px;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+/* Category Subtitle */
+.tour-history-subtitle {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #475569;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 20px 0 14px;
+}
+
+/* Stages List */
+.tour-stage-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tour-stage-row {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.2s;
+}
+
+.tour-stage-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.stage-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #cbd5e1;
+}
+
+.stage-count {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 2px;
+}
+
+.stage-count span {
+    font-size: 0.9rem;
+    color: #64748b;
+    margin-right: 4px;
+    font-weight: 700;
+}
     </style>
 </head>
 <body>
@@ -1092,6 +1211,34 @@
         <div class="p-bar-bg"><div id="growthBar" class="p-bar-fill" style="background: #f59e0b; width: 0%;"></div></div>
     </div>
 </div>
+        <!-- TOURNAMENT & KNOCKOUT HISTORY CARD -->
+<div class="glass-card tour-history-card">
+    <!-- Header -->
+    <div class="tour-history-header">
+        <div class="tour-history-title">
+            <i class="fa-solid fa-trophy"></i>
+            <span>Tournament History</span>
+        </div>
+
+        <!-- Upper Right Dynamic Tour Dropdown -->
+        <div class="tour-select-wrapper">
+            <select id="tourHistoryFilter" onchange="renderTournamentHistory()">
+                <option value="overall">Overall</option>
+            </select>
+            <i class="fa-solid fa-chevron-down select-chevron"></i>
+        </div>
+    </div>
+
+    <!-- Subtitle Category -->
+    <div class="tour-history-subtitle" id="tourHistorySubtitle">
+        OVERALL KNOCKOUT HISTORY
+    </div>
+
+    <!-- Stage Items Container -->
+    <div id="tourStageList" class="tour-stage-list">
+        <!-- Stages injected by JS -->
+    </div>
+</div>
 
 <!-- NEW: IMAGE 2 - SEASON PERFORMANCE -->
 <div class="glass-card">
@@ -1197,6 +1344,7 @@ initMatchActivityCalendar(playerMatches);
             renderRadarChart(p.attributes || {});
             generateScoutReport(p);
             calculateAdvancedStats(p, playerMatches);
+            initTournamentHistoryDropdown();
             
             // --- UPDATE THIS PART IN loadProfile() ---
 const avatarBox = document.getElementById('avatar');
@@ -1811,6 +1959,133 @@ function renderMatchActivity() {
         grid.appendChild(cell);
     }
 }
+        // --- TOURNAMENT & KNOCKOUT HISTORY ENGINE ---
+let cachedAllTournaments = [];
+
+// 1. Initialize Dropdown with all current DB tournaments
+async function initTournamentHistoryDropdown() {
+    try {
+        const res = await fetch(`${API}/api/smart/tournaments`);
+        const tours = await res.json();
+        cachedAllTournaments = Array.isArray(tours) ? tours : [];
+
+        const select = document.getElementById('tourHistoryFilter');
+        if (!select) return;
+
+        // Keep "Overall" first, then add every tournament in the database
+        select.innerHTML = '<option value="overall">Overall</option>' + 
+            cachedAllTournaments.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+
+        // Initial render for Overall
+        renderTournamentHistory();
+    } catch (e) {
+        console.warn("Could not load tournament list:", e);
+        renderTournamentHistory();
+    }
+}
+
+// 2. Stage Name Normalizer (groups variants like QF, Semi-Final into standard names)
+function normalizeStageName(stage, isFinalWon) {
+    if (!stage) return null;
+    const s = stage.toLowerCase().trim();
+
+    if (s.includes("final") || s.includes("grand final")) {
+        return isFinalWon ? "Champions / Winners" : "Finals";
+    }
+    if (s.includes("semi")) return "Semi Finals";
+    if (s.includes("quarter") || s.includes("qf")) return "Quarter Finals";
+    if (s.includes("16") || s.includes("octavo")) return "Round of 16";
+    if (s.includes("32")) return "Round of 32";
+    if (s.includes("eliminator")) return "Eliminators";
+    if (s.includes("qualifier")) return "Qualifiers";
+    if (s.includes("knockout")) return "Knockout Round";
+
+    // If custom named, return as capitalized words
+    return stage;
+}
+
+// 3. Render Stages & Counts
+function renderTournamentHistory() {
+    const filterVal = document.getElementById('tourHistoryFilter')?.value || "overall";
+    const subtitle = document.getElementById('tourHistorySubtitle');
+    const container = document.getElementById('tourStageList');
+
+    if (!container) return;
+
+    // Filter matches based on the selected dropdown
+    let targetMatches = [];
+    if (filterVal === "overall") {
+        subtitle.innerText = "OVERALL KNOCKOUT HISTORY";
+        targetMatches = playerMatches || [];
+    } else {
+        const selectedTour = cachedAllTournaments.find(t => String(t._id) === String(filterVal));
+        const tourName = selectedTour ? selectedTour.name.toUpperCase() : "TOURNAMENT";
+        subtitle.innerText = `${tourName} HISTORY`;
+
+        targetMatches = (playerMatches || []).filter(m => {
+            const matchTourId = m.tourId?._id || m.tourId;
+            return String(matchTourId) === String(filterVal);
+        });
+    }
+
+    // Count how many times each stage was reached
+    const stageCounts = {};
+
+    targetMatches.forEach(m => {
+        // Only count if a stage was assigned to the fixture
+        if (m.stage && m.stage.toLowerCase() !== "group stage" && m.stage.toLowerCase() !== "league") {
+            const isA = m.playerA === myName;
+            const myScore = Number(isA ? m.scoreA : m.scoreB) || 0;
+            const oppScore = Number(isA ? m.scoreB : m.scoreA) || 0;
+            const wonMatch = myScore > oppScore;
+
+            const normalized = normalizeStageName(m.stage, wonMatch);
+            if (normalized) {
+                stageCounts[normalized] = (stageCounts[normalized] || 0) + 1;
+            }
+        }
+    });
+
+    const entries = Object.entries(stageCounts);
+
+    // Order priority: Champion -> Finals -> Semi Finals -> Quarter Finals -> etc.
+    const priority = [
+        "Champions / Winners",
+        "Finals",
+        "Semi Finals",
+        "Quarter Finals",
+        "Eliminators",
+        "Qualifiers",
+        "Round of 16",
+        "Round of 32",
+        "Knockout Round"
+    ];
+
+    entries.sort((a, b) => {
+        const idxA = priority.indexOf(a[0]);
+        const idxB = priority.indexOf(b[0]);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return b[1] - a[1];
+    });
+
+    if (entries.length === 0) {
+        container.innerHTML = `
+            <div style="text-align:center; padding: 25px 15px; color: #64748b; font-size: 0.85rem;">
+                No knockout stages recorded for this selection.
+            </div>`;
+        return;
+    }
+
+    // Render the stage rows (e.g. Quarter Finals × 3)
+    container.innerHTML = entries.map(([stageName, count]) => `
+        <div class="tour-stage-row">
+            <span class="stage-name">${stageName}</span>
+            <span class="stage-count"><span>×</span>${count}</span>
+        </div>
+    `).join('');
+        }
 
 // Call it
 
