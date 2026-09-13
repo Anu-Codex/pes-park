@@ -1332,6 +1332,212 @@
 .ann-item:last-child { border-bottom: none; }
 .ann-item p { margin: 0; font-size: 0.85rem; color: #e2e8f0; line-height: 1.4; }
 .ann-item span { font-size: 0.65rem; color: var(--text-dim); margin-top: 5px; display: block; }
+        /* --- CHAMPION CELEBRATION MODAL STYLES --- */
+.cel-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 7, 18, 0.88);
+    backdrop-filter: blur(10px);
+    z-index: 999999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    animation: fadeInOverlay 0.4s ease-out;
+}
+
+#fireworksCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Card Geometry & Theme Glow */
+.cel-card {
+    --card-theme: #ff003c; /* Dynamic color based on team */
+    position: relative;
+    z-index: 2;
+    width: 88%;
+    max-width: 340px;
+    background: #060913;
+    background-image: 
+        radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 60%),
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0, rgba(255,255,255,0.015) 1px, transparent 0, transparent 8px);
+    border: 2px solid var(--card-theme);
+    border-radius: 28px;
+    padding: 24px 20px 20px;
+    text-align: center;
+    box-shadow: 
+        0 0 35px var(--card-theme),
+        inset 0 0 25px rgba(0,0,0,0.8);
+    animation: cardZoomIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: pointer;
+}
+
+/* Red / Team Crystal Corners */
+.cel-card::before {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 25px;
+    border: 1px solid rgba(255,255,255,0.15);
+    pointer-events: none;
+}
+
+/* Top Stars & Tech Accents */
+.cel-top-badge {
+    color: var(--card-theme);
+    font-size: 0.75rem;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 900;
+}
+.cel-top-badge i {
+    color: #f59e0b;
+    filter: drop-shadow(0 0 8px #f59e0b);
+}
+
+/* Upper Dynamic Trophy */
+.cel-trophy-wrap {
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+.cel-trophy {
+    max-height: 90px;
+    max-width: 90px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.5));
+    animation: trophyFloat 3s ease-in-out infinite;
+}
+
+/* Center Player Avatar */
+.cel-avatar-wrap {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    margin: 0 auto 12px;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 20px var(--card-theme);
+    overflow: hidden;
+    background: #1e293b;
+}
+.cel-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Player Name */
+.cel-player-name {
+    margin: 0 0 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+/* Scorer Sub-stat */
+.cel-scorer-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #f59e0b;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+.cel-boot-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.6));
+}
+
+/* Banner Ribbon */
+.cel-ribbon {
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 8px 0;
+    margin: 10px 0 14px;
+    position: relative;
+}
+.cel-star-mini {
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #060913;
+    padding: 0 6px;
+    font-size: 0.65rem;
+    color: var(--card-theme);
+}
+.cel-ribbon h3 {
+    margin: 0;
+    font-family: 'Orbitron', 'Cinzel', serif;
+    font-size: 1.05rem;
+    letter-spacing: 3px;
+    color: #f1f5f9;
+    font-weight: 800;
+}
+
+/* Bottom Team Crest */
+.cel-team-crest {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.cel-team-crest img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+}
+
+/* Tap to dismiss hint */
+.cel-dismiss-hint {
+    margin-top: 25px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    letter-spacing: 1px;
+    font-weight: 500;
+    position: relative;
+    z-index: 2;
+    animation: pulseHint 2s infinite;
+}
+
+@keyframes trophyFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+@keyframes cardZoomIn {
+    from { opacity: 0; transform: scale(0.7) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes pulseHint {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
         
     </style>
 </head>
@@ -1352,6 +1558,53 @@
         
         <p class="loading-footer">Version 7.0.2 • Secure Connection</p>
     </div>
+</div>
+    <!-- CHAMPION CELEBRATION OVERLAY -->
+<div id="celebrationOverlay" class="cel-overlay" style="display: none;" onclick="dismissCelebration()">
+    <!-- Fireworks & Sparkles Canvas -->
+    <canvas id="fireworksCanvas"></canvas>
+
+    <!-- The Champion Card -->
+    <div class="cel-card" id="celCard" onclick="event.stopPropagation(); dismissCelebration();">
+        <!-- Top Tech Tabs -->
+        <div class="cel-top-badge">
+            <span>///</span>
+            <i class="fa-solid fa-star"></i>
+            <span>///</span>
+        </div>
+
+        <!-- Upper Dynamic Trophy -->
+        <div class="cel-trophy-wrap">
+            <img id="celTrophyImg" src="https://i.postimg.cc/qvqPB29Q/232667-removebg-preview.png" class="cel-trophy">
+        </div>
+
+        <!-- Player Avatar -->
+        <div class="cel-avatar-wrap">
+            <img id="celPlayerAvatar" src="https://via.placeholder.com/80" class="cel-avatar" onerror="this.src='https://via.placeholder.com/80'">
+        </div>
+
+        <!-- Player Name -->
+        <h2 id="celPlayerName" class="cel-player-name">PLAYER NAME</h2>
+
+        <!-- Golden Boot / Scorer Sub-stat -->
+        <div id="celScorerRow" class="cel-scorer-row">
+            <img src="https://i.postimg.cc/15phyzFD/259302-removebg-preview.png" class="cel-boot-icon">
+            <span id="celScorerText">Top Scorer — 0 goals</span>
+        </div>
+
+        <!-- Banner Ribbon -->
+        <div class="cel-ribbon">
+            <span class="cel-star-mini">★</span>
+            <h3 id="celTrophyTitle">WEEKLY WINNER</h3>
+        </div>
+
+        <!-- Bottom Team Crest -->
+        <div class="cel-team-crest">
+            <img id="celTeamLogo" src="" onerror="this.style.display='none'">
+        </div>
+    </div>
+
+    <div class="cel-dismiss-hint">Tap anywhere to dismiss</div>
 </div>
     <!-- Sidebar Menu -->
 <div id="side-menu" class="side-nav">
@@ -2994,6 +3247,159 @@ loadAnnouncements();
         content.innerHTML = '<p style="text-align:center; color:#ef4444; padding:20px;">Duo Database Link Interrupted.</p>';
     }
         }
+        // --- CHAMPION CELEBRATION & FIREWORKS ENGINE ---
+let celebrationTimer = null;
+let fireworksAnimId = null;
+
+// Team Color Palette Mapping
+const teamThemeColors = {
+    "ADRENALINE": "#ef4444",      // Red
+    "BAYERN MUNICH": "#dc2626",   // Crimson
+    "REAL MADRID": "#f59e0b",     // Gold/White
+    "BARCELONA": "#2563eb",       // Blaugrana Blue
+    "CHELSEA": "#0055ff",         // Royal Blue
+    "PSG": "#3b82f6",             // Navy/Red
+    "NIGHT OWLS": "#a855f7",      // Purple
+    "INTER MILAN": "#00d1ff"      // Cyan
+};
+
+async function checkCelebrationBanner() {
+    try {
+        const res = await fetch(`${API}/api/celebration/latest`);
+        const celebration = await res.json();
+        if (!celebration || !celebration._id) return;
+
+        // SHOWN ONLY TO NEW VISITORS: Check if user already saw this celebration
+        const seenKey = `nexus_seen_celebration_${celebration._id}`;
+        if (localStorage.getItem(seenKey)) {
+            return; // Already seen, do not bother the visitor
+        }
+
+        // 1. Set Team Color Theme
+        const matchedColor = celebration.themeColor || teamThemeColors[celebration.teamName?.toUpperCase()] || "#ff003c";
+        document.getElementById('celCard').style.setProperty('--card-theme', matchedColor);
+
+        // 2. Set Dynamic Content
+        document.getElementById('celTrophyTitle').innerText = (celebration.trophyTitle || "WEEKLY WINNER").toUpperCase();
+        document.getElementById('celTrophyImg').src = celebration.trophyImage || "https://i.postimg.cc/qvqPB29Q/232667-removebg-preview.png";
+        document.getElementById('celPlayerName').innerText = celebration.playerName;
+        document.getElementById('celPlayerAvatar').src = celebration.playerImage || "https://via.placeholder.com/80";
+
+        // Scorer details
+        const scorerRow = document.getElementById('celScorerRow');
+        if (celebration.scorerStats) {
+            document.getElementById('celScorerText').innerText = celebration.scorerStats;
+            scorerRow.style.display = "flex";
+        } else {
+            scorerRow.style.display = "none";
+        }
+
+        // Team Crest
+        const logoImg = document.getElementById('celTeamLogo');
+        if (celebration.teamLogo) {
+            logoImg.src = celebration.teamLogo;
+            logoImg.style.display = "block";
+        } else {
+            logoImg.style.display = "none";
+        }
+
+        // 3. Display Modal & Start Fireworks
+        document.getElementById('celebrationOverlay').style.display = "flex";
+        startFireworks(matchedColor);
+
+        // 4. Record as seen so it only shows once
+        localStorage.setItem(seenKey, "true");
+
+        // 5. Auto-dismiss after 6 seconds
+        celebrationTimer = setTimeout(() => {
+            dismissCelebration();
+        }, 6000);
+
+    } catch (err) {
+        console.warn("Celebration check skipped:", err.message);
+    }
+}
+
+function dismissCelebration() {
+    const overlay = document.getElementById('celebrationOverlay');
+    if (overlay) overlay.style.display = "none";
+
+    if (celebrationTimer) clearTimeout(celebrationTimer);
+    if (fireworksAnimId) cancelAnimationFrame(fireworksAnimId);
+}
+
+// 60FPS Pure Canvas Fireworks & Sparkles System
+function startFireworks(themeColor) {
+    const canvas = document.getElementById('fireworksCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+    const colors = [themeColor, '#f59e0b', '#ffffff', '#ffd700'];
+
+    function createExplosion(x, y) {
+        const count = 45;
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 6 + 2;
+            particles.push({
+                x, y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: Math.random() * 3 + 1.5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                alpha: 1,
+                decay: Math.random() * 0.02 + 0.015,
+                gravity: 0.12
+            });
+        }
+    }
+
+    // Launch multiple bursts
+    createExplosion(canvas.width * 0.3, canvas.height * 0.35);
+    setTimeout(() => createExplosion(canvas.width * 0.7, canvas.height * 0.3), 300);
+    setTimeout(() => createExplosion(canvas.width * 0.5, canvas.height * 0.2), 700);
+    setTimeout(() => createExplosion(canvas.width * 0.25, canvas.height * 0.45), 1200);
+
+    function loop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += p.gravity;
+            p.alpha -= p.decay;
+
+            if (p.alpha <= 0) {
+                particles.splice(i, 1);
+                continue;
+            }
+
+            ctx.save();
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        fireworksAnimId = requestAnimationFrame(loop);
+    }
+
+    loop();
+}
+
+// Check for celebration on boot
+window.addEventListener('DOMContentLoaded', () => {
+    checkCelebrationBanner();
+});
 
 // Toggle function for the accordion effect
 function toggleTeamDetails(id) {
