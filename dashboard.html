@@ -823,12 +823,20 @@
             document.getElementById('srTourSelect').innerHTML += duoOpts;
 
             // Inside loadAllDashboardData():
-const soloTours = safeTours.filter(t => t.type === 'solo');
 const uclSoloSel = document.getElementById('uclSoloTourSelect');
-if (uclSoloSel) uclSoloSel.innerHTML = '<option value="">Select Solo Tour...</option>' + soloTours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+        if (uclSoloSel) {
+            uclSoloSel.innerHTML = '<option value="">Select Tour to Add to Pool...</option>' + allTourOpts;
+        }
 
-const uclMainSel = document.getElementById('uclMainTourSelect');
-if (uclMainSel) uclMainSel.innerHTML = '<option value="">Select Main UCL Tournament...</option>' + safeTours.map(t => `<option value="${t._id}">${t.name} (${t.type})</option>`).join('');
+        const uclMainSel = document.getElementById('uclMainTourSelect');
+        if (uclMainSel) {
+            uclMainSel.innerHTML = '<option value="">Select Main UCL Tournament...</option>' + allTourOpts;
+        }
+
+        // Refresh connected qualification leagues badges
+        if (typeof loadUclAdminData === 'function') {
+            loadUclAdminData();
+        }
             
             
 
@@ -837,7 +845,6 @@ if (uclMainSel) uclMainSel.innerHTML = '<option value="">Select Main UCL Tournam
     } catch (e) { console.error("Sync Error", e); }
         syncDuoDropdowns();
         loadFreeAgentsDropdown();
-        loadUclAdminData();
     }
 
     // Load Player Data for Edit
@@ -2392,6 +2399,30 @@ async function snapshotUclRanks() {
     const data = await res.json();
     alert(data.message || "Snapshot saved!");
 }
+        // Standalone loader: Fetches all tournaments directly for UCL
+async function syncUclDropdownsDirectly() {
+    try {
+        const res = await fetch(`${API}/api/smart/tournaments`);
+        const tours = await res.json();
+
+        if (Array.isArray(tours) && tours.length > 0) {
+            const opts = tours.map(t => 
+                `<option value="${t._id}">${t.name} (${t.type || 'Tour'})</option>`
+            ).join('');
+
+            const soloSel = document.getElementById('uclSoloTourSelect');
+            if (soloSel) soloSel.innerHTML = '<option value="">Select Tour to Add to Pool...</option>' + opts;
+
+            const mainSel = document.getElementById('uclMainTourSelect');
+            if (mainSel) mainSel.innerHTML = '<option value="">Select Main UCL Tournament...</option>' + opts;
+        }
+    } catch (err) {
+        console.error("Direct UCL dropdown sync failed:", err);
+    }
+}
+
+// Trigger directly on page load
+syncUclDropdownsDirectly();
 // Update your loadAllDashboardData() to fill 'siTourSelect' and 'ieTourSelect'
 // Inside your existing duo fetch loop:
 
