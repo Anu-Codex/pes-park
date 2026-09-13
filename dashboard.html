@@ -470,6 +470,48 @@
         CONFIRM PLAYER REPLACEMENT
     </button>
 </div>
+            <!-- UCL TOURNAMENT & QUALIFICATION STATION -->
+<div class="sub-box" style="border-left: 4px solid #0055ff; background: linear-gradient(180deg, rgba(0, 85, 255, 0.08) 0%, rgba(16, 25, 38, 0.6) 100%);">
+    <h4 style="color: #38bdf8;"><i class="fa-solid fa-shield-halved"></i> UCL Control Center</h4>
+    <p style="font-size:0.72rem; color:var(--text-dim); margin-bottom: 15px;">
+        Connect registered Solo Tours to feed into the <b>Top 36 UCL Table</b>, lock rank movement snapshots, and link the Main UCL Tournament.
+    </p>
+
+    <!-- Part A: Add Solo Tour to UCL Pool -->
+    <label style="font-size:0.65rem; color:var(--text-dim); text-transform:uppercase;">1. Select Solo Tour to Add to UCL Pool</label>
+    <div style="display:flex; gap:10px; margin-top:5px; margin-bottom:15px;">
+        <select id="uclSoloTourSelect" style="margin:0; flex:1;">
+            <option value="">Select Solo Tour...</option>
+        </select>
+        <button type="button" onclick="addSoloTourToUcl()" class="btn-green" style="width:auto; padding:10px 18px; margin:0; background:#0055ff; color:white;">
+            <i class="fa-solid fa-plus"></i> Connect
+        </button>
+    </div>
+
+    <!-- Active Qualifying Tours List -->
+    <label style="font-size:0.65rem; color:var(--text-dim); text-transform:uppercase;">Active Qualifying Leagues</label>
+    <div id="uclConnectedTours" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:5px; margin-bottom:20px; min-height:30px;">
+        <span style="font-size:0.75rem; color:#64748b;">Loading connected tours...</span>
+    </div>
+
+    <hr style="border:0; border-top:1px solid rgba(255,255,255,0.08); margin:15px 0;">
+
+    <!-- Part B: Link Active Main UCL Tournament -->
+    <label style="font-size:0.65rem; color:var(--text-dim); text-transform:uppercase;">2. Link Active UCL Main Tournament (Fixtures / Standings)</label>
+    <div style="display:flex; gap:10px; margin-top:5px; margin-bottom:15px;">
+        <select id="uclMainTourSelect" style="margin:0; flex:1;">
+            <option value="">Select Main UCL Tournament...</option>
+        </select>
+        <button type="button" onclick="setMainUclTournament()" class="btn-gold" style="width:auto; padding:10px 18px; margin:0;">
+            Link UCL
+        </button>
+    </div>
+
+    <!-- Part C: Snapshot Trigger for Movement ▲ / ▼ -->
+    <button type="button" onclick="snapshotUclRanks()" class="delete-btn" style="background:#1e293b; color:#38bdf8; border:1px solid #38bdf8; width:100%; padding:10px; font-weight:700; font-size:0.75rem;">
+        <i class="fa-solid fa-camera"></i> Lock Rank Snapshot (Calculate ▲ / ▼)
+    </button>
+</div>
         </div>
 
         <!-- 5. PRESTIGE (SMART HOF) -->
@@ -779,6 +821,14 @@
             document.getElementById('siTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('ieTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('srTourSelect').innerHTML += duoOpts;
+
+            // Inside loadAllDashboardData():
+const soloTours = safeTours.filter(t => t.type === 'solo');
+const uclSoloSel = document.getElementById('uclSoloTourSelect');
+if (uclSoloSel) uclSoloSel.innerHTML = '<option value="">Select Solo Tour...</option>' + soloTours.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+
+const uclMainSel = document.getElementById('uclMainTourSelect');
+if (uclMainSel) uclMainSel.innerHTML = '<option value="">Select Main UCL Tournament...</option>' + safeTours.map(t => `<option value="${t._id}">${t.name} (${t.type})</option>`).join('');
             
             
 
@@ -787,6 +837,7 @@
     } catch (e) { console.error("Sync Error", e); }
         syncDuoDropdowns();
         loadFreeAgentsDropdown();
+        loadUclAdminData();
     }
 
     // Load Player Data for Edit
@@ -2268,6 +2319,78 @@ async function executePlayerReplacement() {
     } catch (e) {
         alert("Server error");
     }
+}
+        // --- UCL DASHBOARD FUNCTIONS ---
+async function loadUclAdminData() {
+    try {
+        const res = await fetch(`${API}/api/ucl/hub`);
+        const data = await res.json();
+        
+        // 1. Populate Connected Leagues Pills
+        const container = document.getElementById('uclConnectedTours');
+        if (container) {
+            if (data.qualifyingTours && data.qualifyingTours.length > 0) {
+                container.innerHTML = data.qualifyingTours.map(t => `
+                    <div style="background:rgba(0, 85, 255, 0.2); border:1px solid #0055ff; color:#38bdf8; padding:5px 12px; border-radius:50px; font-size:0.72rem; font-weight:700; display:flex; align-items:center; gap:8px;">
+                        <span>${t.name}</span>
+                        <i class="fa-solid fa-xmark" style="cursor:pointer; color:#ef4444;" onclick="removeSoloTourFromUcl('${t._id}', '${t.name}')"></i>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<span style="font-size:0.75rem; color:#64748b;">No solo tours added yet.</span>';
+            }
+        }
+    } catch (e) {
+        console.error("UCL Admin load error:", e);
+    }
+}
+
+async function addSoloTourToUcl() {
+    const tourId = document.getElementById('uclSoloTourSelect').value;
+    if (!tourId) return alert("Select a Solo Tour first!");
+
+    const res = await fetch(`${API}/api/ucl/admin/manage-pool`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tourId, action: 'add' })
+    });
+    if (res.ok) {
+        alert("League connected to UCL Pool! 🏆");
+        loadUclAdminData();
+    }
+}
+
+async function removeSoloTourFromUcl(tourId, tourName) {
+    if (!confirm(`Disconnect "${tourName}" from UCL?`)) return;
+
+    const res = await fetch(`${API}/api/ucl/admin/manage-pool`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tourId, action: 'remove' })
+    });
+    if (res.ok) {
+        loadUclAdminData();
+    }
+}
+
+async function setMainUclTournament() {
+    const tourId = document.getElementById('uclMainTourSelect').value;
+    if (!tourId) return alert("Select a tournament to set as Main UCL!");
+
+    const res = await fetch(`${API}/api/ucl/admin/set-main-tour`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uclTourId: tourId })
+    });
+    if (res.ok) alert("Main UCL linked successfully! ✅");
+}
+
+async function snapshotUclRanks() {
+    if (!confirm("This will lock the current Top 36 standings as the baseline to show ▲ / ▼ movement indicators. Proceed?")) return;
+
+    const res = await fetch(`${API}/api/ucl/admin/snapshot-ranks`, { method: 'POST' });
+    const data = await res.json();
+    alert(data.message || "Snapshot saved!");
 }
 // Update your loadAllDashboardData() to fill 'siTourSelect' and 'ieTourSelect'
 // Inside your existing duo fetch loop:
