@@ -564,6 +564,39 @@
         </div>
         <button onclick="awardSmartTrophy()" class="btn-gold">Award & Increment Profile +1</button>
     </div>
+    <!-- CHAMPION CELEBRATION LAUNCHER -->
+<div class="sub-box" style="border-left: 4px solid #ff003c; background: linear-gradient(135deg, rgba(255, 0, 60, 0.08) 0%, rgba(15, 23, 42, 0.6) 100%);">
+    <h4 style="color:#ff003c;"><i class="fa-solid fa-crown"></i> Launch Champion Celebration Banner</h4>
+    <p style="font-size:0.72rem; color:var(--text-dim); margin-bottom:15px;">
+        Triggers the 6-second floating champion card with fireworks for all visitors.
+    </p>
+
+    <div class="grid-2">
+        <input type="text" id="celTitleIn" placeholder="Title (e.g. WEEKLY WINNER, UCL CHAMPION)">
+        <select id="celTrophyIn">
+            <option value="https://i.postimg.cc/qvqPB29Q/232667-removebg-preview.png">Weekly Cup (Default)</option>
+            <option value="https://i.postimg.cc/vH0Rd0Sj/232666-removebg-preview.png">Ballon d'Or</option>
+            <option value="https://i.postimg.cc/QdC2NcRm/232668-removebg-preview.png">Champions Trophy (UCL)</option>
+            <option value="https://i.postimg.cc/15phyzFD/259302-removebg-preview.png">Golden Boot / League Trophy</option>
+        </select>
+    </div>
+
+    <div class="grid-2" style="margin-top:10px;">
+        <select id="celPlayerSelect" onchange="autoFillCelebrationPlayer(this.value)">
+            <option value="">Select Winning Player...</option>
+        </select>
+        <input type="text" id="celScorerIn" placeholder="Stat Note (e.g. Sidhu — 17 goals)">
+    </div>
+
+    <div class="grid-2" style="margin-top:10px;">
+        <input type="text" id="celTeamIn" placeholder="Team Name (e.g. ADRENALINE)">
+        <input type="text" id="celThemeColorIn" placeholder="Color Hex (e.g. #ef4444)">
+    </div>
+
+    <button type="button" onclick="publishCelebrationCard()" class="btn-gold" style="background:#ff003c; color:white; width:100%; margin-top:15px; font-weight:800; padding:12px;">
+        🚀 LAUNCH TO ALL VISITORS
+    </button>
+</div>
 
 </div>
         <div id="sec-loyalty" class="admin-section">
@@ -845,6 +878,7 @@ const uclSoloSel = document.getElementById('uclSoloTourSelect');
     } catch (e) { console.error("Sync Error", e); }
         syncDuoDropdowns();
         loadFreeAgentsDropdown();
+        loadCelebrationPlayers();
     }
 
     // Load Player Data for Edit
@@ -2423,6 +2457,61 @@ async function syncUclDropdownsDirectly() {
 
 // Trigger directly on page load
 syncUclDropdownsDirectly();
+        let cachedCelebrationPlayers = [];
+async function loadCelebrationPlayers() {
+    try {
+        const res = await fetch(`${API}/api/players`);
+        const players = await res.json();
+        cachedCelebrationPlayers = players;
+
+        const sel = document.getElementById('celPlayerSelect');
+        if (sel) {
+            sel.innerHTML = '<option value="">Select Winning Player...</option>' + 
+                players.map(p => `<option value="${p.name}">${p.name} (${p.teamName || 'Free Agent'})</option>`).join('');
+        }
+    } catch (e) {}
+}
+
+function autoFillCelebrationPlayer(pName) {
+    const p = cachedCelebrationPlayers.find(x => x.name === pName);
+    if (!p) return;
+
+    document.getElementById('celTeamIn').value = p.teamName || "";
+    // Default matching team color
+    const colors = { "ADRENALINE": "#ef4444", "BAYERN MUNICH": "#dc2626", "REAL MADRID": "#f59e0b", "BARCELONA": "#2563eb", "NIGHT OWLS": "#a855f7" };
+    document.getElementById('celThemeColorIn').value = colors[p.teamName?.toUpperCase()] || "#ff003c";
+}
+
+async function publishCelebrationCard() {
+    const pName = document.getElementById('celPlayerSelect').value;
+    if (!pName) return alert("Select a player!");
+
+    const p = cachedCelebrationPlayers.find(x => x.name === pName);
+
+    const payload = {
+        trophyTitle: document.getElementById('celTitleIn').value || "WEEKLY WINNER",
+        trophyImage: document.getElementById('celTrophyIn').value,
+        playerName: pName,
+        playerImage: p ? p.image : "",
+        teamName: document.getElementById('celTeamIn').value || (p ? p.teamName : ""),
+        teamLogo: p ? p.teamLogo : "",
+        themeColor: document.getElementById('celThemeColorIn').value || "#ff003c",
+        scorerStats: document.getElementById('celScorerIn').value || ""
+    };
+
+    const res = await fetch(`${API}/api/celebration/publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+        alert("🎉 Champion Banner Published! Visitors will see it with fireworks.");
+    }
+}
+
+// Add to your loadAllDashboardData:
+
 // Update your loadAllDashboardData() to fill 'siTourSelect' and 'ieTourSelect'
 // Inside your existing duo fetch loop:
 
