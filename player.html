@@ -608,6 +608,177 @@
         .badge-gold { background: rgba(245, 158, 11, 0.2) !important; color: #f59e0b !important; }
 .badge-blue { background: rgba(59, 130, 246, 0.2) !important; color: #3b82f6 !important; }
 .badge-red { background: rgba(239, 68, 68, 0.2) !important; color: #ef4444 !important; }
+        /* --- MATCH ACTIVITY CALENDAR STYLES --- */
+.activity-card {
+    padding: 22px 18px;
+    background: #0b1322;
+    border: 1px solid #162438;
+}
+
+.activity-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.activity-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.activity-title i {
+    color: #94a3b8;
+    font-size: 1rem;
+}
+
+.activity-legend {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.legend-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #94a3b8;
+}
+
+.legend-pill .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+}
+
+.win-pill .dot { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+.draw-pill .dot { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
+.loss-pill .dot { background: #f43f5e; box-shadow: 0 0 6px rgba(244, 63, 94, 0.4); }
+
+/* Month Navigation */
+.cal-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    padding: 0 5px;
+}
+
+.cal-nav-btn {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.cal-nav-btn:hover {
+    color: #f8fafc;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.cal-month-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+/* Weekday Headers */
+.cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    color: #475569;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+/* Calendar Days Grid */
+.cal-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.cal-day-cell {
+    aspect-ratio: 1 / 1;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 700;
+    position: relative;
+    user-select: none;
+}
+
+/* Inactive / Rest Days */
+.day-empty {
+    visibility: hidden;
+}
+
+.day-no-match {
+    background: #101b2b;
+    color: #3b4e68;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+/* Match Days */
+.day-match {
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: none;
+}
+
+.day-num {
+    line-height: 1;
+    font-size: 0.88rem;
+    font-weight: 800;
+}
+
+.day-sub {
+    font-size: 0.62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-top: 3px;
+    letter-spacing: 0.3px;
+}
+
+/* Color Themes based on results */
+.match-win {
+    background: #10b981;
+}
+
+.match-draw {
+    background: #f59e0b;
+}
+
+.match-loss {
+    background: #f43f5e;
+}
+
+/* Footer Summary */
+.cal-footer-text {
+    text-align: center;
+    color: #64748b;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
     </style>
 </head>
 <body>
@@ -796,24 +967,39 @@
     <div id="customTrophyContainer" class="trophy-new-grid" style="margin-top:12px;">
     </div>
 </div>
-        <!-- SYNAPSE SIGNATURE: NEURAL DNA -->
-<div class="glass-card synapse-card">
-    <div class="section-title">
-        <i class="fa-solid fa-fingerprint"></i> Synapse Signature
-    </div>
-    
-    <div class="synapse-visual-wrapper">
-        <canvas id="synapseCanvas"></canvas>
-        <div class="scan-line"></div>
+        <!-- MATCH ACTIVITY CALENDAR SYSTEM -->
+<div class="glass-card activity-card">
+    <div class="activity-top-row">
+        <div class="activity-title">
+            <i class="fa-regular fa-calendar"></i> Match Activity
+        </div>
+        <div class="activity-legend">
+            <span class="legend-pill win-pill"><span class="dot"></span> <b id="calWinCount">0W</b></span>
+            <span class="legend-pill draw-pill"><span class="dot"></span> <b id="calDrawCount">0D</b></span>
+            <span class="legend-pill loss-pill"><span class="dot"></span> <b id="calLossCount">0L</b></span>
+        </div>
     </div>
 
-    <div class="signature-id-box">
-        <span class="id-label">NEURAL DNA HASH</span>
-        <div id="nexusHash" class="id-value">NXS-00-00-00-00</div>
+    <!-- Month Navigator -->
+    <div class="cal-nav">
+        <button type="button" class="cal-nav-btn" onclick="changeCalendarMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <span class="cal-month-title" id="calMonthDisplay">Month 2026</span>
+        <button type="button" class="cal-nav-btn" onclick="changeCalendarMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
     </div>
-    
-    <div class="biometric-footer">
-        BIOMETRIC SCAN STABLE • V.7.2
+
+    <!-- Weekday Labels (Mon - Sun) -->
+    <div class="cal-weekdays">
+        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="cal-days-grid" id="calDaysGrid">
+        <!-- Injected dynamically by JS -->
+    </div>
+
+    <!-- Footer Summary -->
+    <div class="cal-footer-text" id="calFooterSummary">
+        0 matches in this month
     </div>
 </div>
         <!-- IMAGE 1: FULL PERCENTILE RANKINGS (8 FACTORS) -->
@@ -980,7 +1166,7 @@
             const profileCard = document.getElementById('profileCard');
 const teamPill = document.getElementById('teamPill');
             const attributes = p.attributes || { consistency: 50, bigMatch: 50, scoring: 50, playmaking: 50, defense: 50, mental: 50 };
-generateSynapse(attributes);
+initMatchActivityCalendar(playerMatches);
             if (p.isCaptain) {
     document.getElementById('captainBadge').style.display = 'inline-flex';
 } else {
@@ -1499,72 +1685,131 @@ function renderLineChart(dataPoints) {
         }
     });
 }
-// --- New Function to Generate Visual DNA ---
-function generateSynapse(attr) {
-    const canvas = document.getElementById('synapseCanvas');
-    const ctx = canvas.getContext('2d');
-    const hashEl = document.getElementById('nexusHash');
+// --- MATCH ACTIVITY CALENDAR LOGIC ---
+let activeCalDate = new Date();
+let cachedPlayerMatches = [];
 
-    // 1. Generate Unique Hex Hash
-    const vals = Object.values(attr);
-    const hex = vals.map(v => v.toString(16).padStart(2, '0').toUpperCase());
-    hashEl.innerText = `NXS-${hex.slice(0, 2).join('-')}-${hex.slice(2, 4).join('-')}-${hex.slice(4, 6).join('')}`;
+function initMatchActivityCalendar(matches) {
+    cachedPlayerMatches = matches || [];
 
-    // 2. Setup Canvas
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = 220 * dpr;
-    canvas.height = 220 * dpr;
-    ctx.scale(dpr, dpr);
-
-    let rotation = 0;
-
-    function draw() {
-        ctx.clearRect(0, 0, 220, 220);
-        const centerX = 110;
-        const centerY = 110;
-        const radius = 60;
-
-        ctx.beginPath();
-        ctx.strokeStyle = '#10b981';
-        ctx.lineWidth = 1.5;
-        
-        // This loop generates the unique shape based on stats
-        for (let i = 0; i <= 360; i += 1) {
-            const angle = (i + rotation) * Math.PI / 180;
-            
-            // MATH MAGIC: We use the player attributes to distort a circle
-            // Every attribute affects a different frequency of the wave
-            const noise = (
-                Math.sin(angle * 2) * (attr.scoring / 10) +
-                Math.cos(angle * 3) * (attr.defense / 12) +
-                Math.sin(angle * 5) * (attr.mental / 15) +
-                Math.cos(angle * 1) * (attr.consistency / 8)
-            );
-
-            const r = radius + noise + (Math.sin(Date.now() / 500) * 5); // Pulsation
-            const x = centerX + r * Math.cos(angle);
-            const y = centerY + r * Math.sin(angle);
-
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
+    // If player has matches, default to the month of their latest match
+    if (cachedPlayerMatches.length > 0) {
+        const latestDate = new Date(cachedPlayerMatches[0].createdAt || cachedPlayerMatches[0].date);
+        if (!isNaN(latestDate)) {
+            activeCalDate = new Date(latestDate.getFullYear(), latestDate.getMonth(), 1);
         }
-
-        ctx.closePath();
-        ctx.stroke();
-
-        // Draw inner particles
-        for(let j = 0; j < 3; j++) {
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius - (j * 15) + (Math.sin(Date.now() / 300) * 2), 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(16, 185, 129, ${0.3 - (j * 0.1)})`;
-            ctx.stroke();
-        }
-
-        rotation += 0.2; // Slow rotation
-        requestAnimationFrame(draw);
     }
 
-    draw();
+    renderMatchActivity();
+}
+
+function changeCalendarMonth(offset) {
+    activeCalDate.setMonth(activeCalDate.getMonth() + offset);
+    renderMatchActivity();
+}
+
+function renderMatchActivity() {
+    const year = activeCalDate.getFullYear();
+    const month = activeCalDate.getMonth();
+
+    // 1. Set Month Header
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    document.getElementById('calMonthDisplay').innerText = `${monthNames[month]} ${year}`;
+
+    // 2. Filter matches belonging to this month
+    const monthMatches = cachedPlayerMatches.filter(m => {
+        const mDate = new Date(m.createdAt || m.date);
+        return mDate.getFullYear() === year && mDate.getMonth() === month;
+    });
+
+    // 3. Map matches by Day of Month
+    const dayData = {};
+    let totalWins = 0, totalDraws = 0, totalLosses = 0;
+
+    monthMatches.forEach(m => {
+        const mDate = new Date(m.createdAt || m.date);
+        const day = mDate.getDate();
+
+        const isA = m.playerA === myName;
+        const myS = Number(isA ? m.scoreA : m.scoreB) || 0;
+        const oppS = Number(isA ? m.scoreB : m.scoreA) || 0;
+
+        let result = 'D';
+        if (myS > oppS) { result = 'W'; totalWins++; }
+        else if (myS < oppS) { result = 'L'; totalLosses++; }
+        else { totalDraws++; }
+
+        if (!dayData[day]) {
+            dayData[day] = { matches: [], wins: 0, draws: 0, losses: 0 };
+        }
+        dayData[day].matches.push(result);
+        if (result === 'W') dayData[day].wins++;
+        else if (result === 'L') dayData[day].losses++;
+        else dayData[day].draws++;
+    });
+
+    // 4. Update Top Legend Counters
+    document.getElementById('calWinCount').innerText = `${totalWins}W`;
+    document.getElementById('calDrawCount').innerText = `${totalDraws}D`;
+    document.getElementById('calLossCount').innerText = `${totalLosses}L`;
+
+    // 5. Update Footer Text
+    document.getElementById('calFooterSummary').innerText = 
+        `${monthMatches.length} ${monthMatches.length === 1 ? 'match' : 'matches'} in ${monthNames[month]}`;
+
+    // 6. Generate Days Grid
+    const grid = document.getElementById('calDaysGrid');
+    grid.innerHTML = '';
+
+    // Monday-based week offset (0 = Mon ... 6 = Sun)
+    const firstDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Empty cells for offset
+    for (let i = 0; i < firstDayIndex; i++) {
+        const emptyCell = document.createElement('div');
+        emptyCell.className = 'cal-day-cell day-empty';
+        grid.appendChild(emptyCell);
+    }
+
+    // Days 1 to 31
+    for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('div');
+        const data = dayData[day];
+
+        if (data) {
+            // Day with Matches
+            const matchCount = data.matches.length;
+            let themeClass = 'match-draw';
+            let label = 'D';
+
+            if (data.wins > data.losses) {
+                themeClass = 'match-win';
+                label = matchCount === 1 ? 'W' : `${matchCount}m`;
+            } else if (data.losses > data.wins) {
+                themeClass = 'match-loss';
+                label = matchCount === 1 ? 'L' : `${matchCount}m`;
+            } else {
+                themeClass = 'match-draw';
+                label = matchCount === 1 ? 'D' : `${matchCount}m`;
+            }
+
+            cell.className = `cal-day-cell day-match ${themeClass}`;
+            cell.innerHTML = `
+                <span class="day-num">${day}</span>
+                <span class="day-sub">${label}</span>
+            `;
+        } else {
+            // Inactive day (no matches played)
+            cell.className = 'cal-day-cell day-no-match';
+            cell.innerHTML = `<span class="day-num">${day}</span>`;
+        }
+
+        grid.appendChild(cell);
+    }
 }
 
 // Call it
