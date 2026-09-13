@@ -731,6 +731,15 @@
         ISOLATE AUCTION BDR
     </button>
             </div>
+            <div class="sub-box" style="border-left: 4px solid var(--accent); margin-top: 15px;">
+    <h4 style="color:var(--accent)"><i class="fa-solid fa-clock-rotate-left"></i> Sync Old Solo Matches to History</h4>
+    <p style="font-size:0.7rem; color:var(--text-dim); margin-bottom:10px;">
+        Imports all historical Solo Tour matches into each player's Match History, Head-to-Head, and Match Activity Calendar.
+    </p>
+    <button type="button" onclick="syncOldSoloMatches()" class="btn-green" style="background:#10b981; color:black; font-weight:800;">
+        <i class="fa-solid fa-arrows-rotate"></i> SYNC ALL SOLO MATCHES TO PROFILES
+    </button>
+            </div>
         </div>
         <div id="sec-calendar" class="admin-section">
     <div class="sub-box">
@@ -2509,6 +2518,26 @@ async function publishCelebrationCard() {
         alert("🎉 Champion Banner Published! Visitors will see it with fireworks.");
     }
 }
+        async function syncOldSoloMatches() {
+    if (!confirm("This will scan all past Solo Tour matches and sync them into player profile histories. Continue?")) return;
+
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> SYNCING MATCHES...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/sync/solo-to-player-history`);
+        const data = await res.json();
+        alert(data.message || "Match history synchronized successfully! ✅");
+        location.reload();
+    } catch (e) {
+        alert("Failed to communicate with server.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+        }
 
 // Add to your loadAllDashboardData:
 
