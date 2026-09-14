@@ -740,6 +740,16 @@
         <i class="fa-solid fa-arrows-rotate"></i> SYNC ALL SOLO MATCHES TO PROFILES
     </button>
             </div>
+            <!-- GLOBAL SOLO BDR RECALCULATE TOOL -->
+<div class="sub-box" style="border-left: 4px solid #a855f7; background: rgba(168, 85, 247, 0.05); margin-top: 15px;">
+    <h4 style="color:#a855f7;"><i class="fa-solid fa-globe"></i> Sync Global Solo BDR Rankings</h4>
+    <p style="font-size:0.7rem; color:var(--text-dim); margin-bottom:12px;">
+        Scans all completed Solo Tour matches and recalculates <b>soloBdrPoints</b> for all players. Old Auction BDR is left untouched.
+    </p>
+    <button type="button" onclick="triggerSoloBdrSync()" class="btn-gold" style="background:#a855f7; color:white; font-weight:800; width:100%; padding:12px;">
+        <i class="fa-solid fa-arrows-rotate"></i> REBUILD GLOBAL SOLO BDR
+    </button>
+</div>
         </div>
         <div id="sec-calendar" class="admin-section">
     <div class="sub-box">
@@ -2643,6 +2653,30 @@ async function deleteGloryPoster(id) {
         }
     } catch (err) {
         alert("Delete failed.");
+    }
+}
+    async function triggerSoloBdrSync() {
+    if (!confirm("This will scan all Solo Tour matches and rebuild the Global Solo BDR rankings from scratch. Proceed?")) return;
+
+    const btn = event.target.closest('button');
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> SYNCING SOLO BDR...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/bdr/sync-solo`);
+        const data = await res.json();
+
+        if (data.success) {
+            alert("✅ " + data.message);
+        } else {
+            alert("❌ Sync failed: " + (data.error || "Unknown error"));
+        }
+    } catch (e) {
+        alert("❌ Failed to communicate with server.");
+    } finally {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
     }
 }
 
