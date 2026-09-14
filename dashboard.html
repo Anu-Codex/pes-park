@@ -783,10 +783,42 @@
         <button onclick="setLive(false)" class="delete-btn">END STREAM</button>
     </div>
             </div>
+            <!-- GLORY GALLERY PUBLISHER -->
+<div class="sub-box" style="border-left: 4px solid var(--gold); background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(15, 23, 42, 0.6) 100%);">
+    <h4 style="color: var(--gold);"><i class="fa-solid fa-award"></i> Glory Gallery Showcase Manager</h4>
+    <p style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 15px;">
+        Publish championship and tournament winning posters with official typography tags.
+    </p>
+
+    <div class="grid-2">
+        <input type="text" id="gloryPlayerIn" placeholder="Player Name (e.g. Pappali)" required>
+        <input type="text" id="gloryTourIn" placeholder="Tournament Name (e.g. S1 PRO LEAGUE)" required>
+    </div>
+
+    <div class="grid-2" style="margin-top: 10px;">
+        <select id="gloryStatusIn">
+            <option value="CHAMPION">CHAMPION</option>
+            <option value="RUNNER-UP">RUNNER-UP</option>
+            <option value="MVP">MVP OF THE TOURNAMENT</option>
+            <option value="GOLDEN BOOT">GOLDEN BOOT WINNER</option>
+        </select>
+        <input type="text" id="glorySeasonIn" placeholder="Season / Year (e.g. Season 8 • 2026)">
+    </div>
+
+    <input type="text" id="gloryImageIn" placeholder="Poster Image URL (ImgBB, Cloudinary, etc.)" style="margin-top: 10px;" required>
+
+    <button type="button" onclick="publishGloryPoster()" class="btn-gold" style="width: 100%; margin-top: 15px; font-weight: 800;">
+        <i class="fa-solid fa-cloud-arrow-up"></i> PUBLISH POSTER TO GLORY GALLERY
+    </button>
+
+    <!-- Poster Management List -->
+    <h5 style="color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; margin: 20px 0 10px;">Current Posters</h5>
+    <div id="gloryAdminList" class="list-container" style="max-height: 180px; overflow-y: auto;">
+        <p style="text-align:center; font-size:0.75rem; color:#64748b;">Loading posters...</p>
+    </div>
+</div>
             
         </div>
-       
-
     </div>
 
     <script>
@@ -888,6 +920,7 @@ const uclSoloSel = document.getElementById('uclSoloTourSelect');
         syncDuoDropdowns();
         loadFreeAgentsDropdown();
         loadCelebrationPlayers();
+        loadGloryAdminList();
     }
 
     // Load Player Data for Edit
@@ -2538,13 +2571,80 @@ async function publishCelebrationCard() {
         btn.disabled = false;
     }
         }
+        // --- GLORY GALLERY DASHBOARD LOGIC ---
+async function loadGloryAdminList() {
+    try {
+        const res = await fetch(`${API_V2}/api/glory/posters`);
+        const posters = await res.json();
+        const container = document.getElementById('gloryAdminList');
 
-// Add to your loadAllDashboardData:
+        if (!posters || posters.length === 0) {
+            container.innerHTML = '<p style="text-align:center; font-size:0.75rem; color:#64748b;">No posters published yet.</p>';
+            return;
+        }
 
-// Update your loadAllDashboardData() to fill 'siTourSelect' and 'ieTourSelect'
-// Inside your existing duo fetch loop:
+        container.innerHTML = posters.map(p => `
+            <div class="row-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,0.05);">
+                <div>
+                    <span style="font-weight:700; color:#fff;">${p.playerName}</span>
+                    <small style="color:var(--gold); margin-left:6px;">[${p.status}]</small>
+                    <div style="font-size:0.65rem; color:var(--text-dim);">${p.tourName} • ${p.season}</div>
+                </div>
+                <button type="button" class="delete-btn" onclick="deleteGloryPoster('${p._id}')" style="padding:4px 8px; font-size:0.65rem;">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `).join('');
+    } catch (e) {
+        console.warn("Glory admin fetch failed:", e);
+    }
+}
 
-// Add to your window.onload
+async function publishGloryPoster() {
+    const playerName = document.getElementById('gloryPlayerIn').value.trim();
+    const tourName = document.getElementById('gloryTourIn').value.trim();
+    const status = document.getElementById('gloryStatusIn').value;
+    const season = document.getElementById('glorySeasonIn').value.trim() || 'Season 1';
+    const imageUrl = document.getElementById('gloryImageIn').value.trim();
+
+    if (!playerName || !tourName || !imageUrl) {
+        return alert("Please enter Player Name, Tournament Name, and Image URL!");
+    }
+
+    try {
+        const res = await fetch(`${API_V2}/api/glory/posters`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ playerName, tourName, status, season, imageUrl })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            alert("Victory Poster Live in Gallery! 🏆");
+            document.getElementById('gloryPlayerIn').value = "";
+            document.getElementById('gloryTourIn').value = "";
+            document.getElementById('gloryImageIn').value = "";
+            loadGloryAdminList();
+        } else {
+            alert("Error: " + (data.error || "Failed to publish"));
+        }
+    } catch (err) {
+        alert("Server connection failed.");
+    }
+}
+
+async function deleteGloryPoster(id) {
+    if (!confirm("Remove this poster from the Glory Gallery?")) return;
+
+    try {
+        const res = await fetch(`${API_V2}/api/glory/posters/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            loadGloryAdminList();
+        }
+    } catch (err) {
+        alert("Delete failed.");
+    }
+}
 
     // --- UNIFIED INITIALIZATION ---
 window.onload = async () => {
