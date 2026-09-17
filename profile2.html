@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | NEXUS LEGENDS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg: #060b13;
+            --card-bg: #0d1627;
+            --border: #162438;
+            --accent: #00e5ff;
+            --green: #10b981;
+            --gold: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-dim: #64748b;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% -10%, #081730 0%, #060b13 75%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 15px 15px 95px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .profile-container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        /* --- TOP HEADER USER CARD (SCREENSHOT STYLE) --- */
+        .user-header-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .user-avatar-frame {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+            overflow: hidden;
+            background: #152238;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.25);
+        }
+
+        .user-avatar-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-info-col {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .captain-crown {
+            color: var(--gold);
+            font-size: 0.95rem;
+        }
+
+        .edit-profile-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #ef4444; /* Pinkish red like screenshot */
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-decoration: none;
+            margin-top: 4px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .edit-profile-btn:hover { opacity: 0.8; }
+
+        .team-badge-pill {
+            display: inline-block;
+            font-size: 0.65rem;
+            color: var(--accent);
+            background: rgba(0, 229, 255, 0.08);
+            border: 1px solid rgba(0, 229, 255, 0.25);
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-weight: 700;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        /* --- MENU SECTION CARDS --- */
+        .menu-card-group {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-row-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .menu-row-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-row-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .row-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .row-icon-box {
+            width: 24px;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+
+        .menu-row-item:hover .row-icon-box {
+            color: var(--accent);
+        }
+
+        .row-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .row-tag {
+            font-size: 0.62rem;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--green);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 800;
+            margin-left: 6px;
+        }
+
+        .row-chevron {
+            color: #334155;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+
+        .menu-row-item:hover .row-chevron {
+            transform: translateX(3px);
+            color: var(--accent);
+        }
+
+        /* --- LOGOUT BUTTON --- */
+        .btn-logout-wrap {
+            padding: 10px 5px;
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 14px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--danger);
+            border-radius: 14px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* --- BOTTOM NAVIGATION BAR (PROFILE ACTIVE) --- */
+        .bottom-nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            background: rgba(6, 11, 19, 0.95);
+            backdrop-filter: blur(18px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+        }
+
+        .bottom-nav-inner {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 6px 10px 10px;
+            box-sizing: border-box;
+        }
+
+        .b-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            padding: 8px 4px 6px;
+            cursor: pointer;
+            text-decoration: none;
+            border-radius: 14px;
+            transition: 0.2s;
+        }
+
+        .b-nav-item i { font-size: 1.15rem; margin-bottom: 4px; }
+        .b-nav-item span { font-family: 'Rajdhani'; font-size: 0.72rem; font-weight: 700; text-transform: capitalize; }
+
+        /* Profile active glow */
+        .b-nav-item.active {
+            color: #00e5ff;
+            background: linear-gradient(180deg, rgba(0, 229, 255, 0.12) 0%, rgba(6, 11, 19, 0) 100%);
+            border-top: 2.5px solid #00e5ff;
+            border-radius: 12px 12px 6px 6px;
+            box-shadow: 0 -4px 15px rgba(0, 229, 255, 0.25);
+        }
+
+        .b-nav-item.active i {
+            color: #00e5ff;
+            filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6));
+        }
+
+        .b-nav-item.active span { color: #00e5ff; font-weight: 800; }
+    </style>
+</head>
+<body>
+
+<div class="profile-container">
+
+    <!-- 1. USER HEADER CARD (MATCHES SCREENSHOT) -->
+    <div class="user-header-card">
+        <div class="user-avatar-frame">
+            <img id="uAvatar" src="https://via.placeholder.com/62" onerror="this.src='https://via.placeholder.com/62'">
+        </div>
+        <div class="user-info-col">
+            <h2 class="user-name-title">
+                <span id="uName">Loading User...</span>
+                <i id="uCrown" class="fa-solid fa-crown captain-crown" style="display:none;"></i>
+            </h2>
+            <a id="uEditLink" href="#" class="edit-profile-btn">
+                Edit Profile <i class="fa-solid fa-pen" style="font-size:0.7rem;"></i>
+            </a>
+            <div id="uTeam" class="team-badge-pill">Free Agent</div>
+        </div>
+    </div>
+
+    <!-- 2. CAREER & TOURNAMENT MENU (GROUP 1) -->
+    <div class="menu-card-group">
+        <!-- My Public Profile -->
+        <a id="lnkPublicProfile" href="player.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box"><i class="fa-solid fa-id-card"></i></div>
+                <span class="row-title">My Player Profile & Dossier</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <!-- Club Dressing Room (Captains Only) -->
+        <a id="lnkDressingRoom" href="#" class="menu-row-item" style="display:none;">
+            <div class="row-left">
+                <div class="row-icon-box" style="color:var(--gold);"><i class="fa-solid fa-door-open"></i></div>
+                <span class="row-title">Club Dressing Room <span class="row-tag">CAPTAIN</span></span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <!-- Transfer Market & Bids -->
+        <a href="transfer.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box"><i class="fa-solid fa-handshake"></i></div>
+                <span class="row-title">Transfer Market & Release Offers</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <!-- Trending Players -->
+        <a href="trending.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box" style="color:#f59e0b;"><i class="fa-solid fa-fire"></i></div>
+                <span class="row-title">Trending Players of the Week</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <!-- Global Solo BDR Rankings -->
+        <a href="bdr-global.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box" style="color:#a855f7;"><i class="fa-solid fa-trophy"></i></div>
+                <span class="row-title">Global Solo BDR Leaderboard</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <!-- Glory Gallery -->
+        <a href="glory.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box" style="color:var(--accent);"><i class="fa-solid fa-award"></i></div>
+                <span class="row-title">Glory Gallery Showcase</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+    </div>
+
+    <!-- 3. COMMUNITY & SETTINGS (GROUP 2) -->
+    <div class="menu-card-group">
+        <!-- Media Hub -->
+        <a href="media.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box"><i class="fa-solid fa-tv"></i></div>
+                <span class="row-title">Nexus Media Hub (Streams & Replays)</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <!-- Support / Modmail -->
+        <a href="javascript:void(0)" onclick="openSupportTicket()" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box"><i class="fa-solid fa-headset"></i></div>
+                <span class="row-title">Help Centre & Admin Modmail</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <!-- Identity / Linked Account Info -->
+        <div class="menu-row-item" style="cursor:default;">
+            <div class="row-left">
+                <div class="row-icon-box"><i class="fa-brands fa-google"></i></div>
+                <span class="row-title">Linked Google Account</span>
+            </div>
+            <span id="uGoogleEmail" style="font-size:0.75rem; color:var(--text-dim);">Signed in</span>
+        </div>
+    </div>
+
+    <!-- 4. LOGOUT BUTTON -->
+    <div class="btn-logout-wrap">
+        <button class="btn-logout" onclick="logoutUser()">
+            <i class="fa-solid fa-power-off"></i> LOG OUT OF NEXUS HUB
+        </button>
+    </div>
+
+</div>
+
+<!-- BOTTOM NAVIGATION BAR -->
+<nav class="bottom-nav-bar">
+    <div class="bottom-nav-inner">
+        <a href="index.html" class="b-nav-item">
+            <i class="fa-solid fa-users"></i>
+            <span>Players</span>
+        </a>
+        <a href="index.html" class="b-nav-item">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Teams</span>
+        </a>
+        <a href="index.html" class="b-nav-item">
+            <i class="fa-solid fa-headset"></i>
+            <span>Support</span>
+        </a>
+        <!-- ACTIVE ON PROFILE -->
+        <a href="profile.html" class="b-nav-item active">
+            <i class="fa-solid fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+</nav>
+
+<script>
+    const API = "https://nexus-database-v2.onrender.com";
+
+    // In profile.html:
+    async function loadUserProfile() {
+        // 1. Check if user is logged in
+        const rawUser = localStorage.getItem('nexus_player_user');
+        if (!rawUser) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        try {
+            const sessionUser = JSON.parse(rawUser);
+
+            // 2. Fetch fresh live data for THIS specific player ID
+            const res = await fetch(`${API}/api/players/${sessionUser._id}`);
+            const p = await res.json();
+
+            // 3. Inject their individual information
+            document.getElementById('uName').innerText = p.name || sessionUser.name;
+            document.getElementById('uAvatar').src = p.image || sessionUser.image || "https://via.placeholder.com/62";
+            document.getElementById('uTeam').innerText = p.teamName || "Free Agent";
+            document.getElementById('uGoogleEmail').innerText = p.googleEmail || sessionUser.googleEmail || "Linked";
+
+            // If Captain: unlock their specific team's dressing room
+            if (p.isCaptain) {
+                const crown = document.getElementById('uCrown');
+                if (crown) crown.style.display = 'inline-block';
+
+                if (p.teamName && p.teamName !== "Free Agent") {
+                    const drLink = document.getElementById('lnkDressingRoom');
+                    if (drLink) {
+                        drLink.href = `dressing-room.html?id=${encodeURIComponent(p.teamName)}`;
+                        drLink.style.display = 'flex';
+                    }
+                }
+            }
+
+            // Link "My Player Profile & Dossier" to their unique player.html?id=...
+            document.getElementById('lnkPublicProfile').href = `player.html?id=${p._id}`;
+            document.getElementById('uEditLink').href = `player.html?id=${p._id}`;
+
+        } catch (err) {
+            console.error("Failed to load individual profile:", err);
+        }
+    }
+
+    function openSupportTicket() {
+        window.location.href = "index.html"; // Opens to Modmail on main hub
+    }
+
+    function logoutUser() {
+        if (confirm("Log out of your Nexus Legends player identity?")) {
+            localStorage.removeItem('nexus_player_user');
+            window.location.href = "login.html";
+        }
+    }
+
+    window.onload = loadUserProfile;
+</script>
+
+</body>
+</html>
