@@ -269,6 +269,18 @@
 </div>
                     <button type="submit" class="btn-gold">Update Database</button>
                 </form>
+                <!-- SECRET AUTH RESET (Inside Edit Player sub-box) -->
+<div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed rgba(239, 68, 68, 0.3);">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <span style="font-size:0.68rem; color:#ef4444; font-weight:800;">[ADMIN SECRET] GOOGLE AUTH STATUS</span>
+            <div id="authStatusText" style="font-size:0.75rem; color:#94a3b8;">Select a player to view auth status</div>
+        </div>
+        <button type="button" onclick="secretUnlinkPlayerAuth()" class="delete-btn" style="width:auto; padding:6px 14px; font-size:0.7rem; font-weight:800;">
+            <i class="fa-solid fa-lock-open"></i> UNLINK GOOGLE
+        </button>
+    </div>
+</div>
             </div>
 
             <div class="sub-box">
@@ -1115,6 +1127,39 @@ if (updateForm) {
         alert("❌ Link Error: Server Unreachable");
     }
     }
+        // 1. Show auth status when player is selected in edit dropdown
+// Inside your existing loadPlayerDataForEdit() function, add:
+const authStatus = document.getElementById('authStatusText');
+if (authStatus) {
+    if (p.isClaimed && p.googleEmail) {
+        authStatus.innerHTML = `<span style="color:#10b981;">● Claimed by: ${p.googleEmail}</span>`;
+    } else {
+        authStatus.innerHTML = `<span style="color:#64748b;">○ Unclaimed Profile</span>`;
+    }
+}
+
+// 2. Secret Unlink Trigger
+async function secretUnlinkPlayerAuth() {
+    const id = document.getElementById('playerSelector').value;
+    if (!id) return alert("Select a player first!");
+
+    if (!confirm("⚠️ Are you sure you want to unlink this player's Google account? They will be able to claim a new profile on their next login.")) return;
+
+    try {
+        const res = await fetch(`${API_V2}/api/admin/players/${id}/unlink-auth`, {
+            method: 'PUT'
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            alert("✅ " + data.message);
+            loadPlayerDataForEdit();
+        } else {
+            alert("Error: " + data.error);
+        }
+    } catch (e) {
+        alert("Server communication error.");
+    }
+        }
 
     async function loadTourFixtures() {
     const tourId = document.getElementById('srTourSelect').value;
