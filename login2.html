@@ -211,16 +211,25 @@
     let tempGoogleCredential = null;
 
     // 1. Initialize Google Sign-In SDK
+    // In login.html inside window.onload:
     window.onload = function () {
         google.accounts.id.initialize({
             client_id: GOOGLE_CLIENT_ID,
             callback: handleGoogleResponse,
-            auto_select: true // Auto prompts login on mobile
+            auto_select: false, // 👈 Turn off auto_select (avoids popup freezing on mobile)
+            cancel_on_tap_outside: true,
+            context: 'signin'
         });
 
         google.accounts.id.renderButton(
             document.getElementById("googleBtn"),
-            { theme: "filled_blue", size: "large", shape: "pill", text: "continue_with" }
+            { 
+                theme: "filled_blue", 
+                size: "large", 
+                shape: "pill", 
+                text: "continue_with",
+                width: 260
+            }
         );
     };
 
