@@ -2718,7 +2718,26 @@ async function deleteGloryPoster(id) {
         // --- CSV PARSING & IMPORT ENGINE ---
 let parsedCsvPlayers = [];
 
-// 1. Read and Parse the CSV file
+// --- SMART RFC-4180 CSV LINE PARSER (Handles commas inside quotes & feedbacks) ---
+function parseCSVLine(text) {
+    let p = '', inQuotes = false, row = [];
+    for (let i = 0; i < text.length; i++) {
+        let char = text[i], nextChar = text[i + 1];
+        if (char === '"') {
+            if (inQuotes && nextChar === '"') { p += '"'; i++; }
+            else { inQuotes = !inQuotes; }
+        } else if (char === ',' && !inQuotes) {
+            row.push(p.trim());
+            p = '';
+        } else {
+            p += char;
+        }
+    }
+    row.push(p.trim());
+    return row;
+}
+
+// --- SMART SURVEYHEART / GOOGLE FORMS CSV PARSER ---
 function parseUploadedCsv() {
     const fileInput = document.getElementById('csvFileInput');
     const file = fileInput.files[0];
@@ -2733,35 +2752,62 @@ function parseUploadedCsv() {
         const text = e.target.result;
         const lines = text.split(/\r\n|\n/);
 
+        if (lines.length < 2) {
+            return alert("CSV file appears to be empty.");
+        }
+
+        // 1. Analyze Headers from Row 1
+        const headers = parseCSVLine(lines[0]);
+
+        // Auto-detect Name column (looks for "Name" or defaults to Column 3 / Index 2)
+        let nameIdx = headers.findIndex(h => h.toLowerCase().includes('name'));
+        if (nameIdx === -1) nameIdx = 2; // SurveyHeart Default
+
+        // Auto-detect Image column (looks for "Screenshot", "Team", "Squad" or defaults to Index 7)
+        let imageIdx = headers.findIndex(h => {
+            const s = h.toLowerCase();
+            return s.includes('screenshot') || s.includes('squad') || s.includes('image');
+        });
+        if (imageIdx === -1) imageIdx = 7; // SurveyHeart Default
+
         parsedCsvPlayers = [];
 
-        for (let i = 0; i < lines.length; i++) {
+        // 2. Parse Data Rows
+        for (let i = 1; i < lines.length; i++) {
             const line = lines[i].trim();
             if (!line) continue;
 
-            // Split by comma (handles basic comma-separated rows)
-            const cols = line.split(',').map(c => c.replace(/^["']|["']$/g, '').trim());
+            const cols = parseCSVLine(line);
 
-            if (cols.length >= 1) {
-                const name = cols[0];
-                const squadImage = cols[1] || "";
+            // Extract Name
+            let rawName = cols[nameIdx] || "";
+            if (!rawName || rawName.toLowerCase().includes('your full name')) continue;
 
-                // Skip header row if it contains "name" or "player"
-                if (i === 0 && (name.toLowerCase() === "name" || name.toLowerCase() === "player")) {
-                    continue;
-                }
-
-                if (name) {
-                    parsedCsvPlayers.push({ name, squadImage });
-                }
+            // Extract Nickname if present in brackets: e.g. "Debargha Pathak (XeNo)"
+            let playerName = rawName;
+            let nickname = "";
+            const nickMatch = rawName.match(/^(.*?)\s*\((.*?)\)$/);
+            if (nickMatch) {
+                playerName = nickMatch[1].trim();
+                nickname = nickMatch[2].trim();
             }
+
+            // Extract Image (with fallback: scan row for any cell starting with http/https)
+            let squadImageUrl = cols[imageIdx] || "";
+            if (!squadImageUrl.startsWith("http")) {
+                const foundUrl = cols.find(c => c && c.startsWith("http"));
+                if (foundUrl) squadImageUrl = foundUrl;
+            }
+
+            parsedCsvPlayers.push({
+                name: playerName,
+                nickname: nickname,
+                squadImage: squadImageUrl
+            });
         }
 
+        console.log(`Parsed ${parsedCsvPlayers.length} players from registration CSV:`, parsedCsvPlayers);
         renderCsvPreview();
-    };
-
-    reader.onerror = function () {
-        alert("Failed to read the file. Ensure it is a valid .csv file.");
     };
 
     reader.readAsText(file);
@@ -2779,19 +2825,28 @@ function renderCsvPreview() {
         return;
     }
 
-    countDisplay.innerText = `${parsedCsvPlayers.length} Players Found in CSV`;
+    countDisplay.innerText = `${parsedCsvPlayers.length} Registrations Found`;
 
     listContainer.innerHTML = parsedCsvPlayers.map((p, idx) => `
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,0.05);">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; border-bottom:1px solid rgba(255,255,255,0.05);">
             <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-                <input type="checkbox" class="csv-check" data-index="${idx}" checked style="width:18px; height:18px; margin:0; cursor:pointer;">
-                <img src="${p.squadImage || 'https://via.placeholder.com/40'}" style="width:36px; height:36px; border-radius:8px; object-fit:cover; background:#1e293b;" onerror="this.src='https://via.placeholder.com/40'">
+                <input type="checkbox" class="csv-check" data-index="${idx}" checked style="width:20px; height:20px; margin:0; cursor:pointer;">
+                
+                <!-- Squad Screenshot from SurveyHeart S3 -->
+                <img src="${p.squadImage}" 
+                     style="width:48px; height:48px; border-radius:8px; object-fit:cover; background:#1e293b; border:1px solid var(--border);" 
+                     onerror="this.src='https://via.placeholder.com/48?text=No+Img'">
+                
                 <div style="min-width:0;">
-                    <div style="font-size:0.85rem; font-weight:700; color:white; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
-                    <div style="font-size:0.65rem; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.squadImage ? p.squadImage.substring(0, 35) + '...' : 'No squad image'}</div>
+                    <div style="font-size:0.9rem; font-weight:700; color:white;">
+                        ${p.name} ${p.nickname ? `<span style="font-size:0.75rem; color:var(--gold); font-style:italic;">"${p.nickname}"</span>` : ''}
+                    </div>
+                    <div style="font-size:0.65rem; color:var(--text-dim); text-overflow:ellipsis; overflow:hidden; white-space:nowrap; max-width:220px;">
+                        ${p.squadImage ? p.squadImage : 'No screenshot uploaded'}
+                    </div>
                 </div>
             </div>
-            <span style="font-size:0.65rem; color:var(--accent); font-weight:bold; margin-left:10px;">APPROVED</span>
+            <span style="font-size:0.65rem; color:var(--accent); font-weight:800; margin-left:8px;">APPROVED</span>
         </div>
     `).join('');
 
