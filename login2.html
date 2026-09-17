@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Login | NEXUS LEGENDS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Google Identity Services SDK -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
+
+        :root {
+            --bg: #030712;
+            --card: #0b1220;
+            --border: #16243b;
+            --accent: #10b981;
+            --gold: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            background: var(--bg);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-image: radial-gradient(circle at 50% -20%, #003366 0%, #030712 80%);
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 420px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 35px 25px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        }
+
+        .logo-title {
+            font-family: 'Orbitron';
+            font-size: 1.4rem;
+            letter-spacing: 2px;
+            margin: 10px 0 5px;
+            color: #fff;
+        }
+
+        .logo-title span { color: var(--accent); }
+
+        .sub-text {
+            color: #64748b;
+            font-size: 0.85rem;
+            margin-bottom: 30px;
+        }
+
+        .google-btn-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        /* --- ONE-TIME CLAIM MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 7, 18, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .claim-card {
+            background: #0f172a;
+            border: 2px solid var(--gold);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.2);
+        }
+
+        .user-preview {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .user-preview img {
+            width: 42px; height: 42px; border-radius: 50%;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            background: #030712;
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .warning-pill {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .btn-claim {
+            width: 100%;
+            padding: 14px;
+            background: var(--gold);
+            color: #000;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Orbitron';
+            font-weight: 900;
+            font-size: 0.85rem;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-box">
+    <div style="font-size: 2.2rem; color: var(--accent); margin-bottom: 5px;">
+        <i class="fa-solid fa-shield-halved"></i>
+    </div>
+    <h2 class="logo-title">NEXUS <span>LEGENDS</span></h2>
+    <p class="sub-text">Player & Captain Identity Portal</p>
+
+    <!-- Google Sign-In Button Container -->
+    <div class="google-btn-wrap">
+        <div id="googleBtn"></div>
+    </div>
+
+    <div style="margin-top: 25px; border-top: 1px solid var(--border); padding-top: 15px;">
+        <a href="index.html" style="color:#64748b; text-decoration:none; font-size:0.8rem; font-weight:700;">
+            ← Return to Community Hub
+        </a>
+    </div>
+</div>
+
+<!-- ONE-TIME PROFILE CLAIM MODAL (Hidden by default) -->
+<div id="claimModal" class="modal-overlay" style="display: none;">
+    <div class="claim-card">
+        <h3 style="font-family:'Orbitron'; color:var(--gold); margin:0 0 5px; font-size:1.1rem;">
+            CLAIM PLAYER IDENTITY
+        </h3>
+        <p style="font-size:0.75rem; color:#94a3b8; margin-bottom:15px;">
+            Link your Google account to your registered in-game profile.
+        </p>
+
+        <!-- Google User Preview -->
+        <div class="user-preview">
+            <img id="modalGooglePic" src="">
+            <div>
+                <div id="modalGoogleName" style="font-weight:700; font-size:0.9rem;"></div>
+                <div id="modalGoogleEmail" style="font-size:0.7rem; color:#64748b;"></div>
+            </div>
+        </div>
+
+        <label style="display:block; text-align:left; font-size:0.7rem; color:#94a3b8; margin-bottom:6px; font-weight:700;">
+            SELECT YOUR PLAYER PROFILE:
+        </label>
+        <select id="playerClaimSelect">
+            <option value="">Loading Unclaimed Profiles...</option>
+        </select>
+
+        <div class="warning-pill">
+            <i class="fa-solid fa-triangle-exclamation"></i> <b>PERMANENT LOCK:</b><br>
+            Once claimed, this Google account will be permanently tied to this player profile and cannot be changed.
+        </div>
+
+        <button type="button" onclick="submitProfileClaim()" class="btn-claim">
+            CONFIRM PERMANENT LINK
+        </button>
+    </div>
+</div>
+
+<script>
+    const API = "https://nexus-database-v2.onrender.com";
+    // ⚠️ REPLACE WITH YOUR ACTUAL GOOGLE CLIENT ID:
+    const GOOGLE_CLIENT_ID = "153914494881-o7k36nq1o3si33vb1c7fcb5uohcqegep.apps.googleusercontent.com";
+
+    let tempGoogleCredential = null;
+
+    // 1. Initialize Google Sign-In SDK
+    window.onload = function () {
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleResponse,
+            auto_select: true // Auto prompts login on mobile
+        });
+
+        google.accounts.id.renderButton(
+            document.getElementById("googleBtn"),
+            { theme: "filled_blue", size: "large", shape: "pill", text: "continue_with" }
+        );
+    };
+
+    // 2. Handle Google Login Token
+    async function handleGoogleResponse(response) {
+        tempGoogleCredential = response.credential;
+
+        try {
+            const res = await fetch(`${API}/api/auth/google`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ credential: tempGoogleCredential })
+            });
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Authentication failed");
+
+            // CASE A: Profile already linked!
+            if (data.isLinked) {
+                finalizeLogin(data.player);
+            } 
+            // CASE B: First-time user, needs to claim profile
+            else {
+                showClaimModal(data.googleUser, data.unclaimedPlayers);
+            }
+
+        } catch (err) {
+            alert("Login Failed: " + err.message);
+        }
+    }
+
+    // 3. Show One-Time Claim Modal
+    function showClaimModal(googleUser, unclaimedPlayers) {
+        document.getElementById('modalGooglePic').src = googleUser.picture;
+        document.getElementById('modalGoogleName').innerText = googleUser.name;
+        document.getElementById('modalGoogleEmail').innerText = googleUser.email;
+
+        const select = document.getElementById('playerClaimSelect');
+        if (unclaimedPlayers.length === 0) {
+            select.innerHTML = '<option value="">No unclaimed player profiles available</option>';
+        } else {
+            select.innerHTML = '<option value="">-- Choose Your Name --</option>' + 
+                unclaimedPlayers.map(p => `<option value="${p._id}">${p.name} (${p.teamName || 'Free Agent'})</option>`).join('');
+        }
+
+        document.getElementById('claimModal').style.display = 'flex';
+    }
+
+    // 4. Submit One-Time Claim
+    async function submitProfileClaim() {
+        const playerId = document.getElementById('playerClaimSelect').value;
+        if (!playerId) return alert("Please select your player profile from the list!");
+
+        try {
+            const res = await fetch(`${API}/api/auth/google/claim-profile`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    credential: tempGoogleCredential,
+                    playerId: playerId
+                })
+            });
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Claim failed");
+
+            alert("✅ Identity Verified! Welcome to Nexus Legends.");
+            finalizeLogin(data.player);
+
+        } catch (err) {
+            alert("Error: " + err.message);
+        }
+    }
+
+    // 5. Store Session & Route
+    function finalizeLogin(player) {
+        // Save player session to browser
+        localStorage.setItem('nexus_player_user', JSON.stringify(player));
+
+        // If Captain: redirect to their Dressing Room
+        if (player.isCaptain && player.teamName && player.teamName !== "Free Agent") {
+            window.location.href = `dressing-room.html?id=${encodeURIComponent(player.teamName)}`;
+        } else {
+            // Regular Player: redirect to their profile page
+            window.location.href = `player.html?id=${player._id}`;
+        }
+    }
+</script>
+
+</body>
+</html>
