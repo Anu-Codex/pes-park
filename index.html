@@ -1944,6 +1944,17 @@ body {
     <option value="teams">Total teams</option>
     </select>
             </div>
+            <div class="players-card">
+        <!-- SEARCH BOX (Hidden by default on first visit) -->
+        <div class="search-box" id="playerSearchBox" style="display: none;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Search players or nicknames..." oninput="filterPlayers()">
+        </div>
+
+        <div id="dynamicContent">
+            <!-- Initial prompt will show here -->
+        </div>
+            </div>
 
             
         </section>
