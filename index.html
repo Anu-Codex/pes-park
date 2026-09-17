@@ -2063,7 +2063,23 @@ body {
             switchView(linkedView);
         }
         else {
-            switchView('total');
+            // Leave bottom bar unselected & wait for visitor to choose first
+            const container = document.getElementById('dynamicContent');
+            const title = document.querySelector('.section-title-row h3');
+            const selector = document.getElementById('viewSelector');
+
+            if (title) title.innerText = "EXPLORE NEXUS LEGENDS";
+            if (selector) selector.value = ""; // Clears the view dropdown
+
+            if (container) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding: 45px 15px; color: var(--text-dim);">
+                        <i class="fa-solid fa-arrow-down fa-bounce" style="font-size: 1.8rem; color: #00e5ff; margin-bottom: 14px; display:block;"></i>
+                        <p style="font-size: 0.95rem; font-weight: 800; color: #f8fafc; margin: 0 0 6px; letter-spacing: 1px;">WELCOME TO NEXUS LEGENDS</p>
+                        <span style="font-size: 0.75rem; color: #64748b;">Select an option from the menu or bottom bar to view Players or Clubs.</span>
+                    </div>
+                `;
+            }
         }
         if(typeof updateLeagueLeader === "function") updateLeagueLeader();
         
