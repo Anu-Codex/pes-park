@@ -1945,15 +1945,14 @@ body {
     </select>
             </div>
             <div class="players-card">
-        <!-- SEARCH BOX (Hidden by default on first visit) -->
-        <div class="search-box" id="playerSearchBox" style="display: none;">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="searchInput" placeholder="Search players or nicknames..." oninput="filterPlayers()">
-        </div>
-
-        <div id="dynamicContent">
-            <!-- Initial prompt will show here -->
-        </div>
+                <!-- SEARCH BOX -->
+<div class="search-box">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="searchInput" placeholder="Search players or nicknames..." oninput="filterPlayers()">
+</div>
+                <div id="dynamicContent">
+                
+                </div>
             </div>
 
             
@@ -2107,7 +2106,7 @@ body {
     // 2. Render the correct list
     if (view === "teams") {
         renderTotalTeams(container);
-    } else {
+    } else if (view === "total") {
         renderTotalPlayers(container);
     }
     }
