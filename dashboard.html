@@ -1000,6 +1000,14 @@ document.getElementById('attrScore').value = attr.scoring || 50;
 document.getElementById('attrPlay').value = attr.playmaking || 50;
 document.getElementById('attrDef').value = attr.defense || 50;
 document.getElementById('attrMent').value = attr.mental || 50;
+    const authStatus = document.getElementById('authStatusText');
+        if (authStatus) {
+            if (p.isClaimed && p.googleEmail) {
+                authStatus.innerHTML = `<span style="color:#10b981;">● Claimed by: ${p.googleEmail}</span>`;
+            } else {
+                authStatus.innerHTML = `<span style="color:#64748b;">○ Unclaimed Profile</span>`;
+            }
+        }
     }
 
     // Generic Form Submission Logic
@@ -1130,14 +1138,7 @@ if (updateForm) {
     }
         // 1. Show auth status when player is selected in edit dropdown
 // Inside your existing loadPlayerDataForEdit() function, add:
-const authStatus = document.getElementById('authStatusText');
-if (authStatus) {
-    if (p.isClaimed && p.googleEmail) {
-        authStatus.innerHTML = `<span style="color:#10b981;">● Claimed by: ${p.googleEmail}</span>`;
-    } else {
-        authStatus.innerHTML = `<span style="color:#64748b;">○ Unclaimed Profile</span>`;
-    }
-}
+
 
 // 2. Secret Unlink Trigger
 async function secretUnlinkPlayerAuth() {
