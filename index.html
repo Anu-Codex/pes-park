@@ -1939,7 +1939,7 @@ body {
             <div class="section-title-row">
     <h3>DASHBOARD VIEW</h3>
     <select id="viewSelector" onchange="toggleView()">
-    <option value="" disabled selected>Select View...</option>
+    <option value="" selected>Select View...</option>
     <option value="total">Total players</option>
     <option value="teams">Total teams</option>
     </select>
@@ -2071,6 +2071,10 @@ body {
 
             if (title) title.innerText = "EXPLORE NEXUS LEGENDS";
             if (selector) selector.value = ""; // Clears the view dropdown
+            if (selector) {
+                selector.selectedIndex = 0; // Forces index 0 ("Select View...")
+                selector.value = "";
+            }
 
             if (container) {
                 container.innerHTML = `
