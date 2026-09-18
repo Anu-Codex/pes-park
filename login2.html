@@ -321,23 +321,77 @@
     }
 
     // 2. Fetch Unclaimed Players for Sign Up
+    // --- 2. FETCH UNCLAIMED PLAYERS (WITH AUTO-PRELOAD & ERROR DIAGNOSTICS) ---
+    let cachedUnclaimedPlayers = null;
+    let isFetchingPlayers = false;
+
     async function loadUnclaimedPlayers() {
         const select = document.getElementById('suPlayerSelect');
-        try {
-            const res = await fetch(`${API}/api/players`);
-            const allPlayers = await res.json();
-            const unclaimed = allPlayers.filter(p => !p.isClaimed);
+        if (!select) return;
 
-            if (unclaimed.length === 0) {
-                select.innerHTML = '<option value="">No unclaimed profiles available</option>';
-            } else {
-                select.innerHTML = '<option value="">-- Select Your Player Profile --</option>' + 
-                    unclaimed.map(p => `<option value="${p._id}">${p.name} (${p.teamName || 'Free Agent'})</option>`).join('');
+        // If already cached, render immediately without waiting
+        if (cachedUnclaimedPlayers && cachedUnclaimedPlayers.length > 0) {
+            renderUnclaimedDropdown(cachedUnclaimedPlayers);
+            return;
+        }
+
+        if (isFetchingPlayers) return;
+        isFetchingPlayers = true;
+
+        select.innerHTML = '<option value="">Syncing Player Database...</option>';
+
+        // Sanitize API URL to prevent double slashes
+        const cleanAPI = API.replace(/\/+$/, '');
+
+        try {
+            console.log(`[Auth] Fetching players from: ${cleanAPI}/api/players`);
+            const res = await fetch(`${cleanAPI}/api/players`);
+            
+            if (!res.ok) {
+                throw new Error(`Server returned HTTP status ${res.status}`);
             }
-        } catch (e) {
-            select.innerHTML = '<option value="">Error loading profiles</option>';
+
+            const allPlayers = await res.json();
+
+            if (!Array.isArray(allPlayers)) {
+                throw new Error("API did not return a valid list of players.");
+            }
+
+            // Filter unclaimed players
+            cachedUnclaimedPlayers = allPlayers.filter(p => !p.isClaimed);
+            renderUnclaimedDropdown(cachedUnclaimedPlayers);
+
+        } catch (err) {
+            console.error("❌ Failed to load players for sign-up:", err);
+            select.innerHTML = `
+                <option value="">⚠️ Failed to load. Tap here to retry</option>
+            `;
+            // Allow user to tap the dropdown to retry
+            select.onchange = () => {
+                if (!select.value) {
+                    isFetchingPlayers = false;
+                    loadUnclaimedPlayers();
+                }
+            };
+        } finally {
+            isFetchingPlayers = false;
         }
     }
+
+    function renderUnclaimedDropdown(list) {
+        const select = document.getElementById('suPlayerSelect');
+        if (!select) return;
+
+        if (list.length === 0) {
+            select.innerHTML = '<option value="">All registered player profiles are claimed</option>';
+        } else {
+            select.innerHTML = '<option value="">-- Choose Your Player Profile --</option>' + 
+                list.map(p => `<option value="${p._id}">${p.name} (${p.teamName || 'Free Agent'})</option>`).join('');
+        }
+    }
+
+    // --- INITIALIZE ON PAGE OPEN ---
+    
 
     // 3. Request Sign-Up OTP
     async function handleSignUpRequest(e) {
@@ -456,16 +510,23 @@
 
     // --- GOOGLE SIGN-IN HANDLER ---
     window.onload = function () {
-        google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: handleGoogleResponse,
-            auto_select: false
-        });
+        // 1. Start fetching players in background immediately so it is ready
+        loadUnclaimedPlayers();
 
-        google.accounts.id.renderButton(
-            document.getElementById("googleBtn"),
-            { theme: "filled_blue", size: "large", shape: "pill", text: "continue_with", width: 260 }
-        );
+        // 2. Initialize Google Sign-In SDK
+        if (typeof google !== 'undefined' && google.accounts) {
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleGoogleResponse,
+                auto_select: false,
+                cancel_on_tap_outside: true
+            });
+
+            google.accounts.id.renderButton(
+                document.getElementById("googleBtn"),
+                { theme: "filled_blue", size: "large", shape: "pill", text: "continue_with", width: 260 }
+            );
+        }
     };
 
     async function handleGoogleResponse(response) {
