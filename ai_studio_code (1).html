@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | NEXUS LEGENDS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --bg: #060b13;
+            --card-bg: #0d1627;
+            --border: #162438;
+            --accent: #00e5ff;
+            --green: #10b981;
+            --gold: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-dim: #64748b;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% -10%, #081730 0%, #060b13 75%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 15px 15px 95px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .profile-container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        /* --- USER HEADER CARD --- */
+        .user-header-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .user-avatar-frame {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            border: 2.5px solid var(--accent);
+            overflow: hidden;
+            background: #152238;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        }
+
+        .user-avatar-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .user-info-col {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .captain-crown {
+            color: var(--gold);
+            font-size: 0.95rem;
+        }
+
+        .edit-profile-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #f43f5e;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-decoration: none;
+            margin-top: 4px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+            font-family: inherit;
+        }
+
+        .edit-profile-btn:hover { opacity: 0.8; }
+
+        .team-badge-pill {
+            display: inline-block;
+            font-size: 0.65rem;
+            color: var(--accent);
+            background: rgba(0, 229, 255, 0.08);
+            border: 1px solid rgba(0, 229, 255, 0.25);
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-weight: 800;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- MENU SECTION CARDS --- */
+        .menu-card-group {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .menu-row-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .menu-row-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-row-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .row-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .row-icon-box {
+            width: 24px;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            transition: color 0.2s;
+        }
+
+        .menu-row-item:hover .row-icon-box {
+            color: var(--accent);
+        }
+
+        .row-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .row-tag {
+            font-size: 0.62rem;
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--gold);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 800;
+            margin-left: 6px;
+        }
+
+        .row-chevron {
+            color: #334155;
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+        }
+
+        .menu-row-item:hover .row-chevron {
+            transform: translateX(3px);
+            color: var(--accent);
+        }
+
+        /* --- LOGOUT BUTTON --- */
+        .btn-logout-wrap {
+            padding: 10px 5px;
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 14px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--danger);
+            border-radius: 14px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* --- EDIT PROFILE MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 7, 18, 0.92);
+            backdrop-filter: blur(10px);
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeInModal 0.2s ease-out;
+        }
+
+        .modal-card {
+            background: #0d1627;
+            border: 1px solid var(--border);
+            border-top: 3px solid var(--accent);
+            border-radius: 22px;
+            width: 100%;
+            max-width: 420px;
+            padding: 24px 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 12px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-family: 'Orbitron';
+            font-size: 1.05rem;
+            color: #fff;
+        }
+
+        .close-modal-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 11px 12px;
+            background: #060b13;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.88rem;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: var(--accent);
+        }
+
+        .upload-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-upload-file {
+            background: #162438;
+            border: 1px solid var(--border);
+            color: #94a3b8;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .btn-upload-file:hover {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .btn-save-profile {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Orbitron';
+            font-weight: 900;
+            font-size: 0.82rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-save-profile:hover { opacity: 0.9; }
+
+        /* --- BOTTOM NAVIGATION BAR (PROFILE ACTIVE) --- */
+        .bottom-nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            background: rgba(6, 11, 19, 0.95);
+            backdrop-filter: blur(18px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+        }
+
+        .bottom-nav-inner {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 6px 10px 10px;
+            box-sizing: border-box;
+        }
+
+        .b-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            padding: 8px 4px 6px;
+            cursor: pointer;
+            text-decoration: none;
+            border-radius: 14px;
+            transition: 0.2s;
+        }
+
+        .b-nav-item i { font-size: 1.15rem; margin-bottom: 4px; }
+        .b-nav-item span { font-family: 'Rajdhani'; font-size: 0.72rem; font-weight: 700; text-transform: capitalize; }
+
+        .b-nav-item.active {
+            color: #00e5ff;
+            background: linear-gradient(180deg, rgba(0, 229, 255, 0.12) 0%, rgba(6, 11, 19, 0) 100%);
+            border-top: 2.5px solid #00e5ff;
+            border-radius: 12px 12px 6px 6px;
+            box-shadow: 0 -4px 15px rgba(0, 229, 255, 0.25);
+        }
+
+        .b-nav-item.active i {
+            color: #00e5ff;
+            filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6));
+        }
+
+        .b-nav-item.active span { color: #00e5ff; font-weight: 800; }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="profile-container">
+
+    <!-- 1. USER HEADER CARD -->
+    <div class="user-header-card">
+        <div class="user-avatar-frame">
+            <img id="uAvatar" src="" onerror="handleAvatarError(this)">
+        </div>
+        <div class="user-info-col">
+            <h2 class="user-name-title">
+                <span id="uName">Loading...</span>
+                <i id="uCrown" class="fa-solid fa-crown captain-crown" style="display:none;"></i>
+            </h2>
+            <button type="button" onclick="openEditModal()" class="edit-profile-btn">
+                Edit Profile <i class="fa-solid fa-pen" style="font-size:0.7rem;"></i>
+            </button>
+            <br>
+            <div id="uTeam" class="team-badge-pill">Free Agent</div>
+        </div>
+    </div>
+
+    <!-- 2. CAREER & TOURNAMENT MENU -->
+    <div class="menu-card-group">
+        <a id="lnkPublicProfile" href="player.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box"><i class="fa-solid fa-id-card"></i></div>
+                <span class="row-title">My Player Profile & Dossier</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <a id="lnkDressingRoom" href="#" class="menu-row-item" style="display:none;">
+            <div class="row-left">
+                <div class="row-icon-box" style="color:var(--gold);"><i class="fa-solid fa-door-open"></i></div>
+                <span class="row-title">Club Dressing Room <span class="row-tag">CAPTAIN</span></span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <a href="transfer.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box"><i class="fa-solid fa-handshake"></i></div>
+                <span class="row-title">Transfer Market & Release Offers</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <a href="trending.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box" style="color:#f59e0b;"><i class="fa-solid fa-fire"></i></div>
+                <span class="row-title">Trending Players of the Week</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <a href="bdr-global.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box" style="color:#a855f7;"><i class="fa-solid fa-trophy"></i></div>
+                <span class="row-title">Global Solo BDR Leaderboard</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <a href="glory.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box" style="color:var(--green);"><i class="fa-solid fa-award"></i></div>
+                <span class="row-title">Glory Gallery Showcase</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+    </div>
+
+    <!-- 3. COMMUNITY & SETTINGS -->
+    <div class="menu-card-group">
+        <a href="media.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box"><i class="fa-solid fa-tv"></i></div>
+                <span class="row-title">Nexus Media Hub (Streams & Replays)</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <a href="index.html" class="menu-row-item">
+            <div class="row-left">
+                <div class="row-icon-box"><i class="fa-solid fa-headset"></i></div>
+                <span class="row-title">Help Centre & Admin Modmail</span>
+            </div>
+            <i class="fa-solid fa-chevron-right row-chevron"></i>
+        </a>
+
+        <div class="menu-row-item" style="cursor:default;">
+            <div class="row-left">
+                <div class="row-icon-box"><i class="fa-brands fa-google"></i></div>
+                <span class="row-title">Linked Google Account</span>
+            </div>
+            <span id="uGoogleEmail" style="font-size:0.75rem; color:var(--text-dim);">Signed in</span>
+        </div>
+    </div>
+
+    <!-- 4. LOGOUT BUTTON -->
+    <div class="btn-logout-wrap">
+        <button class="btn-logout" onclick="logoutUser()">
+            <i class="fa-solid fa-power-off"></i> LOG OUT OF NEXUS HUB
+        </button>
+    </div>
+
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div id="editModal" class="modal-overlay" style="display:none;" onclick="closeEditModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-user-pen" style="color:var(--accent);"></i> Edit Player Profile</h3>
+            <button type="button" class="close-modal-btn" onclick="closeEditModal()">&times;</button>
+        </div>
+
+        <form id="editProfileForm" onsubmit="saveProfileChanges(event)">
+            <div class="form-group">
+                <label>Player Full Name</label>
+                <input type="text" id="epName" placeholder="Enter Full Name" required>
+            </div>
+
+            <div class="form-group">
+                <label>Nickname / Gaming Handle</label>
+                <input type="text" id="epNick" placeholder="e.g. 'XeNo' or 'The Flash'">
+            </div>
+
+            <div class="form-group">
+                <label>Profile Avatar Image</label>
+                <div class="upload-row">
+                    <input type="text" id="epAvatar" placeholder="Avatar Image URL (ImgBB/Direct)" style="margin:0; flex:1;">
+                    <button type="button" class="btn-upload-file" onclick="document.getElementById('fileAvatarInput').click()">
+                        <i class="fa-solid fa-upload"></i> Upload
+                    </button>
+                </div>
+                <input type="file" id="fileAvatarInput" accept="image/*" style="display:none;" onchange="uploadImageToImgBB(this, 'epAvatar')">
+            </div>
+
+            <div class="form-group">
+                <label>Squad Screenshot Image</label>
+                <div class="upload-row">
+                    <input type="text" id="epSquad" placeholder="Squad Screenshot URL" style="margin:0; flex:1;">
+                    <button type="button" class="btn-upload-file" onclick="document.getElementById('fileSquadInput').click()">
+                        <i class="fa-solid fa-upload"></i> Upload
+                    </button>
+                </div>
+                <input type="file" id="fileSquadInput" accept="image/*" style="display:none;" onchange="uploadImageToImgBB(this, 'epSquad')">
+            </div>
+
+            <button type="submit" id="btnSaveProfile" class="btn-save-profile">
+                SAVE CHANGES TO DATABASE
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- BOTTOM NAVIGATION BAR -->
+<nav class="bottom-nav-bar">
+    <div class="bottom-nav-inner">
+        <a href="index.html" class="b-nav-item">
+            <i class="fa-solid fa-users"></i>
+            <span>Players</span>
+        </a>
+        <a href="index.html" class="b-nav-item">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Teams</span>
+        </a>
+        <a href="index.html" class="b-nav-item">
+            <i class="fa-solid fa-headset"></i>
+            <span>Support</span>
+        </a>
+        <a href="profile.html" class="b-nav-item active">
+            <i class="fa-solid fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+</nav>
+
+<script>
+    const API = "https://pes-park-backend.onrender.com";
+    const IMGBB_API_KEY = "f7efe3b052585cd233d08aa371c043bc";
+
+    let currentPlayerData = null;
+
+    // Fallback if image link fails or is empty
+    function handleAvatarError(img) {
+        const name = currentPlayerData?.name || "Player";
+        img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=00e5ff&color=000&bold=true`;
+    }
+
+    // 1. INSTANT LOAD: Render immediately from localStorage cache, then sync live from DB
+    async function loadUserProfile() {
+        const rawUser = localStorage.getItem('nexus_player_user');
+        if (!rawUser) {
+            window.location.href = "login.html";
+            return;
+        }
+
+        try {
+            const sessionUser = JSON.parse(rawUser);
+            currentPlayerData = sessionUser;
+
+            // 👉 INSTANT LOCAL RENDER (Zero Waiting Time)
+            renderUserData(sessionUser);
+
+            // 👉 BACKGROUND LIVE SYNC FROM DATABASE
+            const res = await fetch(`${API}/api/players/${sessionUser._id}`);
+            if (res.ok) {
+                const freshPlayer = await res.json();
+                if (freshPlayer && freshPlayer._id) {
+                    currentPlayerData = freshPlayer;
+                    localStorage.setItem('nexus_player_user', JSON.stringify(freshPlayer));
+                    renderUserData(freshPlayer);
+                }
+            }
+        } catch (err) {
+            console.warn("Live DB sync failed, using cached session:", err);
+        }
+    }
+
+    function renderUserData(p) {
+        document.getElementById('uName').innerText = p.name || "Agent";
+        
+        let avatarSrc = p.image ? p.image.trim() : "";
+        if (avatarSrc.startsWith("http://")) avatarSrc = avatarSrc.replace("http://", "https://");
+        
+        const avatarEl = document.getElementById('uAvatar');
+        if (avatarSrc && avatarSrc !== "" && avatarSrc !== "null") {
+            avatarEl.src = avatarSrc;
+        } else {
+            handleAvatarError(avatarEl);
+        }
+
+        document.getElementById('uTeam').innerText = p.teamName || "Free Agent";
+        document.getElementById('uGoogleEmail').innerText = p.googleEmail || "Google Linked";
+
+        // Captain Status
+        if (p.isCaptain) {
+            document.getElementById('uCrown').style.display = 'inline-block';
+            if (p.teamName && p.teamName !== "Free Agent") {
+                const drLink = document.getElementById('lnkDressingRoom');
+                drLink.href = `dressing-room.html?id=${encodeURIComponent(p.teamName)}`;
+                drLink.style.display = 'flex';
+            }
+        }
+
+        // Links
+        document.getElementById('lnkPublicProfile').href = `player.html?id=${p._id}`;
+    }
+
+    // --- EDIT PROFILE MODAL CONTROLLERS ---
+    function openEditModal() {
+        if (!currentPlayerData) return;
+
+        document.getElementById('epName').value = currentPlayerData.name || "";
+        document.getElementById('epNick').value = currentPlayerData.nickname || "";
+        document.getElementById('epAvatar').value = currentPlayerData.image || "";
+        document.getElementById('epSquad').value = currentPlayerData.squadImage || "";
+
+        document.getElementById('editModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // ImgBB Direct Upload
+    async function uploadImageToImgBB(input, targetInputId) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const targetField = document.getElementById(targetInputId);
+        const originalVal = targetField.value;
+        targetField.value = "Uploading to Cloud...";
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: "POST",
+                body: formData
+            });
+            const data = await res.json();
+            if (data && data.data && data.data.url) {
+                targetField.value = data.data.url;
+                alert("Upload Successful! Click 'Save Changes' to apply.");
+            } else {
+                throw new Error("Upload response invalid");
+            }
+        } catch (e) {
+            alert("Image upload failed. You can paste a direct link manually.");
+            targetField.value = originalVal;
+        }
+    }
+
+    // Save Directly to Database
+    async function saveProfileChanges(e) {
+        e.preventDefault();
+        if (!currentPlayerData || !currentPlayerData._id) return;
+
+        const btn = document.getElementById('btnSaveProfile');
+        btn.innerText = "SAVING TO DATABASE...";
+        btn.disabled = true;
+
+        const payload = {
+            name: document.getElementById('epName').value.trim(),
+            nickname: document.getElementById('epNick').value.trim(),
+            image: document.getElementById('epAvatar').value.trim(),
+            squadImage: document.getElementById('epSquad').value.trim()
+        };
+
+        try {
+            const res = await fetch(`${API}/api/players/${currentPlayerData._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                // Update local session
+                const updated = { ...currentPlayerData, ...payload };
+                currentPlayerData = updated;
+                localStorage.setItem('nexus_player_user', JSON.stringify(updated));
+
+                // Update UI live
+                renderUserData(updated);
+                closeEditModal();
+                alert("✅ Profile updated successfully!");
+            } else {
+                alert("Failed to update profile. Server rejected the request.");
+            }
+        } catch (err) {
+            console.error("Save error:", err);
+            alert("Connection error. Could not reach server.");
+        } finally {
+            btn.innerText = "SAVE CHANGES TO DATABASE";
+            btn.disabled = false;
+        }
+    }
+
+    function logoutUser() {
+        if (confirm("Log out of your Nexus Legends identity?")) {
+            localStorage.removeItem('nexus_player_user');
+            window.location.href = "login.html";
+        }
+    }
+
+    window.onload = loadUserProfile;
+</script>
+
+</body>
+</html>
