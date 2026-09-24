@@ -2067,24 +2067,71 @@ body {
             switchView(linkedView);
         }
         else {
-            // Leave bottom bar unselected & wait for visitor to choose first
             const container = document.getElementById('dynamicContent');
             const title = document.querySelector('.section-title-row h3');
             const selector = document.getElementById('viewSelector');
 
-            if (title) title.innerText = "EXPLORE NEXUS LEGENDS";
-            if (selector) selector.value = ""; // Clears the view dropdown
+            if (title) title.innerText = "EXPLORE NEXUS HUB";
             if (selector) {
-                selector.selectedIndex = 0; // Forces index 0 ("Select View...")
+                selector.selectedIndex = 0;
                 selector.value = "";
             }
 
             if (container) {
                 container.innerHTML = `
-                    <div style="text-align:center; padding: 45px 15px; color: var(--text-dim);">
-                        <i class="fa-solid fa-arrow-down fa-bounce" style="font-size: 1.8rem; color: #00e5ff; margin-bottom: 14px; display:block;"></i>
-                        <p style="font-size: 0.95rem; font-weight: 800; color: #f8fafc; margin: 0 0 6px; letter-spacing: 1px;">WELCOME TO NEXUS LEGENDS</p>
-                        <span style="font-size: 0.75rem; color: #64748b;">Select an option from the menu or bottom bar to view Players or Clubs.</span>
+                    <div style="text-align:center; padding: 15px 5px 25px;">
+                        <i class="fa-solid fa-arrow-down fa-bounce" style="font-size: 1.5rem; color: #00e5ff; margin-bottom: 8px; display:block;"></i>
+                        <p style="font-size: 0.95rem; font-weight: 900; color: #f8fafc; margin: 0 0 3px; font-family:'Orbitron'; letter-spacing:1px;">WELCOME TO NEXUS LEGENDS</p>
+                        <span style="font-size: 0.72rem; color: #64748b;">Select an option from the menu or bottom bar to begin exploring.</span>
+
+                        <!-- QUICK GUIDE GRID -->
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; text-align: left;">
+                            
+                            <!-- 1. Players -->
+                            <div style="background: rgba(0, 229, 255, 0.04); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 34px; height: 34px; border-radius: 9px; background: rgba(0, 229, 255, 0.15); color: #00e5ff; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink:0;">
+                                    <i class="fa-solid fa-users"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 800; font-size: 0.8rem; color: #00e5ff; font-family:'Orbitron';">Players Roster</div>
+                                    <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 1px;">Inspect individual player dossiers, match activity calendars, win rates, and OVR ratings.</div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Teams -->
+                            <div style="background: rgba(16, 185, 129, 0.04); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 34px; height: 34px; border-radius: 9px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink:0;">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 800; font-size: 0.8rem; color: #10b981; font-family:'Orbitron';">Official Clubs</div>
+                                    <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 1px;">Explore team squads, captain credentials, trophy cabinets, and recent club performance.</div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Tournaments & UCL -->
+                            <div style="background: rgba(245, 158, 11, 0.04); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 34px; height: 34px; border-radius: 9px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink:0;">
+                                    <i class="fa-solid fa-trophy"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 800; font-size: 0.8rem; color: #f59e0b; font-family:'Orbitron';">Tournaments & UCL</div>
+                                    <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 1px;">Track live fixtures, group standings (A-F), Swiss 36-team tables, and Golden Boot races.</div>
+                                </div>
+                            </div>
+
+                            <!-- 4. Transfer Market -->
+                            <div style="background: rgba(168, 85, 247, 0.04); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 14px;">
+                                <div style="width: 34px; height: 34px; border-radius: 9px; background: rgba(168, 85, 247, 0.15); color: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink:0;">
+                                    <i class="fa-solid fa-cart-shopping"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 800; font-size: 0.8rem; color: #a855f7; font-family:'Orbitron';">Transfer Market</div>
+                                    <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 1px;">Review Fabrizio-style transfer news, release listings, and direct captain-to-captain offers.</div>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 `;
             }
