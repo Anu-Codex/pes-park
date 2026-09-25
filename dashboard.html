@@ -2957,16 +2957,17 @@ async function submitSelectedCsvPlayers() {
             }
             // --- DANGER ZONE SECURITY GATEKEEPER ---
 // ⚠️ CHANGE THIS PIN TO WHATEVER CODE YOU WANT:
-const MASTER_DANGER_PIN = "5355"; 
+// --- DANGER ZONE SECURITY GATEKEEPER ---
+const MASTER_DANGER_PIN = "5355"; // 👈 You can change this PIN anytime
 
 function requestDangerAccess(btn) {
-    // Check if already unlocked during this browser session
+    // If already unlocked this session, open directly
     if (sessionStorage.getItem('nexus_danger_unlocked') === 'true') {
         showSection('sec-danger', btn);
         return;
     }
 
-    // Otherwise, open the PIN modal
+    // Otherwise, show the PIN popup
     document.getElementById('dangerPinInput').value = "";
     document.getElementById('dangerModal').style.display = 'flex';
 }
@@ -2976,21 +2977,25 @@ function closeDangerModal() {
 }
 
 function verifyDangerPin() {
-    const enteredPin = document.getElementById('dangerPinInput').value.trim();
+    const pin = document.getElementById('dangerPinInput').value.trim();
     
-    if (enteredPin === MASTER_DANGER_PIN) {
-        // Unlock session storage so they don't have to type it every 2 clicks
+    if (pin === MASTER_DANGER_PIN) {
         sessionStorage.setItem('nexus_danger_unlocked', 'true');
         closeDangerModal();
-        
-        // Find the danger tab button and activate the section
-        const dangerBtn = Array.from(document.querySelectorAll('.nav-tab')).find(b => b.textContent.includes('Danger'));
+
+        // Find the danger tab button in the nav
+        const tabs = document.querySelectorAll('.admin-nav .nav-tab');
+        let dangerBtn = null;
+        tabs.forEach(t => {
+            if (t.textContent.includes('Danger')) dangerBtn = t;
+        });
+
         showSection('sec-danger', dangerBtn);
-        
-        alert("🔓 Danger Zone unlocked for this browsing session.");
+        alert("🔓 Danger Zone Unlocked for this session.");
     } else {
         alert("❌ ACCESS DENIED: Incorrect Security PIN.");
         document.getElementById('dangerPinInput').value = "";
+        document.getElementById('dangerPinInput').focus();
     }
 }
 
@@ -3009,22 +3014,20 @@ window.onload = async () => {
     }
 };
     </script>
-            <!-- DANGER ZONE SECURITY PIN MODAL -->
-<div id="dangerModal" class="modal-overlay" style="display:none;" onclick="closeDangerModal(event)">
-    <div class="modal-card" style="border-top-color: var(--danger);" onclick="event.stopPropagation()">
-        <div class="modal-header">
-            <h3><i class="fa-solid fa-triangle-exclamation" style="color:var(--danger);"></i> RESTRICTED ACCESS</h3>
-            <button type="button" class="close-modal-btn" onclick="closeDangerModal()">&times;</button>
-        </div>
-        <p style="font-size:0.75rem; color:var(--text-dim); margin-bottom:15px; line-height:1.4;">
-            This section contains core database wipe and reset functions. Enter your Master Admin Passcode to proceed.
+            <!-- BULLETPROOF DANGER PIN MODAL -->
+<div id="dangerModal" style="position: fixed; inset: 0; background: rgba(3, 7, 18, 0.92); backdrop-filter: blur(8px); z-index: 999999; display: none; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: #101926; border: 2px solid #ef4444; border-radius: 22px; width: 100%; max-width: 380px; padding: 25px; text-align: center; box-shadow: 0 0 40px rgba(239, 68, 68, 0.4);">
+        <h3 style="color: #ef4444; margin-top: 0; font-family: 'Orbitron', sans-serif; letter-spacing: 1px;">RESTRICTED ACCESS</h3>
+        <p style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 20px; line-height: 1.4;">
+            This section contains core database wipe and reset functions. Enter the Master Security PIN to unlock.
         </p>
-        <div class="form-group">
-            <label>Master Security PIN</label>
-            <input type="password" id="dangerPinInput" placeholder="••••" style="text-align:center; font-size:1.2rem; letter-spacing:5px;" required autofocus>
-        </div>
-        <button type="button" onclick="verifyDangerPin()" class="delete-btn" style="width:100%; padding:14px; font-weight:900; margin-top:10px; font-family:'Orbitron';">
+        <input type="password" id="dangerPinInput" placeholder="••••" style="text-align: center; font-size: 1.5rem; letter-spacing: 10px; margin-bottom: 15px; background: #060b13; border: 1px solid #1e293b; color: white; padding: 12px; border-radius: 10px; width: 100%; box-sizing: border-box; outline: none;" autofocus>
+        
+        <button type="button" onclick="verifyDangerPin()" class="delete-btn" style="width: 100%; padding: 14px; font-weight: 900; font-family: 'Orbitron', sans-serif; cursor: pointer;">
             UNLOCK DANGER ZONE
+        </button>
+        <button type="button" onclick="closeDangerModal()" style="background: transparent; border: none; color: #64748b; margin-top: 15px; cursor: pointer; font-size: 0.8rem; font-weight: 700;">
+            Cancel
         </button>
     </div>
 </div>
