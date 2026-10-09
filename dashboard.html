@@ -799,6 +799,28 @@
         <i class="fa-solid fa-arrows-rotate"></i> REBUILD GLOBAL SOLO BDR
     </button>
 </div>
+            <div class="sub-box" style="border: 2px solid var(--gold); background: rgba(245, 158, 11, 0.05); margin-top: 20px;">
+    <h4 style="color: var(--gold);"><i class="fa-solid fa-gavel"></i> Auction Tournament Stats Control</h4>
+    <p style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 15px; line-height: 1.4;">
+        Manage BDR Points and Market Value calculations specifically for <b>Auction Tournaments</b>.
+    </p>
+
+    <!-- BUTTON 1: MASTER RECALCULATE -->
+    <div style="margin-bottom: 15px;">
+        <span style="font-size: 0.65rem; color: #ef4444; font-weight: 800; display:block; margin-bottom:4px;">EMERGENCY / ONE-TIME USE</span>
+        <button type="button" onclick="triggerAuctionMasterSync()" class="delete-btn" style="width: 100%; padding: 12px; background: #ef4444; font-weight: 900;">
+            <i class="fa-solid fa-triangle-exclamation"></i> RUN MASTER AUCTION RECALCULATE (WIPES & REBUILDS)
+        </button>
+    </div>
+
+    <!-- BUTTON 2: INCREMENTAL SYNC -->
+    <div>
+        <span style="font-size: 0.65rem; color: var(--accent); font-weight: 800; display:block; margin-bottom:4px;">MOST DEMANDED (DAILY USE)</span>
+        <button type="button" onclick="triggerAuctionIncrementalSync()" class="btn-green" style="width: 100%; padding: 12px; font-weight: 900;">
+            <i class="fa-solid fa-bolt"></i> SYNC NEW / UPDATED AUCTION MATCHES (+/-)
+        </button>
+    </div>
+            </div>
         </div>
         <div id="sec-calendar" class="admin-section">
     <div class="sub-box">
@@ -2996,6 +3018,54 @@ function verifyDangerPin() {
         alert("❌ ACCESS DENIED: Incorrect Security PIN.");
         document.getElementById('dangerPinInput').value = "";
         document.getElementById('dangerPinInput').focus();
+    }
+}
+        async function triggerAuctionMasterSync() {
+    if (!confirm("⚠️ DANGER: This will reset all player auction stats and rebuild them from scratch using ALL auction matches. Proceed?")) return;
+
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> REBUILDING MASTER DATA...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/auction/sync-master`);
+        const data = await res.json();
+        if (data.success) {
+            alert("✅ " + data.message);
+            location.reload();
+        } else {
+            alert("❌ Error: " + data.error);
+        }
+    } catch (e) {
+        alert("Server connection failed.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function triggerAuctionIncrementalSync() {
+    if (!confirm("Scan for newly completed auction matches and add/increment their stats?")) return;
+
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> SYNCING NEW MATCHES...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/auction/sync-incremental`);
+        const data = await res.json();
+        if (data.success) {
+            alert("✅ " + data.message);
+        } else {
+            alert("❌ Error: " + data.error);
+        }
+    } catch (e) {
+        alert("Server connection failed.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
     }
 }
 
