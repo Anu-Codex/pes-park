@@ -898,6 +898,16 @@
         <p style="text-align:center; font-size:0.75rem; color:#64748b;">Loading posters...</p>
     </div>
 </div>
+            <div class="sub-box" style="border-left: 4px solid var(--gold); background: rgba(245, 158, 11, 0.05); margin-top: 20px;">
+    <h4 style="color: var(--gold);"><i class="fa-solid fa-ticket"></i> Luis Suarez Giveaway Applications</h4>
+    <p style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 15px;">
+        Review participant screenshots for YouTube subscription and WhatsApp group invites.
+    </p>
+
+    <div id="giveawayAdminList" class="list-container" style="max-height: 400px; overflow-y: auto;">
+        <p style="text-align:center; color:var(--text-dim); padding:20px;">Loading applications...</p>
+    </div>
+            </div>
             
         </div>
     </div>
@@ -1002,6 +1012,7 @@ const uclSoloSel = document.getElementById('uclSoloTourSelect');
         loadFreeAgentsDropdown();
         loadCelebrationPlayers();
         loadGloryAdminList();
+        loadGiveawayAdminList();
     }
 
     // Load Player Data for Edit
@@ -3068,6 +3079,77 @@ async function triggerAuctionIncrementalSync() {
         btn.disabled = false;
     }
 }
+        
+async function loadGiveawayAdminList() {
+    try {
+        const res = await fetch(`${API}/api/giveaway/admin/all`);
+        const apps = await res.json();
+        const container = document.getElementById('giveawayAdminList');
+
+        if (!apps || apps.length === 0) {
+            container.innerHTML = '<p style="text-align:center; font-size:0.8rem; color:#64748b; padding:20px;">No applications submitted yet.</p>';
+            return;
+        }
+
+        container.innerHTML = apps.map(a => `
+            <div class="sub-box" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); margin-bottom: 12px; padding: 15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <div>
+                        <b style="font-size:0.95rem; color:#fff;">${a.name}</b> 
+                        <span style="font-family:'Orbitron'; font-size:0.75rem; color:var(--gold); margin-left:8px;">[${a.code}]</span>
+                    </div>
+                    <span style="font-size:0.65rem; padding:3px 8px; border-radius:4px; font-weight:800; background:${a.status==='Approved'?'rgba(16,185,129,0.2); color:#10b981':a.status==='Rejected'?'rgba(239,68,68,0.2); color:#ef4444':'rgba(245,158,11,0.2); color:#f59e0b'}">
+                        ${a.status.toUpperCase()}
+                    </span>
+                </div>
+                
+                <div style="font-size:0.75rem; color:var(--text-dim); margin-bottom:10px;">
+                    WhatsApp: <b style="color:#fff;">${a.whatsapp}</b> | YT Link: <a href="${a.ytLink || '#'}" target="_blank" style="color:var(--cyan);">${a.ytLink ? 'Open Link' : 'None'}</a>
+                </div>
+
+                <!-- SCREENSHOT PREVIEW LINKS -->
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom:12px;">
+                    <a href="${a.ytScreenshot}" target="_blank" style="background:#162438; border:1px solid var(--border); padding:8px; border-radius:8px; color:#fff; text-align:center; font-size:0.7rem; text-decoration:none; display:block;">
+                        <i class="fa-solid fa-image"></i> View YT Proof
+                    </a>
+                    <a href="${a.waScreenshot}" target="_blank" style="background:#162438; border:1px solid var(--border); padding:8px; border-radius:8px; color:#fff; text-align:center; font-size:0.7rem; text-decoration:none; display:block;">
+                        <i class="fa-solid fa-image"></i> View WA Proof
+                    </a>
+                </div>
+
+                <!-- APPROVE / REJECT ACTIONS -->
+                <div style="display:flex; gap:8px;">
+                    <button type="button" onclick="updateGiveawayStatus('${a._id}', 'Approved')" class="btn-green" style="flex:1; padding:8px; font-size:0.75rem;">
+                        APPROVE SLOT
+                    </button>
+                    <button type="button" onclick="updateGiveawayStatus('${a._id}', 'Rejected')" class="delete-btn" style="flex:1; padding:8px; font-size:0.75rem;">
+                        REJECT
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        console.error("Giveaway admin load error:", e);
+    }
+}
+
+async function updateGiveawayStatus(id, newStatus) {
+    const res = await fetch(`${API}/api/giveaway/admin/status/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+        alert(`✅ ${data.message}`);
+        loadGiveawayAdminList();
+    } else {
+        alert("❌ Failed to update status");
+    }
+}
+
+// Add to your loadAllDashboardData() in dashboard.html:
+
 
     // --- UNIFIED INITIALIZATION ---
 window.onload = async () => {
