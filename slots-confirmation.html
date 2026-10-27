@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giveaway Slot Confirmation | NEXUS LEGENDS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&display=swap');
+
+        :root {
+            --bg: #030712;
+            --card: #0f172a;
+            --border: #1e293b;
+            --accent: #10b981;
+            --gold: #f59e0b;
+            --cyan: #00e5ff;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% -10%, #002b80 0%, #030712 70%);
+            color: var(--text-main);
+            font-family: 'Rajdhani', sans-serif;
+            margin: 0;
+            padding: 20px 15px 80px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .top-nav { margin-bottom: 20px; }
+        .back-link { color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; text-transform: uppercase; }
+
+        /* HERO HEADER */
+        .giveaway-hero {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(15, 23, 42, 0.9) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 24px;
+            padding: 25px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.15);
+        }
+        .giveaway-hero h1 { font-family: 'Orbitron'; font-size: 1.3rem; margin: 0 0 5px; color: var(--gold); letter-spacing: 1px; }
+        .giveaway-hero p { font-size: 0.8rem; color: var(--text-dim); margin: 0; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* BOXES */
+        .glass-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .box-title { font-family: 'Orbitron'; font-size: 0.9rem; color: var(--accent); margin: 0 0 15px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+
+        /* RULES */
+        .rules-img-wrap { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 15px; border: 1px solid var(--border); }
+        .rules-img-wrap img { width: 100%; display: block; }
+
+        .rule-list { list-style: none; padding: 0; margin: 0; }
+        .rule-list li { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; font-size: 0.9rem; color: #cbd5e1; line-height: 1.4; }
+        .rule-list i { color: var(--gold); margin-top: 3px; }
+
+        /* FORM */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; font-weight: 800; margin-bottom: 6px; letter-spacing: 1px; }
+        .form-group input { width: 100%; padding: 12px; background: #030712; border: 1px solid var(--border); border-radius: 10px; color: white; font-family: inherit; font-size: 0.95rem; box-sizing: border-box; outline: none; }
+        .form-group input:focus { border-color: var(--accent); }
+
+        .upload-row { display: flex; gap: 8px; align-items: center; }
+        .btn-upload { background: #162438; border: 1px solid var(--border); color: #94a3b8; padding: 11px 14px; border-radius: 10px; font-size: 0.75rem; cursor: pointer; white-space: font-weight: 700; }
+        .btn-upload:hover { border-color: var(--accent); color: var(--accent); }
+
+        .btn-submit { width: 100%; padding: 14px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-family: 'Orbitron'; font-weight: 900; font-size: 0.85rem; letter-spacing: 1px; cursor: pointer; margin-top: 10px; }
+        .btn-submit:hover { opacity: 0.9; }
+
+        /* SUCCESS MODAL / CODE BOX */
+        .code-display-box { background: rgba(16, 185, 129, 0.08); border: 2px dashed var(--accent); border-radius: 16px; padding: 20px; text-align: center; margin-top: 20px; }
+        .unique-code-val { font-family: 'Orbitron'; font-size: 1.8rem; font-weight: 900; color: var(--gold); letter-spacing: 3px; margin: 10px 0; display: block; background: #030712; padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
+
+        /* STATUS CHECK */
+        .status-badge { display: inline-block; padding: 6px 16px; border-radius: 50px; font-family: 'Orbitron'; font-size: 0.75rem; font-weight: 900; text-transform: uppercase; margin-top: 10px; }
+        .status-review { background: rgba(245, 158, 11, 0.2); color: var(--gold); border: 1px solid var(--gold); }
+        .status-approved { background: rgba(16, 185, 129, 0.2); color: var(--accent); border: 1px solid var(--accent); }
+        .status-rejected { background: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="top-nav">
+        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> NEXUS HUB</a>
+    </div>
+
+    <!-- Hero -->
+    <div class="giveaway-hero">
+        <h1>LUIS SUAREZ STARTER SET</h1>
+        <p>Official Giveaway Tournament Slot Confirmation</p>
+    </div>
+
+    <!-- TAB SWITCHER -->
+    <div style="display:flex; gap:10px; margin-bottom:20px;">
+        <button type="button" onclick="switchGiveawayTab('apply')" id="tabApplyBtn" style="flex:1; padding:12px; background:var(--accent); color:#000; border:none; border-radius:12px; font-family:'Orbitron'; font-weight:900; font-size:0.75rem; cursor:pointer;">APPLY FOR SLOT</button>
+        <button type="button" onclick="switchGiveawayTab('check')" id="tabCheckBtn" style="flex:1; padding:12px; background:var(--card); color:var(--text-dim); border:1px solid var(--border); border-radius:12px; font-family:'Orbitron'; font-weight:900; font-size:0.75rem; cursor:pointer;">CHECK MY STATUS</button>
+    </div>
+
+    <!-- PANEL A: RULES & APPLICATION FORM -->
+    <div id="panelApply">
+        <!-- Rules Box -->
+        <div class="glass-box">
+            <h3 class="box-title"><i class="fa-solid fa-list-check"></i> Tournament Rules</h3>
+            <!-- Optional image of rules -->
+            <div class="rules-img-wrap">
+                <img src="https://i.postimg.cc/placeholder-rules.png" alt="Rules" onerror="this.style.display='none'">
+            </div>
+            <ul class="rule-list">
+                <li><i class="fa-solid fa-circle-check"></i> <b>Subscribe</b> to the official Nexus Legends YouTube channel.</li>
+                <li><i class="fa-solid fa-circle-check"></i> <b>Add your 1 eFootball friend</b> into our community WhatsApp group.</li>
+                <li><i class="fa-solid fa-circle-check"></i> <b>Upload screenshots</b> of both actions below to secure your slot confirmation code.</li>
+            </ul>
+        </div>
+
+        <!-- Application Form -->
+        <div class="glass-box">
+            <h3 class="box-title"><i class="fa-solid fa-file-pen"></i> Slot Application Form</h3>
+            
+            <form id="giveawayForm" onsubmit="submitGiveaway(event)">
+                <div class="form-group">
+                    <label>Your Full Name</label>
+                    <input type="text" id="gName" placeholder="e.g. Debargha Pathak" required>
+                </div>
+
+                <div class="form-group">
+                    <label>WhatsApp Phone Number</label>
+                    <input type="tel" id="gWhatsapp" placeholder="e.g. +91 9876543210" required>
+                </div>
+
+                <div class="form-group">
+                    <label>1. Screenshot: YouTube Subscription Proof</label>
+                    <div class="upload-row">
+                        <input type="text" id="gYtScreenshot" placeholder="Image URL or Upload" style="margin:0; flex:1;" required>
+                        <button type="button" class="btn-upload" onclick="document.getElementById('fileYtInput').click()"><i class="fa-solid fa-upload"></i> Upload</button>
+                    </div>
+                    <input type="file" id="fileYtInput" accept="image/*" hidden onchange="uploadToImgBB(this, 'gYtScreenshot')">
+                </div>
+
+                <div class="form-group">
+                    <label>2. Screenshot: Friend Added to WhatsApp Group</label>
+                    <div class="upload-row">
+                        <input type="text" id="gWaScreenshot" placeholder="Image URL or Upload" style="margin:0; flex:1;" required>
+                        <button type="button" class="btn-upload" onclick="document.getElementById('fileWaInput').click()"><i class="fa-solid fa-upload"></i> Upload</button>
+                    </div>
+                    <input type="file" id="fileWaInput" accept="image/*" hidden onchange="uploadToImgBB(this, 'gWaScreenshot')">
+                </div>
+
+                <button type="submit" id="btnSubmitGiveaway" class="btn-submit">
+                    SUBMIT TO CONFIRM SLOT
+                </button>
+            </form>
+
+            <!-- Success Code Display Box -->
+            <div id="successCodeBox" class="code-display-box" style="display:none;">
+                <span style="font-size:0.75rem; color:var(--accent); font-weight:bold; letter-spacing:1px;">SUCCESS! YOUR CONFIRMATION CODE:</span>
+                <span id="generatedCodeText" class="unique-code-val">NXLS-0000</span>
+                <p style="font-size:0.7rem; color:var(--text-dim); margin:0;">Save this code! Use the <b>Check My Status</b> tab above anytime to verify if your slot is approved.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANEL B: STATUS CHECKER -->
+    <div id="panelCheck" style="display:none;">
+        <div class="glass-box" style="text-align: center;">
+            <h3 class="box-title" style="justify-content: center;"><i class="fa-solid fa-magnifying-glass"></i> Check Slot Status</h3>
+            <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;">Enter your unique confirmation code to view your current approval status.</p>
+            
+            <div class="form-group">
+                <input type="text" id="checkCodeInput" placeholder="e.g. NXLS-8942" style="text-align: center; font-family:'Orbitron'; font-size:1.2rem; letter-spacing:2px; text-transform:uppercase;" required>
+            </div>
+            
+            <button type="button" onclick="checkSlotStatus()" class="btn-submit" style="background:var(--gold); color:#000;">
+                CHECK APPROVAL STATUS
+            </button>
+
+            <!-- Status Result Display -->
+            <div id="statusResultBox" style="display:none; margin-top:25px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.05);">
+                <div style="font-size:0.8rem; font-weight:700; color:#fff;" id="resPlayerName">Player Name</div>
+                <div id="resBadge" class="status-badge status-review">Under Review</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const API = "https://pes-park-backend.onrender.com";
+    const IMGBB_API_KEY = "f7efe3b052585cd233d08aa371c043bc";
+
+    function switchGiveawayTab(tab) {
+        const isApply = tab === 'apply';
+        document.getElementById('panelApply').style.display = isApply ? 'block' : 'none';
+        document.getElementById('panelCheck').style.display = isApply ? 'none' : 'block';
+
+        document.getElementById('tabApplyBtn').style.background = isApply ? 'var(--accent)' : 'var(--card)';
+        document.getElementById('tabApplyBtn').style.color = isApply ? '#000' : 'var(--text-dim)';
+        document.getElementById('tabApplyBtn').style.border = isApply ? 'none' : '1px solid var(--border)';
+
+        document.getElementById('tabCheckBtn').style.background = isApply ? 'var(--card)' : 'var(--accent)';
+        document.getElementById('tabCheckBtn').style.color = isApply ? 'var(--text-dim)' : '#000';
+        document.getElementById('tabCheckBtn').style.border = isApply ? '1px solid var(--border)' : 'none';
+    }
+
+    // ImgBB Upload Helper
+    async function uploadToImgBB(input, targetInputId) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const targetField = document.getElementById(targetInputId);
+        targetField.value = "Uploading screenshot...";
+
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: "POST",
+                body: formData
+            });
+            const data = await res.json();
+            if (data && data.data && data.data.url) {
+                targetField.value = data.data.url;
+                alert("Screenshot uploaded successfully!");
+            } else {
+                throw new Error("Upload failed");
+            }
+        } catch (e) {
+            alert("Upload failed. You can paste a direct image URL manually.");
+            targetField.value = "";
+        }
+    }
+
+    // Submit Application
+    async function submitGiveaway(e) {
+        e.preventDefault();
+
+        const payload = {
+            name: document.getElementById('gName').value.trim(),
+            whatsapp: document.getElementById('gWhatsapp').value.trim(),
+            ytScreenshot: document.getElementById('gYtScreenshot').value.trim(),
+            waScreenshot: document.getElementById('gWaScreenshot').value.trim()
+        };
+
+        const btn = document.getElementById('btnSubmitGiveaway');
+        btn.innerText = "SUBMITTING...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`${API}/api/giveaway/apply`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                document.getElementById('giveawayForm').style.display = 'none';
+                document.getElementById('generatedCodeText').innerText = data.code;
+                document.getElementById('successCodeBox').style.display = 'block';
+            } else {
+                alert("❌ " + (data.error || "Submission failed"));
+                btn.innerText = "SUBMIT TO CONFIRM SLOT";
+                btn.disabled = false;
+            }
+        } catch (err) {
+            alert("Server connection error.");
+            btn.innerText = "SUBMIT TO CONFIRM SLOT";
+            btn.disabled = false;
+        }
+    }
+
+    // Check Status
+    async function checkSlotStatus() {
+        const code = document.getElementById('checkCodeInput').value.trim();
+        if (!code) return alert("Please enter your confirmation code!");
+
+        try {
+            const res = await fetch(`${API}/api/giveaway/status/${encodeURIComponent(code)}`);
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                const rec = data.record;
+                document.getElementById('resPlayerName').innerText = `${rec.name} (${rec.whatsapp})`;
+                
+                const badge = document.getElementById('resBadge');
+                badge.innerText = rec.status.toUpperCase();
+                badge.className = "status-badge ";
+                if (rec.status === "Approved") badge.classList.add("status-approved");
+                else if (rec.status === "Rejected") badge.classList.add("status-rejected");
+                else badge.classList.add("status-review");
+
+                document.getElementById('statusResultBox').style.display = 'block';
+            } else {
+                alert("❌ " + (data.error || "Code not found"));
+                document.getElementById('statusResultBox').style.display = 'none';
+            }
+        } catch (e) {
+            alert("Server connection failed.");
+        }
+    }
+</script>
+
+</body>
+  </html>
