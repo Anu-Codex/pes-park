@@ -2593,7 +2593,7 @@ async function switchTourTab(type) {
             teamsData.forEach(t => logoMap[t.name] = t.logo || t.logoUrl);
 
             // Filter matches tagged as Knockout
-            const koMatches = matches.filter(m => m.type === "Knockout" || m.stage);
+            const koMatches = matches.filter(m => m.type && m.type.toLowerCase() === "knockout");
 
             if (koMatches.length === 0) {
                 content.innerHTML = '<p style="text-align:center; padding:40px; color:var(--text-dim); font-family:\'Orbitron\'; font-size:0.8rem;">Knockout stages have not been generated yet.</p>';
