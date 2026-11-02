@@ -2593,7 +2593,18 @@ async function switchTourTab(type) {
             teamsData.forEach(t => logoMap[t.name] = t.logo || t.logoUrl);
 
             // Filter matches tagged as Knockout
-            const koMatches = matches.filter(m => m.type && m.type.toLowerCase() === "knockout");
+            const koMatches = matches.filter(m => {
+    const isKnockoutType = m.type && m.type.toLowerCase() === "knockout";
+    const stageName = (m.stage || "").toLowerCase();
+                const isKnockoutStage = stageName.includes("final") || 
+                            stageName.includes("semi") || 
+                            stageName.includes("quarter") || 
+                            stageName.includes("eliminator") || 
+                            stageName.includes("qualifier") ||
+                            stageName.includes("r16");
+
+    return isKnockoutType || isKnockoutStage;
+});
 
             if (koMatches.length === 0) {
                 content.innerHTML = '<p style="text-align:center; padding:40px; color:var(--text-dim); font-family:\'Orbitron\'; font-size:0.8rem;">Knockout stages have not been generated yet.</p>';
