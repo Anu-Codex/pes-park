@@ -2637,6 +2637,8 @@ async function switchTourTab(type) {
                     </div>
                 </div>
             `).join('');
+        }
+    
     } catch (e) {
         console.error(e);
         content.innerHTML = '<p style="text-align:center; color:red; padding:20px;">CRITICAL: DATABASE LINK FAILED</p>';
