@@ -439,23 +439,40 @@
                 <select id="srTourSelect" onchange="loadTourFixtures()"><option>Choose Tour...</option></select>
                 <div id="srFixtureList"></div>
             </div>
-            <div class="sub-box" style="border-left: 4px solid var(--gold);">
-    <h4><i class="fa-solid fa-sitemap"></i> Smart Knockout Generator</h4>
+            <!-- SMART KNOCKOUT GENERATOR -->
+<div class="sub-box" style="border-left: 4px solid var(--gold); background: rgba(245, 158, 11, 0.05);">
+    <h4 style="color:var(--gold);"><i class="fa-solid fa-sitemap"></i> Auction Knockout Generator</h4>
     
-    <!-- Select ANY Tournament -->
-    <select id="akTourSelect" onchange="loadAKParticipants()">
+    <label style="font-size:0.6rem; color:var(--text-dim)">1. SELECT AUCTION TOURNAMENT</label>
+    <select id="akTourSelect" onchange="loadAKParticipants()" style="border-color:var(--gold);">
         <option value="">Select Tournament...</option>
     </select>
     
-    <div class="grid-2">
-        <input type="text" id="akStage" placeholder="Stage (e.g. Semi-Final, Final)">
-        <div style="display:flex; gap:5px">
-            <select id="akPlayerA"></select>
-            <select id="akPlayerB"></select>
+    <div class="grid-2" style="margin-top:10px;">
+        <div>
+            <label style="font-size:0.6rem; color:var(--text-dim)">2. STAGE</label>
+            <select id="akStage">
+                <option value="Qualifier 1">Qualifier 1 (1st vs 2nd)</option>
+                <option value="Eliminator">Eliminator (4th vs 5th)</option>
+                <option value="Knockout Round">Knockout Round (3rd vs Winner)</option>
+                <option value="Qualifier 2">Qualifier 2 (Loser Q1 vs Winner KR)</option>
+                <option value="Semi-Final">Semi-Final</option>
+                <option value="Grand Final">Grand Final</option>
+            </select>
+        </div>
+        <div>
+            <label style="font-size:0.6rem; color:var(--text-dim)">3. TEAM A vs TEAM B</label>
+            <div style="display:flex; gap:5px">
+                <select id="akPlayerA"><option>Team A...</option></select>
+                <select id="akPlayerB"><option>Team B...</option></select>
+            </div>
         </div>
     </div>
-    <button onclick="createAKFixture()" class="btn-gold">Generate Knockout Match</button>
-            </div>
+    
+    <button type="button" onclick="createAKFixture()" class="btn-gold" style="margin-top:15px; font-weight:900;">
+        GENERATE KNOCKOUT MATCH
+    </button>
+</div>
             <!-- DELETE TOURNAMENT BOX -->
 <div class="sub-box" style="border: 1px solid var(--danger); background: rgba(239, 68, 68, 0.05);">
     <h4 style="color: var(--danger);"><i class="fa-solid fa-trash-can"></i> 4. Delete Tournament</h4>
