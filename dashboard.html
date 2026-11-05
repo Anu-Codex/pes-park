@@ -505,6 +505,27 @@
     </div>
     <button onclick="createSubFixture()" class="btn-green">Generate Member Match</button>
             </div>
+            <!-- TOURNAMENT TABLE LOCK CONTROL -->
+<div class="sub-box" style="border-left: 4px solid var(--gold); background: rgba(245, 158, 11, 0.05); margin-top: 15px;">
+    <h4><i class="fa-solid fa-lock"></i> Tournament Table Lock Control</h4>
+    <p style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 12px; line-height: 1.4;">
+        Locking a tournament freezes its points table. Future match results will update the fixture status but <b>will not alter the standings</b>.
+    </p>
+
+    <label style="font-size: 0.6rem; color: var(--text-dim);">SELECT TOURNAMENT TO LOCK/UNLOCK</label>
+    <select id="lockTourSelect" style="border-color: var(--gold); margin-bottom: 12px;">
+        <option value="">Select Tournament...</option>
+    </select>
+
+    <div class="grid-2">
+        <button type="button" onclick="setTourLockStatus(true)" class="btn-gold" style="background: #f59e0b; color: black; font-weight: 900;">
+            <i class="fa-solid fa-lock"></i> LOCK TABLE 🔒
+        </button>
+        <button type="button" onclick="setTourLockStatus(false)" class="btn-green" style="background: #10b981; color: black; font-weight: 900;">
+            <i class="fa-solid fa-lock-open"></i> UNLOCK TABLE 🔓
+        </button>
+    </div>
+</div>
             <!-- REPLACE PLAYER IN TOURNAMENT -->
 <div class="sub-box" style="border-left: 4px solid var(--accent); background: rgba(16, 185, 129, 0.05); margin-top: 15px;">
     <h4><i class="fa-solid fa-arrows-rotate"></i> Replace Player in Tournament</h4>
@@ -997,6 +1018,7 @@
             document.getElementById('akTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             document.getElementById('rebuildTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             document.getElementById('repTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
+            document.getElementById('lockTourSelect').innerHTML = '<option>Select Tour...</option>' + tourOpts;
             
             const duoOpts = duoTours.map(t => `<option value="${t._id}">${t.name} (DUO)</option>`).join('');
             document.getElementById('dmTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
@@ -3165,6 +3187,38 @@ async function updateGiveawayStatus(id, newStatus) {
         alert("❌ Failed to update status");
     }
 }
+        async function setTourLockStatus(isLocked) {
+    const tourId = document.getElementById('lockTourSelect').value;
+    if (!tourId) return alert("Please select a tournament from the dropdown first!");
+
+    const actionText = isLocked ? "LOCK" : "UNLOCK";
+    if (!confirm(`Are you sure you want to ${actionText} the points table for this tournament?`)) return;
+
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> UPDATING...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/smart/tournaments/${tourId}/lock`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isLocked })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            alert("✅ " + data.message);
+        } else {
+            alert("❌ Error: " + (data.error || "Failed to update lock status"));
+        }
+    } catch (e) {
+        alert("Server connection failed.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+        }
 
 // Add to your loadAllDashboardData() in dashboard.html:
 
