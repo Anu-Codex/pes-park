@@ -22,6 +22,9 @@
     })();
     </script>
     <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#10b981">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
@@ -1543,30 +1546,29 @@ body {
     padding-bottom: 100px !important; /* Prevents footer overlap */
 }
 
+/* ================= SLEEK APP FLOATING BOTTOM DOCK ================= */
 .bottom-nav-bar {
     position: fixed;
-    bottom: 14px;
-    left: 0;
-    right: 0;
-    width: auto;
-    max-width: 460px;
-    margin: 0 auto;
-    background: rgba(6, 11, 19, 0.94);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);         /* Responsive on all screens */
+    max-width: 480px;                  /* Clean width on mobile/tablet */
+    background: rgba(8, 8, 10, 0.94); /* Deep Obsidian */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1.5px solid rgba(251, 191, 36, 0.35); /* Glowing Gold Border */
+    border-radius: 24px;              /* Fixes the square cut-off look */
     z-index: 99999;
-    display: flex;
-    justify-content: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), 0 0 20px rgba(251, 191, 36, 0.12);
 }
 
 .bottom-nav-inner {
     width: 100%;
-    max-width: 500px;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: 6px 10px 10px;
+    padding: 10px 8px;                 /* Adds proper vertical breathing room */
     box-sizing: border-box;
 }
 
@@ -1578,48 +1580,42 @@ body {
     justify-content: center;
     background: transparent;
     border: none;
-    color: #64748b;
-    padding: 8px 4px 6px;
+    color: #a1a1aa;
+    padding: 6px 4px;
     cursor: pointer;
-    position: relative;
     border-radius: 14px;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
     text-decoration: none;
-    user-select: none;
 }
 
 .b-nav-item i {
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     margin-bottom: 4px;
-    transition: transform 0.2s, color 0.2s;
+    color: #a1a1aa;
 }
 
 .b-nav-item span {
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 0.72rem;
+    font-family: 'Rajdhani', sans-serif !important;
+    font-size: 0.76rem;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
     text-transform: capitalize;
-    transition: color 0.2s;
 }
 
-/* Active Tab Style (Matches Screenshot Glow) */
+/* Active State (Gold & Yellow) */
 .b-nav-item.active {
-    color: #00e5ff;
-    background: linear-gradient(180deg, rgba(0, 229, 255, 0.12) 0%, rgba(6, 11, 19, 0) 100%);
-    border-top: 2.5px solid #00e5ff;
-    border-radius: 12px 12px 6px 6px;
-    box-shadow: 0 -4px 15px rgba(0, 229, 255, 0.25);
+    color: #facc15 !important;
+    background: rgba(251, 191, 36, 0.12);
 }
 
 .b-nav-item.active i {
-    color: #00e5ff;
-    filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6));
+    color: #facc15 !important;
+    filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.7));
     transform: translateY(-2px);
 }
 
 .b-nav-item.active span {
-    color: #00e5ff;
+    color: #facc15 !important;
     font-weight: 800;
 }
 
