@@ -1546,30 +1546,35 @@ body {
     padding-bottom: 100px !important; /* Prevents footer overlap */
 }
 
-/* ================= SLEEK APP FLOATING BOTTOM DOCK ================= */
+/* ================= FULL WIDTH EDGE-TO-EDGE BOTTOM BAR ================= */
 .bottom-nav-bar {
-    position: fixed;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 32px);         /* Responsive on all screens */
-    max-width: 480px;                  /* Clean width on mobile/tablet */
-    background: rgba(8, 8, 10, 0.94); /* Deep Obsidian */
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1.5px solid rgba(251, 191, 36, 0.35); /* Glowing Gold Border */
-    border-radius: 24px;              /* Fixes the square cut-off look */
-    z-index: 99999;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), 0 0 20px rgba(251, 191, 36, 0.12);
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    transform: none !important;
+    border-radius: 0 !important; /* Flat edge-to-edge */
+    border: none !important;
+    border-top: 1.5px solid rgba(251, 191, 36, 0.35) !important; /* Gold border across whole screen */
+    background: rgba(6, 6, 8, 0.96) !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.9) !important;
+    z-index: 99999 !important;
+    padding-bottom: env(safe-area-inset-bottom, 6px); /* Fix for phones with gesture home bars */
 }
 
 .bottom-nav-inner {
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 10px 8px;                 /* Adds proper vertical breathing room */
-    box-sizing: border-box;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    padding: 8px 16px 10px !important;
+    box-sizing: border-box !important;
 }
 
 .b-nav-item {
@@ -1581,9 +1586,8 @@ body {
     background: transparent;
     border: none;
     color: #a1a1aa;
-    padding: 6px 4px;
+    padding: 6px 0;
     cursor: pointer;
-    border-radius: 14px;
     transition: all 0.2s ease;
     text-decoration: none;
 }
@@ -1591,7 +1595,6 @@ body {
 .b-nav-item i {
     font-size: 1.25rem;
     margin-bottom: 4px;
-    color: #a1a1aa;
 }
 
 .b-nav-item span {
@@ -1605,19 +1608,20 @@ body {
 /* Active State (Gold & Yellow) */
 .b-nav-item.active {
     color: #facc15 !important;
-    background: rgba(251, 191, 36, 0.12);
+    background: linear-gradient(180deg, rgba(251, 191, 36, 0.15) 0%, rgba(6, 6, 8, 0) 100%) !important;
+    border-top: 2.5px solid #facc15 !important;
 }
 
 .b-nav-item.active i {
     color: #facc15 !important;
-    filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.7));
+    filter: drop-shadow(0 0 8px rgba(250, 204, 21, 0.7)) !important;
     transform: translateY(-2px);
 }
 
 .b-nav-item.active span {
     color: #facc15 !important;
     font-weight: 800;
-}
+    }
 
 /* --- MODMAIL SUPPORT MODAL --- */
 .modmail-overlay {
