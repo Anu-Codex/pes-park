@@ -1273,8 +1273,14 @@ async function secretUnlinkPlayerAuth() {
                     <i class="fa-solid fa-save"></i>
                 </button>
             </div>
+            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 8px;">
+    <input type="checkbox" id="ignore-${m._id}" ${m.ignoreInStandings ? 'checked' : ''} onchange="toggleIgnoreMatch('${m._id}', this.checked)" style="width: 16px; height: 16px; cursor: pointer;">
+    <label for="ignore-${m._id}" style="font-size: 0.65rem; color: var(--gold); cursor: pointer; font-weight: bold;">
+        Ignore points for this match in Standings
+    </label>
+</div>
 
-            <!-- WALKOVER SECTION -->
+            
             <div style="display:flex; gap:5px; margin-top:10px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
                 <button onclick="markWalkover('${m._id}', 'A')" 
                         style="flex:1; background:transparent; color:#10b981; border:1px solid #10b981; padding:5px; font-size:0.55rem; border-radius:5px; font-weight:bold; cursor:pointer;">
@@ -1428,6 +1434,21 @@ async function saveTourPodium() {
     });
     if(res.ok) alert(`Tournament Podium Saved for ${tour}!`);
 }
+        async function toggleIgnoreMatch(fixtureId, ignore) {
+    try {
+        const res = await fetch(`${API}/api/smart/fixtures/${fixtureId}/ignore`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ignoreInStandings: ignore })
+        });
+
+        if (res.ok) {
+            alert(ignore ? "🔒 Match points will now be ignored in the table." : "🔓 Match points are now active in the table.");
+        }
+    } catch (e) {
+        alert("Failed to update status.");
+    }
+        }
 
 // 3. Logic for Block 3: Individual Trophies (The Auto-Counter)
 async function awardSmartTrophy() {
