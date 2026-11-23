@@ -350,6 +350,27 @@
         🔗 MERGE PROFILES PERMANENTLY
     </button>
 </div>
+            <!-- DISCIPLINARY ACTION CENTER -->
+<div class="sub-box" style="border-left: 4px solid var(--gold); background: rgba(245, 158, 11, 0.05); margin-top: 15px;">
+    <h4 style="color: var(--gold);"><i class="fa-solid fa-rectangle-list"></i> Disciplinary Action (Cards & Penalties)</h4>
+    <p style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 12px;">
+        Issue cards to players. 🟨 Yellow cards deduct 5 BDR points; 🟥 Red cards deduct 15 BDR points.
+    </p>
+
+    <label style="font-size: 0.6rem; color: var(--text-dim);">SELECT PLAYER</label>
+    <select id="cardPlayerSelect">
+        <option value="">Select Player...</option>
+    </select>
+
+    <div class="grid-2" style="margin-top: 10px;">
+        <button type="button" onclick="issueCard('yellow')" class="btn-gold" style="background: #eab308; color: black; font-weight: 900; font-size: 0.75rem;">
+            🟨 +1 YELLOW (-5 BDR)
+        </button>
+        <button type="button" onclick="issueCard('red')" class="delete-btn" style="background: #ef4444; color: white; font-weight: 900; font-size: 0.75rem;">
+            🟥 +1 RED (-15 BDR)
+        </button>
+    </div>
+</div>
         </div>
 
         <!-- 3. TEAMS (Creation & Management) -->
@@ -1076,6 +1097,8 @@
 const mergeDupSel = document.getElementById('mergeDupSelect');
 if (mergeKeepSel) mergeKeepSel.innerHTML = '<option value="">Select Primary Player...</option>' + pOpts;
 if (mergeDupSel) mergeDupSel.innerHTML = '<option value="">Select Duplicate Player...</option>' + pOpts;
+            const cardSel = document.getElementById('cardPlayerSelect');
+if (cardSel) cardSel.innerHTML = '<option value="">Select Player...</option>' + pOpts;
 
             // Inside loadAllDashboardData():
 const uclSoloSel = document.getElementById('uclSoloTourSelect');
@@ -3394,6 +3417,35 @@ async function updateGiveawayStatus(id, newStatus) {
         btn.disabled = false;
     }
         }
+        async function issueCard(cardType) {
+    const playerId = document.getElementById('cardPlayerSelect').value;
+    if (!playerId) return alert("Please select a player from the dropdown first!");
+
+    const penalty = cardType === 'yellow' ? '5 BDR points' : '15 BDR points';
+    const check = confirm(`Issue 1 ${cardType.toUpperCase()} card? This will deduct ${penalty} immediately.`);
+    if (!check) return;
+
+    try {
+        const res = await fetch(`${API}/api/players/${playerId}/issue-card`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cardType })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            alert("✅ " + data.message);
+        } else {
+            alert("❌ Error: " + (data.error || "Failed to issue card"));
+        }
+    } catch (err) {
+        console.error("Card error:", err);
+        alert("Server communication error.");
+    }
+}
+
+// Inside your loadAllDashboardData(), populate cardPlayerSelect:
+
 
 // Add to your loadAllDashboardData() in dashboard.html:
 
