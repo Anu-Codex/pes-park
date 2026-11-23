@@ -859,6 +859,16 @@
         </button>
     </div>
             </div>
+            <!-- RESCUE DELETED TEAMS TOOL -->
+<div class="sub-box" style="border: 1px solid #3b82f6; background: rgba(59, 130, 246, 0.05); margin-top: 15px;">
+    <h4 style="color: #3b82f6;"><i class="fa-solid fa-life-ring"></i> Rescue Deleted Club Teams</h4>
+    <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 15px; line-height: 1.4;">
+        Since you already deleted your old club teams from the auction site, click this to scan player profiles and automatically rebuild your historical team archive.
+    </p>
+    <button type="button" onclick="executeTeamRescue()" class="btn-gold" style="background: #3b82f6; color: white; font-weight: 900; font-family:'Orbitron'; font-size: 0.75rem; width: 100%; padding: 12px;">
+        🛟 RECONSTRUCT ARCHIVE FROM PLAYERS
+    </button>
+</div>
         </div>
         <div id="sec-calendar" class="admin-section">
     <div class="sub-box">
@@ -3232,6 +3242,30 @@ async function updateGiveawayStatus(id, newStatus) {
             alert("✅ " + data.message);
         } else {
             alert("❌ Error: " + (data.error || "Failed to update lock status"));
+        }
+    } catch (e) {
+        alert("Server connection failed.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+        }
+        async function executeTeamRescue() {
+    if (!confirm("Scan player profiles to recover deleted club names and logos?")) return;
+
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> SCANNING PROFILES...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/admin/rebuild-archive-from-players`);
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            alert("✅ " + data.message);
+        } else {
+            alert("❌ Error: " + (data.error || "Rescue failed"));
         }
     } catch (e) {
         alert("Server connection failed.");
