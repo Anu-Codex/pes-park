@@ -324,6 +324,32 @@
         </button>
     </div>
 </div>
+            <!-- MERGE DUPLICATE PLAYERS TOOL -->
+<div class="sub-box" style="border-left: 4px solid var(--gold); background: rgba(245, 158, 11, 0.05); margin-top: 20px;">
+    <h4 style="color: var(--gold);"><i class="fa-solid fa-code-merge"></i> Merge Duplicate Players</h4>
+    <p style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 15px;">
+        Combine two profiles representing the same person. Match history, BDR, trophies, and stats will be merged into the primary profile, and the duplicate will be deleted.
+    </p>
+
+    <div class="grid-2">
+        <div>
+            <label style="font-size: 0.6rem; color: var(--accent);">1. PRIMARY PLAYER (TO KEEP)</label>
+            <select id="mergeKeepSelect">
+                <option value="">Select Primary Player...</option>
+            </select>
+        </div>
+        <div>
+            <label style="font-size: 0.6rem; color: var(--danger);">2. DUPLICATE PLAYER (TO DELETE)</label>
+            <select id="mergeDupSelect">
+                <option value="">Select Duplicate Player...</option>
+            </select>
+        </div>
+    </div>
+
+    <button type="button" onclick="executePlayerMerge()" class="btn-gold" style="width: 100%; margin-top: 15px; font-weight: 900; background: var(--gold); color: black;">
+        🔗 MERGE PROFILES PERMANENTLY
+    </button>
+</div>
         </div>
 
         <!-- 3. TEAMS (Creation & Management) -->
@@ -869,6 +895,16 @@
         🛟 RECONSTRUCT ARCHIVE FROM PLAYERS
     </button>
 </div>
+            <!-- SEASON RESET TOOL -->
+<div class="sub-box" style="border: 2px solid var(--danger); background: rgba(239, 68, 68, 0.06); margin-top: 20px;">
+    <h4 style="color: var(--danger); font-family: 'Orbitron';"><i class="fa-solid fa-rotate-left"></i> Season Reset (BDR & Valuations)</h4>
+    <p style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 15px; line-height: 1.4;">
+        Sets all players' <b>Ballon d'Or points</b>, <b>Solo BDR</b>, <b>Market Value</b>, and <b>Auction Price</b> to <b>0</b>. Use this to prepare your database before syncing new auction data for a new season.
+    </p>
+    <button type="button" onclick="executeSeasonReset()" class="delete-btn" style="width: 100%; padding: 14px; background: var(--danger); color: white; font-weight: 900; font-family:'Orbitron'; font-size: 0.75rem; letter-spacing: 1px;">
+        🧹 RESET ALL BDR & VALUATIONS TO 0
+    </button>
+</div>
         </div>
         <div id="sec-calendar" class="admin-section">
     <div class="sub-box">
@@ -1036,6 +1072,10 @@
             document.getElementById('siTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('ieTourSelect').innerHTML = '<option value="">Select Duo Tour...</option>' + duoOpts;
             document.getElementById('srTourSelect').innerHTML += duoOpts;
+            const mergeKeepSel = document.getElementById('mergeKeepSelect');
+const mergeDupSel = document.getElementById('mergeDupSelect');
+if (mergeKeepSel) mergeKeepSel.innerHTML = '<option value="">Select Primary Player...</option>' + pOpts;
+if (mergeDupSel) mergeDupSel.innerHTML = '<option value="">Select Duplicate Player...</option>' + pOpts;
 
             // Inside loadAllDashboardData():
 const uclSoloSel = document.getElementById('uclSoloTourSelect');
@@ -3269,6 +3309,86 @@ async function updateGiveawayStatus(id, newStatus) {
         }
     } catch (e) {
         alert("Server connection failed.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+        }
+        async function executePlayerMerge() {
+    const keepId = document.getElementById('mergeKeepSelect').value;
+    const dupId = document.getElementById('mergeDupSelect').value;
+
+    if (!keepId || !dupId) {
+        return alert("Please select both the Primary player and the Duplicate player!");
+    }
+
+    if (keepId === dupId) {
+        return alert("You cannot merge a player with themselves!");
+    }
+
+    const check = confirm(
+        "⚠️ MERGE WARNING ⚠️\n\n" +
+        "All match history, trophies, BDR points, and season stats will be combined into the primary profile.\n\n" +
+        "The duplicate profile will be permanently deleted. Proceed?"
+    );
+    if (!check) return;
+
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> MERGING PROFILES...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/players/merge`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ keepPlayerId: keepId, duplicatePlayerId: dupId })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            alert("✅ " + data.message);
+            location.reload();
+        } else {
+            alert("❌ Error: " + (data.error || "Merge failed"));
+        }
+    } catch (err) {
+        console.error("Merge error:", err);
+        alert("Server communication error.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+        }
+        async function executeSeasonReset() {
+    const check = confirm(
+        "⚠️ SEASON RESET WARNING ⚠️\n\n" +
+        "This will instantly reset ALL players' Ballon d'Or points, Solo BDR, Market Value, and Auction Prices to 0.\n\n" +
+        "Are you sure you want to wipe these stats for the new season?"
+    );
+    if (!check) return;
+
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> WIPING STATS TO 0...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/danger/reset-season-financials`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            alert("✅ " + data.message);
+            location.reload();
+        } else {
+            alert("❌ Error: " + (data.error || "Reset failed"));
+        }
+    } catch (e) {
+        console.error("Reset error:", e);
+        alert("❌ Server connection failed.");
     } finally {
         btn.innerHTML = originalText;
         btn.disabled = false;
