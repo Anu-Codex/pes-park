@@ -1354,6 +1354,8 @@ initMatchActivityCalendar(playerMatches);
             document.getElementById('pAuction').innerText = (p.auctionPrice || 0) + "M";
             document.getElementById('pMarket').innerText = (p.marketValue || 0) + "M";
             document.getElementById('pBDR').innerText = p.bdrPoints || 0;
+            document.getElementById('profileYellowCards').innerText = p.yellowCards || 0;
+            document.getElementById('profileRedCards').innerText = p.redCards || 0;
             const squadDiv = document.getElementById('squadDisplay');
         if (squadDiv && p.squadImage) {
             squadDiv.innerHTML = `<img src="${p.squadImage}" style="width:100%; height:100%; object-fit:cover; border-radius:15px;">`;
