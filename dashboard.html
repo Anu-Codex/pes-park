@@ -926,6 +926,29 @@
         🧹 RESET ALL BDR & VALUATIONS TO 0
     </button>
 </div>
+            <!-- NATIONAL TEAM MIGRATION TOOL -->
+<div class="sub-box" style="border: 2px solid #00e5ff; background: rgba(0, 229, 255, 0.05); margin-top: 20px;">
+    <h4 style="color: #00e5ff; font-family:'Orbitron';"><i class="fa-solid fa-earth-americas"></i> National Team Transition Tool</h4>
+    <p style="font-size: 0.72rem; color: var(--text-dim); margin-bottom: 15px; line-height: 1.4;">
+        Use this when switching from Club Teams to National Teams. Step 1 wipes old club assignments. Step 2 pulls new National Teams and logos from your auction site.
+    </p>
+
+    <!-- STEP 1 -->
+    <div style="margin-bottom: 15px;">
+        <span style="font-size:0.65rem; color:#ef4444; font-weight:800; display:block; margin-bottom:4px;">STEP 1: WIPE OLD CLUBS</span>
+        <button type="button" onclick="executeTeamReset()" class="delete-btn" style="width: 100%; padding: 12px; background: #ef4444; font-weight: 900;">
+            <i class="fa-solid fa-user-slash"></i> RESET ALL PLAYERS TO FREE AGENT
+        </button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div>
+        <span style="font-size:0.65rem; color:#10b981; font-weight:800; display:block; margin-bottom:4px;">STEP 2: IMPORT NATIONAL TEAMS</span>
+        <button type="button" onclick="executeNationalTeamSync()" class="btn-green" style="width: 100%; padding: 12px; background: #10b981; color: black; font-weight: 900;">
+            <i class="fa-solid fa-cloud-arrow-down"></i> RUN NATIONAL TEAM & LOGO SYNC
+        </button>
+    </div>
+</div>
         </div>
         <div id="sec-calendar" class="admin-section">
     <div class="sub-box">
@@ -3443,7 +3466,57 @@ async function updateGiveawayStatus(id, newStatus) {
         alert("Server communication error.");
     }
 }
+async function executeTeamReset() {
+    if (!confirm("⚠️ This will clear team assignments for ALL players and make them Free Agents. Proceed?")) return;
 
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> RESETTING TO FREE AGENT...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/danger/reset-all-player-teams`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            alert("✅ " + data.message);
+        } else {
+            alert("❌ Error: " + (data.error || "Reset failed"));
+        }
+    } catch (e) {
+        alert("Server connection failed.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+async function executeNationalTeamSync() {
+    if (!confirm("Import the latest National Teams and logos from your Auction database?")) return;
+
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> SYNCING NATIONAL TEAMS...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/danger/import-team-data`);
+        const data = await res.json();
+        if (res.ok && data.success) {
+            alert("✅ " + data.message);
+            location.reload();
+        } else {
+            alert("❌ Error: " + (data.error || "Sync failed"));
+        }
+    } catch (e) {
+        alert("Server connection failed.");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
 // Inside your loadAllDashboardData(), populate cardPlayerSelect:
 
 
