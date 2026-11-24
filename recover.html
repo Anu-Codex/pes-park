@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction Sale Recovery | NEXUS LEGENDS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root { --bg: #030712; --card: #0f172a; --border: #1e293b; --accent: #10b981; --gold: #f59e0b; --cyan: #00e5ff; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 15px 15px 100px; }
+        .wrap { max-width: 700px; margin: auto; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+        .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        .team-box { background: #020617; border: 1px solid var(--border); border-radius: 10px; padding: 10px; font-size: 0.75rem; }
+        .team-box.matched { border-color: var(--accent); background: rgba(16, 185, 129, 0.08); }
+        .player-row { display: grid; grid-template-columns: 1fr 90px 150px; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        input, select { width: 100%; padding: 8px; background: #020617; border: 1px solid var(--border); color: white; border-radius: 8px; box-sizing: border-box; }
+        .btn-save-all { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 650px; padding: 16px; background: var(--accent); color: #000; border: none; border-radius: 14px; font-weight: 900; font-size: 1rem; cursor: pointer; box-shadow: 0 5px 25px rgba(16, 185, 129, 0.4); z-index: 999; }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <h2 style="color:var(--cyan); margin-top:0;">🛠️ Auction Sale Recovery (<span id="totalSoldCount">0</span> Sold Players)</h2>
+    <p style="font-size:0.8rem; color:#94a3b8;">Prices below were automatically recovered from your <b>histories</b> collection. Select the winning team for each player and save.</p>
+
+    <!-- LIVE TEAM SPENT BUDGET TRACKER -->
+    <div class="card">
+        <h4 style="margin:0 0 10px; color:var(--gold);">Team Purse Spent Tracker (Assigned / Actual Spent)</h4>
+        <div id="teamTrackerGrid" class="team-grid">Loading teams...</div>
+    </div>
+
+    <!-- SEARCH FILTER -->
+    <input type="text" id="searchBox" placeholder="Search player name..." oninput="filterRows()" style="margin-bottom: 15px; padding: 12px;">
+
+    <!-- ALL 82+ SOLD PLAYERS LIST -->
+    <div class="card" id="playersList">
+        <p style="text-align:center; color:#64748b;">Loading all sold players...</p>
+    </div>
+</div>
+
+<button type="button" class="btn-save-all" onclick="saveAllRestored()">💾 RESTORE ALL ASSIGNED PLAYERS</button>
+
+<script>
+    const API = "https://pes-park-backend.onrender.com";
+    let workspaceData = { teams: [], players: [] };
+
+    async function initRecovery() {
+        const res = await fetch(`${API}/api/danger/recovery-workspace`);
+        const data = await res.json();
+        workspaceData = data;
+
+        document.getElementById('totalSoldCount').innerText = data.totalSoldPlayers;
+
+        const teamOptions = '<option value="">-- Select Team --</option>' + 
+            data.teams.map(t => `<option value="${t.name}">${t.name}</option>`).join('');
+
+        document.getElementById('playersList').innerHTML = data.players.map((p, idx) => `
+            <div class="player-row" data-name="${p.name.toLowerCase()}">
+                <div>
+                    <div style="font-weight:bold; font-size:0.9rem;">${idx + 1}. ${p.name}</div>
+                    <div style="font-size:0.65rem; color:#64748b;">Old auctionPrice: ${p.oldAuctionPrice}M</div>
+                </div>
+                <input type="number" class="rec-price" data-id="${p._id}" value="${p.recoveredPrice}" oninput="recalcBudgets()">
+                <select class="rec-team" data-id="${p._id}" onchange="recalcBudgets()">
+                    ${teamOptions}
+                </select>
+            </div>
+        `).join('');
+
+        // Pre-select if player already has a team
+        data.players.forEach(p => {
+            if (p.currentTeam) {
+                const sel = document.querySelector(`.rec-team[data-id="${p._id}"]`);
+                if (sel) sel.value = p.currentTeam;
+            }
+        });
+
+        recalcBudgets();
+    }
+
+    function recalcBudgets() {
+        const assignedTotals = {};
+        document.querySelectorAll('.rec-team').forEach(sel => {
+            const team = sel.value;
+            if (team) {
+                const id = sel.getAttribute('data-id');
+                const price = Number(document.querySelector(`.rec-price[data-id="${id}"]`).value) || 0;
+                assignedTotals[team] = (assignedTotals[team] || 0) + price;
+            }
+        });
+
+        document.getElementById('teamTrackerGrid').innerHTML = workspaceData.teams.map(t => {
+            const assigned = assignedTotals[t.name] || 0;
+            const isExact = assigned === t.spent && t.spent > 0;
+            return `
+                <div class="team-box ${isExact ? 'matched' : ''}">
+                    <b style="color:${isExact ? '#10b981' : '#fff'}">${t.name}</b><br>
+                    <span>Assigned: <b>${assigned}M</b></span><br>
+                    <span style="color:#94a3b8;">Spent: ${t.spent}M ${isExact ? '✅' : ''}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function filterRows() {
+        const q = document.getElementById('searchBox').value.toLowerCase();
+        document.querySelectorAll('.player-row').forEach(r => {
+            r.style.display = r.getAttribute('data-name').includes(q) ? 'grid' : 'none';
+        });
+    }
+
+    async function saveAllRestored() {
+        const assignments = [];
+        document.querySelectorAll('.rec-team').forEach(sel => {
+            if (sel.value) {
+                const id = sel.getAttribute('data-id');
+                const price = document.querySelector(`.rec-price[data-id="${id}"]`).value;
+                assignments.push({ playerId: id, teamName: sel.value, price: Number(price) });
+            }
+        });
+
+        if (assignments.length === 0) return alert("Assign at least one player to a team first!");
+
+        const btn = document.querySelector('.btn-save-all');
+        btn.innerText = "RESTORING...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`${API}/api/danger/restore-bulk-sales`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ assignments })
+            });
+            const data = await res.json();
+            alert(data.message || "Restored!");
+        } catch (e) {
+            alert("Error saving.");
+        } finally {
+            btn.innerText = "💾 RESTORE ALL ASSIGNED PLAYERS";
+            btn.disabled = false;
+        }
+    }
+
+    window.onload = initRecovery;
+</script>
+
+</body>
+</html>
