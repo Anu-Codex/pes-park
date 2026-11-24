@@ -949,6 +949,17 @@
         </button>
     </div>
 </div>
+            <!-- TEAM SYNC DIAGNOSTIC TOOL -->
+<div class="sub-box" style="border: 1px solid #3b82f6; background: rgba(59, 130, 246, 0.05); margin-top: 15px;">
+    <h4 style="color: #3b82f6;"><i class="fa-solid fa-bug-slash"></i> Team Sync Diagnostics</h4>
+    <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 12px;">
+        Click this to check why player names aren't matching with your Auction database. It will show a detailed report in your console.
+    </p>
+    <button type="button" onclick="runTeamDiagnostics()" class="btn-gold" style="background: #3b82f6; color: white; font-weight: 900; width: 100%; padding: 12px;">
+        🔍 RUN TEAM SYNC DIAGNOSTIC REPORT
+    </button>
+</div>
+
         </div>
         <div id="sec-calendar" class="admin-section">
     <div class="sub-box">
@@ -1253,7 +1264,30 @@ if (updateForm) {
         logo: document.getElementById('ntLogo').value,
         members: Array.from(document.querySelectorAll('.nt-member-cb:checked')).map(cb => cb.value)
     }));
-
+async function runTeamDiagnostics() {
+    const btn = event.target;
+    btn.innerText = "RUNNING DIAGNOSTICS...";
+    
+    try {
+        const res = await fetch(`${API}/api/danger/debug-team-sync`);
+        const data = await res.json();
+        
+        console.table(data.report); // Prints a clean table in Eruda/Browser Console!
+        
+        const mismatches = data.report.filter(r => !r.auctionDbFound || r.auctionSoldToField === '-' || r.auctionSoldToField === 'UNSOLD');
+        
+        alert(
+            `📊 DIAGNOSTIC REPORT:\n\n` +
+            `Total Community Players: ${data.totalPlayers}\n` +
+            `Mismatches / Unsold: ${mismatches.length}\n\n` +
+            `👉 Open your Eruda Console (F12 or ?debug=true) to view the full table report and see which names don't match!`
+        );
+    } catch (e) {
+        alert("Diagnostics failed to run.");
+    } finally {
+        btn.innerText = "🔍 RUN TEAM SYNC DIAGNOSTIC REPORT";
+    }
+        }
     // Smart Center Logic
     async function createSmartTour() {
         const data = {
