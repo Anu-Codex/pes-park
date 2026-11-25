@@ -1931,6 +1931,93 @@ body {
     box-shadow: 0 0 14px rgba(0, 229, 255, 0.7);
     border-color: #00e5ff;
 }
+        /* ================= QUICK ACCESS COMMAND GRID ================= */
+.quick-access-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 22px;
+    position: relative;
+    z-index: 2;
+}
+
+.qa-btn {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+}
+
+.qa-btn:hover {
+    transform: translateY(-3px);
+}
+
+.qa-icon-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.qa-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+    line-height: 1.3;
+    text-transform: uppercase;
+}
+
+/* Individual Color Themes */
+.qa-gold { border-bottom: 2px solid #f59e0b; }
+.qa-gold .qa-icon-circle { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.qa-gold:hover { box-shadow: 0 5px 20px rgba(245, 158, 11, 0.25); border-color: #f59e0b; }
+
+.qa-red { border-bottom: 2px solid #ef4444; }
+.qa-red .qa-icon-circle { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+.qa-red:hover { box-shadow: 0 5px 20px rgba(239, 68, 68, 0.25); border-color: #ef4444; }
+
+.qa-green { border-bottom: 2px solid #10b981; }
+.qa-green .qa-icon-circle { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.qa-green:hover { box-shadow: 0 5px 20px rgba(16, 185, 129, 0.25); border-color: #10b981; }
+
+.qa-cyan { border-bottom: 2px solid #00e5ff; }
+.qa-cyan .qa-icon-circle { background: rgba(0, 229, 255, 0.15); color: #00e5ff; }
+.qa-cyan:hover { box-shadow: 0 5px 20px rgba(0, 229, 255, 0.25); border-color: #00e5ff; }
+
+.live-mini-pill {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.5rem;
+    font-weight: 900;
+    padding: 2px 5px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    animation: blinkLive 1.2s infinite;
+}
+
+@keyframes blinkLive {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
         
     </style>
 </head>
@@ -2308,7 +2395,34 @@ body {
                         <!-- Laser Light Effect -->
                         <div class="laser-beam"></div>
 
-                        <h2 class="dashboard-neon-title">PLAYERS DASHBOARD</h2>
+                        <h2 class="dashboard-neon-title">PLAYERS DASHBOARD</h2>                    
+                        <!-- 👉 QUICK ACCESS BUTTONS GRID -->
+                        <div class="quick-access-grid">
+                            <!-- 1. TOP BALLON D'OR RANKINGS -->
+                            <div class="qa-btn qa-gold" onclick="quickJump('bdr')">
+                                <div class="qa-icon-circle"><i class="fa-solid fa-trophy"></i></div>
+                                <span class="qa-title">TOP BALLON D'OR<br>RANKINGS</span>
+                            </div>
+
+                            <!-- 2. LIVE CAL AUCTION TOUR S2 -->
+                            <div class="qa-btn qa-red" onclick="quickJump('auction_s2')">
+                                <span class="live-mini-pill">LIVE</span>
+                                <div class="qa-icon-circle"><i class="fa-solid fa-gavel"></i></div>
+                                <span class="qa-title">CAL AUCTION<br>TOUR S2</span>
+                            </div>
+
+                            <!-- 3. PLAYERS PROFILE (TOTAL LIST) -->
+                            <div class="qa-btn qa-green" onclick="quickJump('players')">
+                                <div class="qa-icon-circle"><i class="fa-solid fa-users"></i></div>
+                                <span class="qa-title">PLAYERS PROFILE<br>(TOTAL LIST)</span>
+                            </div>
+
+                            <!-- 4. WEEKLY BEST PLAYER LIST -->
+                            <a href="potw.html" class="qa-btn qa-cyan">
+                                <div class="qa-icon-circle"><i class="fa-solid fa-bolt"></i></div>
+                                <span class="qa-title">WEEKLY BEST<br>PLAYER LIST</span>
+                            </a>
+                        </div>
                         <p class="dashboard-subtitle">Live Community Telemetry & Analytics</p>
 
                         
@@ -2345,6 +2459,49 @@ body {
         
                                         }
         }
+        // --- QUICK ACCESS BUTTON CONTROLLER ---
+function quickJump(target) {
+    const container = document.getElementById('dynamicContent');
+    const title = document.querySelector('.section-title-row h3');
+    const selector = document.getElementById('viewSelector');
+
+    if (target === 'bdr') {
+        if (title) title.innerText = "BDR RANKINGS";
+        renderBDRRankings(container);
+    } 
+    else if (target === 'players') {
+        if (title) title.innerText = "TOTAL PLAYERS";
+        if (selector) selector.value = "total";
+        renderTotalPlayers(container);
+
+        // Also highlight Players in bottom bar
+        document.querySelectorAll('.b-nav-item').forEach(b => b.classList.remove('active'));
+        const pBtn = document.getElementById('bNavPlayers');
+        if (pBtn) pBtn.classList.add('active');
+    } 
+    else if (target === 'auction_s2') {
+        if (title) title.innerText = "AUCTION TOUR";
+        renderAuctionTour(container).then(() => {
+            // Auto-select CAL AUCTION TOUR S2 if it exists in the dropdown
+            setTimeout(() => {
+                const tourSel = document.getElementById('tourNameSelector');
+                if (tourSel && tourSel.options.length > 0) {
+                    const s2Option = Array.from(tourSel.options).find(opt => 
+                        opt.text.toUpperCase().includes('S2') || opt.text.toUpperCase().includes('CAL')
+                    );
+                    if (s2Option) {
+                        tourSel.value = s2Option.value;
+                        switchTourTab('auction');
+                    }
+                }
+            }, 400);
+        });
+    }
+
+    // Smoothly scroll to the top of the section
+    const sec = document.querySelector('.dashboard-section');
+    if (sec) sec.scrollIntoView({ behavior: 'smooth' });
+}
 
     // 3. View Toggler (BDR vs Total Players)
     function toggleView() {
