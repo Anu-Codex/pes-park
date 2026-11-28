@@ -2018,6 +2018,256 @@ body {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
 }
+        /* ================= COOKIE BANNER & SETTINGS MODAL ================= */
+.cookie-banner {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    max-width: 480px;
+    margin: 0 auto;
+    background: #0b1322;
+    border: 1px solid #1e293b;
+    border-radius: 14px;
+    padding: 14px 16px;
+    z-index: 100005;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.85);
+    display: none; /* Controlled by JS */
+    animation: slideUpCookie 0.35s ease-out;
+}
+
+@keyframes slideUpCookie {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cookie-banner-text {
+    font-size: 0.82rem;
+    color: #cbd5e1;
+    margin: 0 0 12px;
+    line-height: 1.4;
+}
+
+.cookie-banner-text a {
+    color: #00e5ff;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.cookie-btn-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.c-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #2d3d54;
+    color: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    flex: 1;
+    transition: 0.2s;
+}
+
+.c-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: #00e5ff;
+}
+
+.c-btn-gear {
+    flex: 0 0 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 1rem;
+}
+
+/* --- COOKIE SETTINGS MODAL --- */
+.cookie-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 7, 18, 0.88);
+    backdrop-filter: blur(8px);
+    z-index: 100010;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+}
+
+.cookie-modal-card {
+    background: #0c1424;
+    border: 1px solid #1e293b;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 420px;
+    padding: 24px 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+}
+
+.c-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.c-modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: #ffffff;
+    font-weight: 800;
+}
+
+.c-modal-close {
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.c-modal-desc {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin: 0 0 22px;
+    line-height: 1.45;
+}
+
+.c-pref-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.c-pref-left {
+    display: flex;
+    gap: 14px;
+    flex: 1;
+}
+
+.c-pref-icon {
+    font-size: 1.1rem;
+    margin-top: 2px;
+    width: 22px;
+    text-align: center;
+}
+
+.c-pref-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 4px;
+}
+
+.c-pref-sub {
+    font-size: 0.75rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+/* Toggle Switches */
+.c-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.c-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.c-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background-color: #334155;
+    border-radius: 34px;
+    transition: 0.3s;
+}
+
+.c-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+input:checked + .c-slider {
+    background-color: #f59e0b;
+}
+
+input:checked + .c-slider:before {
+    transform: translateX(20px);
+}
+
+input:disabled + .c-slider {
+    background-color: rgba(245, 158, 11, 0.4);
+    cursor: not-allowed;
+}
+
+input:disabled + .c-slider:before {
+    background-color: #cbd5e1;
+}
+
+.c-policy-link-row {
+    text-align: center;
+    padding: 15px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    margin-top: 5px;
+}
+
+.c-policy-link-row a {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    text-decoration: underline;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.c-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.c-btn-cancel {
+    background: transparent;
+    border: 1px solid #2d3d54;
+    color: #f8fafc;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.c-btn-save {
+    background: #f59e0b;
+    border: none;
+    color: #000000;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+        }
         
     </style>
 </head>
@@ -4201,6 +4451,54 @@ async function renderTrophiesView(container) {
         console.error("Trophy types load error:", e);
     }
 }
+        // --- COOKIE CONSENT & PREFERENCES ENGINE ---
+function initCookieConsent() {
+    const savedPrefs = localStorage.getItem('nexus_cookie_prefs');
+    if (!savedPrefs) {
+        // Show bottom cookie banner if visitor hasn't chosen yet
+        const banner = document.getElementById('cookieBanner');
+        if (banner) banner.style.display = 'block';
+    }
+}
+
+function saveCookieChoice(analytics, marketing) {
+    const prefs = {
+        essential: true,
+        analytics: Boolean(analytics),
+        marketing: Boolean(marketing),
+        savedAt: new Date().toISOString()
+    };
+    localStorage.setItem('nexus_cookie_prefs', JSON.stringify(prefs));
+    
+    const banner = document.getElementById('cookieBanner');
+    if (banner) banner.style.display = 'none';
+}
+
+function openCookieModal() {
+    const saved = localStorage.getItem('nexus_cookie_prefs');
+    if (saved) {
+        try {
+            const prefs = JSON.parse(saved);
+            document.getElementById('toggleAnalytics').checked = !!prefs.analytics;
+            document.getElementById('toggleMarketing').checked = !!prefs.marketing;
+        } catch(e) {}
+    }
+    document.getElementById('cookieModal').style.display = 'flex';
+}
+
+function closeCookieModal() {
+    document.getElementById('cookieModal').style.display = 'none';
+}
+
+function savePreferencesFromModal() {
+    const analytics = document.getElementById('toggleAnalytics').checked;
+    const marketing = document.getElementById('toggleMarketing').checked;
+    saveCookieChoice(analytics, marketing);
+    closeCookieModal();
+}
+
+// Run on boot
+window.addEventListener('DOMContentLoaded', initCookieConsent);
 
 async function loadTrophyLeaderboard() {
     const type = document.getElementById('trophyTypeSelector').value;
@@ -4463,6 +4761,7 @@ function rollStatNumber(elementId, targetNumber, suffix = '', duration = 1800) {
     }
     requestAnimationFrame(update);
 }
+    
 
 // Hook rolling counter into existing updateTopStats function
 const originalUpdateTopStats = window.updateTopStats;
@@ -4643,6 +4942,86 @@ window.addEventListener('appinstalled', () => {
             <button type="button" class="btn-send-modmail" onclick="submitModmailTicket()">
                 <i class="fa-solid fa-paper-plane"></i> DISPATCH TICKET TO ADMIN
             </button>
+        </div>
+    </div>
+</div>
+    <!-- COOKIE CONSENT BANNER -->
+<div id="cookieBanner" class="cookie-banner">
+    <p class="cookie-banner-text">
+        Essential storage only, no ad cookies — see our <a href="cookie-policy.html">cookie policy</a>.
+    </p>
+    <div class="cookie-btn-row">
+        <button type="button" class="c-btn" onclick="saveCookieChoice(false, false)">Reject non-essential</button>
+        <button type="button" class="c-btn" onclick="saveCookieChoice(true, true)">Accept all</button>
+        <button type="button" class="c-btn c-btn-gear" onclick="openCookieModal()" title="Cookie Settings">
+            <i class="fa-solid fa-gear"></i>
+        </button>
+    </div>
+</div>
+
+<!-- COOKIE SETTINGS MODAL -->
+<div id="cookieModal" class="cookie-modal-overlay" onclick="closeCookieModal(event)">
+    <div class="cookie-modal-card" onclick="event.stopPropagation()">
+        <div class="c-modal-header">
+            <h3>Cookie Settings</h3>
+            <button type="button" class="c-modal-close" onclick="closeCookieModal()">&times;</button>
+        </div>
+        <p class="c-modal-desc">
+            Manage your cookie preferences. Essential cookies cannot be disabled as they are required for the site to function.
+        </p>
+
+        <!-- 1. Essential -->
+        <div class="c-pref-row">
+            <div class="c-pref-left">
+                <i class="fa-solid fa-shield-halved c-pref-icon" style="color:#00e5ff;"></i>
+                <div>
+                    <div class="c-pref-title">Essential</div>
+                    <div class="c-pref-sub">Required for basic site functionality like authentication and security. Always enabled.</div>
+                </div>
+            </div>
+            <label class="c-switch">
+                <input type="checkbox" checked disabled>
+                <span class="c-slider"></span>
+            </label>
+        </div>
+
+        <!-- 2. Analytics -->
+        <div class="c-pref-row">
+            <div class="c-pref-left">
+                <i class="fa-solid fa-chart-line c-pref-icon" style="color:#38bdf8;"></i>
+                <div>
+                    <div class="c-pref-title">Analytics</div>
+                    <div class="c-pref-sub">Help us understand how visitors interact with the site to improve your experience.</div>
+                </div>
+            </div>
+            <label class="c-switch">
+                <input type="checkbox" id="toggleAnalytics">
+                <span class="c-slider"></span>
+            </label>
+        </div>
+
+        <!-- 3. Marketing -->
+        <div class="c-pref-row">
+            <div class="c-pref-left">
+                <i class="fa-solid fa-bullhorn c-pref-icon" style="color:#94a3b8;"></i>
+                <div>
+                    <div class="c-pref-title">Marketing</div>
+                    <div class="c-pref-sub">Allow us to deliver relevant promotions, offers, and sponsored content.</div>
+                </div>
+            </div>
+            <label class="c-switch">
+                <input type="checkbox" id="toggleMarketing">
+                <span class="c-slider"></span>
+            </label>
+        </div>
+
+        <div class="c-policy-link-row">
+            <a href="cookie-policy.html"><i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.7rem;"></i> Full Cookie Policy</a>
+        </div>
+
+        <div class="c-modal-actions">
+            <button type="button" class="c-btn-cancel" onclick="closeCookieModal()">Cancel</button>
+            <button type="button" class="c-btn-save" onclick="savePreferencesFromModal()">Save Preferences</button>
         </div>
     </div>
 </div>
