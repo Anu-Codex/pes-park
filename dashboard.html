@@ -439,6 +439,48 @@
         ASSIGN PLAYER TO SQUAD
     </button>
 </div>
+            <!-- EDIT / RENAME TEAM -->
+<div class="sub-box" style="border-left: 4px solid var(--gold); background: rgba(245, 158, 11, 0.05); margin-top: 15px;">
+    <h4 style="color: var(--gold);"><i class="fa-solid fa-pen-to-square"></i> Edit / Rename Team</h4>
+    <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 12px;">
+        Rename a club/national team or update its logo. Automatically syncs with all player rosters, fixtures, and standings.
+    </p>
+
+    <label style="font-size: 0.6rem; color: var(--text-dim);">1. SELECT TEAM TO EDIT</label>
+    <select id="editTeamSelect" onchange="autoFillEditTeam()">
+        <option value="">Choose Team...</option>
+    </select>
+
+    <div class="grid-2" style="margin-top: 8px;">
+        <div>
+            <label style="font-size: 0.6rem; color: var(--accent);">NEW TEAM NAME</label>
+            <input type="text" id="editTeamNewName" placeholder="e.g. ARGENTINA">
+        </div>
+        <div>
+            <label style="font-size: 0.6rem; color: var(--text-dim);">NEW LOGO URL (OPTIONAL)</label>
+            <input type="text" id="editTeamNewLogo" placeholder="Leave blank to keep current">
+        </div>
+    </div>
+
+    <button type="button" onclick="executeTeamRename()" class="btn-gold" style="margin-top: 8px; font-weight: 900;">
+        SAVE TEAM CHANGES
+    </button>
+</div>
+            <!-- DELETE SPECIFIC TEAM -->
+<div class="sub-box" style="border: 1px solid var(--danger); background: rgba(239, 68, 68, 0.05); margin-top: 15px;">
+    <h4 style="color: var(--danger);"><i class="fa-solid fa-trash-can"></i> Delete Specific Team</h4>
+    <p style="font-size: 0.7rem; color: var(--text-dim); margin-bottom: 12px;">
+        Permanently removes the selected team from the active roster and releases its players back to Free Agent.
+    </p>
+
+    <select id="delTeamSelect" style="border-color: var(--danger);">
+        <option value="">Select Team to Delete...</option>
+    </select>
+
+    <button type="button" onclick="deleteSpecificTeam()" class="delete-btn" style="width: 100% !important; margin-top: 8px; padding: 12px !important; font-weight: 900;">
+        DELETE SELECTED TEAM
+    </button>
+</div>
         </div>
 
         <!-- 4. SMART CENTER (Tournament Logic) -->
@@ -1129,6 +1171,18 @@ if (mergeKeepSel) mergeKeepSel.innerHTML = '<option value="">Select Primary Play
 if (mergeDupSel) mergeDupSel.innerHTML = '<option value="">Select Duplicate Player...</option>' + pOpts;
             const cardSel = document.getElementById('cardPlayerSelect');
 if (cardSel) cardSel.innerHTML = '<option value="">Select Player...</option>' + pOpts;
+            // Inside loadAllDashboardData() in dashboard.html:
+const editTeamSel = document.getElementById('editTeamSelect');
+if (editTeamSel && Array.isArray(teams)) {
+    editTeamSel.innerHTML = '<option value="">Choose Team...</option>' + 
+        teams.map(t => `<option value="${t._id}" data-logo="${t.logo || ''}">${t.name}</option>`).join('');
+}
+            // Inside loadAllDashboardData() in dashboard.html:
+const delTeamSel = document.getElementById('delTeamSelect');
+if (delTeamSel && Array.isArray(teams)) {
+    delTeamSel.innerHTML = '<option value="">Select Team to Delete...</option>' + 
+        teams.map(t => `<option value="${t._id}">${t.name}</option>`).join('');
+}
 
             // Inside loadAllDashboardData():
 const uclSoloSel = document.getElementById('uclSoloTourSelect');
@@ -3547,6 +3601,79 @@ async function executeNationalTeamSync() {
         btn.disabled = false;
     }
 }
+        function autoFillEditTeam() {
+    const sel = document.getElementById('editTeamSelect');
+    const selectedOpt = sel.options[sel.selectedIndex];
+    if (!sel.value) return;
+
+    document.getElementById('editTeamNewName').value = selectedOpt.text;
+    document.getElementById('editTeamNewLogo').value = selectedOpt.getAttribute('data-logo') || "";
+}
+
+async function executeTeamRename() {
+    const teamId = document.getElementById('editTeamSelect').value;
+    const newName = document.getElementById('editTeamNewName').value.trim();
+    const newLogo = document.getElementById('editTeamNewLogo').value.trim();
+
+    if (!teamId || !newName) {
+        return alert("Please select a team and enter the new name!");
+    }
+
+    if (!confirm(`Rename this team to "${newName}" across the entire database?`)) return;
+
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.innerText = "UPDATING SYSTEM...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/api/teams/${teamId}/rename`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newName, newLogo })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            alert("✅ " + data.message);
+            location.reload();
+        } else {
+            alert("❌ Error: " + (data.error || "Failed to rename team"));
+        }
+    } catch (err) {
+        alert("Server connection failed.");
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
+        async function deleteSpecificTeam() {
+    const sel = document.getElementById('delTeamSelect');
+    const teamId = sel.value;
+    const teamName = sel.options[sel.selectedIndex]?.text;
+
+    if (!teamId) return alert("Please select a team to delete first!");
+
+    const check = confirm(`⚠️ DANGER: Permanently delete "${teamName}"? All players assigned to this team will become Free Agents.`);
+    if (!check) return;
+
+    try {
+        const res = await fetch(`${API}/api/teams/${teamId}`, {
+            method: 'DELETE'
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            alert("🗑️ " + data.message);
+            location.reload();
+        } else {
+            alert("❌ Error: " + (data.error || "Failed to delete team"));
+        }
+    } catch (err) {
+        console.error("Delete team error:", err);
+        alert("Server connection failed.");
+    }
+        }
 // Inside your loadAllDashboardData(), populate cardPlayerSelect:
 
 
